@@ -1,7 +1,4 @@
-import AsyncApp from '../index'
-
-import logger from './middleware/logger'
-import responseTime from './middleware/response-time'
+import AsyncApp,{middleware} from '../src/index'
 
 import {
     info
@@ -10,8 +7,8 @@ import {
 let app = new AsyncApp(),
     port = 8080
 
-app.use(logger())
-app.use(responseTime())
+app.use(middleware.logger())
+app.use(middleware.responseTime())
 
 app.use('/home', (ctx) => {
     ctx.body = info('home route is ok')

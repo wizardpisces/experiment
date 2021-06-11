@@ -1,4 +1,4 @@
-import { Handle, Next, Context } from "../../index";
+import { Handle, Next, Context } from "../type";
 
 export default function responseTime():Handle {
     
