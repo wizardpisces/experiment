@@ -49,3 +49,8 @@ req1 |-  cpu -|--- request ---|- cpu -|
 req2          |- cpu -|--- request ---|- cpu -|
 req3                  |- cpu -|---request---| |- cpu -|
 ```
+
+## Reference
+
+* http://www.ruanyifeng.com/blog/2014/10/event-loop.html
+* https://cnodejs.org/topic/5c8b0a4a7ce0df3732428254

@@ -3,13 +3,13 @@ const http = require('http')
 module.exports = function request(options) {
     return new Promise((resolve, _) => {
         let result = ''
-        let req = http.get(options, (res) => {
+        let req = http.get(options.url, (res) => {
             res.setEncoding('utf8');
             res.on('data', (chunk) => {
-                console.log(`BODY: ${chunk}`);
-                result += chunk.toString()
+                result += chunk
             });
             res.on('end', () => {
+                console.log(`BODY: ${JSON.stringify(result)}`);
                 resolve(result)
             });
         })

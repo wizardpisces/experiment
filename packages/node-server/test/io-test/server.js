@@ -20,8 +20,11 @@ app.use('/multiple', (req, res, next) => {
     globalId = req.query.id;
     duration = duration === 1000 ? 2000 : 1000
     setTimeout(() => {
-         res.writeHead(200); // 触发 on-headers 保证 response-time middleware 的时间捕获正常
-         res.end(`[tiny-server]: ${req.query.id}: ${globalId}`)
+        let o = {
+            message: `[tiny-server]: ${req.query.id}: ${globalId}`
+        }
+        res.writeHead(200); // 触发 on-headers 保证 response-time middleware 的时间捕获正常
+        res.end(JSON.stringify(o))
         // request({
         //     hostname: 'localhost',
         //     port: 8081,

@@ -16,7 +16,6 @@
     "test": "tsdx test",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
-    "test:router": "ts-node test/router.js",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
@@ -32,24 +31,22 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "node-server",
+  "name": "node-server-async",
   "author": "刘泽",
-  "module": "dist/node-server.esm.js",
+  "module": "dist/node-server-async.esm.js",
   "size-limit": [
     {
-      "path": "dist/node-server.cjs.production.min.js",
+      "path": "dist/node-server-async.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/node-server.esm.js",
+      "path": "dist/node-server-async.esm.js",
       "limit": "10 KB"
     }
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.12.0",
-    "@types/node": "^15.12.2",
     "husky": "^6.0.0",
-    "on-headers": "^1.0.2",
     "size-limit": "^4.12.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.2.0",

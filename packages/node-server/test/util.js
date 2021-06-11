@@ -28,7 +28,7 @@ class RenderStream extends Stream.Readable {
 }
 
 function info(str){
-    return `[tiny-server]: ${str}`
+    return `[node-server]: ${str}`
 }
 
 function clone(obj) {

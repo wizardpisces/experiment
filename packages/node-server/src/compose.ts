@@ -1,6 +1,6 @@
-import { Handler,Next } from './type'
+import { Handle ,Next } from './type'
 
-export default function compose<T, U, V = void>(handlers: Handler<T, U, V>[]) {
+export default function compose<T, U, V = void>(handlers: Handle[]) {
     let len = handlers.length,
         i = 0;
     return (req: T, res: U, done: Next<V>) => {
