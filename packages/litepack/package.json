@@ -15,6 +15,8 @@
   },
   "scripts": {
     "start": "tsdx watch",
+    "dev": "ts-node ./src/index.ts",
+    "nodemon": "nodemon",
     "build": "tsdx build",
     "test": "tsdx test",
     "lint": "tsdx lint",
@@ -49,11 +51,15 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.12.0",
+    "@types/koa": "^2.13.3",
+    "@types/koa-static": "^4.0.1",
+    "es-module-lexer": "^0.6.0",
     "husky": "^6.0.0",
+    "koa": "^2.13.1",
+    "koa-static": "^5.0.0",
     "size-limit": "^4.12.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.2.0",
-    "typescript": "^4.3.2",
-    "server-async": "0.1.0"
+    "typescript": "^4.3.2"
   }
 }

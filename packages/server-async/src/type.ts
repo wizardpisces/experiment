@@ -1,3 +1,4 @@
+import ContextType from "./context";
 
 export type Next<T = Promise<any>> = (err?: Error | null) => T;
 export type RequestHandler<T, V = void> = (
@@ -16,8 +17,6 @@ export type LayerOptions = {
     path: string
 }
 
-export type Context = {
-    res: any;
-    req: any;
-    body: any
-}
+export type Context = ContextType
+export type HttpRequest = any
+export type HttpRespond = any

@@ -7,6 +7,8 @@
 
 ## litepack todo
 
+* node_modules 预处理到 .litepack 文件
+* use server-async to replace koa, but still use koa middleware
 * litepack create-app
 * litepack build
 * litepack serve

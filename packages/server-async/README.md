@@ -10,7 +10,8 @@ ts-node test/router.ts
 
 ## Todos 
 
-add jest test cases
+* add jest test cases
+* add context, respondProto, requestProto mixins
 
 ## Reference
 

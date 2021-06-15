@@ -1,4 +1,5 @@
-import { Context, Handle, Next } from '../type'
+import Context from '../context';
+import { Handle, Next } from '../type'
 
 type Query = { [key: string]: string }
 

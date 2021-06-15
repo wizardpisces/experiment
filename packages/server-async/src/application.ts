@@ -1,10 +1,11 @@
 /**
  * Copyright(c) 2021 wizardpisces
  */
-import { Handle, Context } from './type'
+import { Handle, HttpRequest, HttpRespond } from './type'
 import query from './middleware/query'
 import http from 'http'
 import Router from './router'
+import Context from './context'
 
 export default class App {
     _router: Router
@@ -13,13 +14,8 @@ export default class App {
         this.use(query())
     }
 
-    createContext(req:any, res:any): Context{
-        let body = null;
-        return {
-            req,
-            res,
-            body
-        }
+    createContext(req:HttpRequest, res:HttpRespond): Context{
+       return new Context(req,res)
     }
 
     handle(req: any, res: any) {

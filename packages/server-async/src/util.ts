@@ -1,7 +1,9 @@
-function info(str:string) {
+export function info(str:string) {
     return `[node-server]: ${str}`
 }
 
-export {
-    info
+export function mixins(...list:object[]) {
+    return function (target:any) {
+        Object.assign(target.prototype, ...list);
+    };
 }
