@@ -8,6 +8,7 @@ export default function resolveModule(serverDevContext: ServerDevContext) {
         await next();
 
         if (serverDevContext.needsModuleResolve(ctx.path)) {
+            ctx.res.setHeader('Content-Type', 'application/javascript')
             ctx.body = serverDevContext.resolveModule(ctx.path);
         }
     }

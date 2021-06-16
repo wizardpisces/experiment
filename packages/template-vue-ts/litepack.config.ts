@@ -1,4 +1,4 @@
-// import { defineConfig } from 'liteP'
+// import { defineConfig } from 'litePack'
 // import vue from '@vitejs/plugin-vue'
 
 // // https://vitejs.dev/config/
