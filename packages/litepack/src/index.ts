@@ -1,16 +1,17 @@
+
+import path from 'path'
 // import AsyncApp, { middleware } from 'server-async'
 import Koa from 'koa'
 import koaStatic from 'koa-static'
 // @ts-ignore
 import logger from 'koa-logger'
-import path from 'path'
 
 import htmlRewrite from './middleware/htmlRewrite'
 import transform from './middleware/transform'
 import resolveModule from './middleware/resolveModule'
 import pluginVue from './middleware/plugin-vue'
 
-import createDevServerContext,{ServerDevContext} from './context'
+import createDevServerContext, { ServerDevContext } from './context'
 
 let app = new Koa(),
     port = 8080
@@ -22,7 +23,7 @@ let serverDevContext: ServerDevContext = createDevServerContext(root)
 app.use(logger())
 
 // html 插入 client 脚本
-app.use(htmlRewrite())
+app.use(htmlRewrite(serverDevContext))
 
 // 这里需要最后运行，对所有的返回进行 esm import 重写（利用洋葱模型）
 app.use(transform(serverDevContext))

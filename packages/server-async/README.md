@@ -10,6 +10,7 @@ ts-node test/router.ts
 
 ## Todos 
 
+* make router a middleware plugin
 * add jest test cases
 * add context, respondProto, requestProto mixins
 
