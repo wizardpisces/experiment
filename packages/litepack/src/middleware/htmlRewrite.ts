@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import { ServerDevContext } from '../context';
-import { readBody } from './util';
+import { readBody, transformWithEsbuild } from './util';
 import fs from 'fs'
 import path from 'path'
 import { CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH} from '../constants'
@@ -14,13 +14,22 @@ export default function htmlRewrite(serverDevContext:ServerDevContext) {
         // client.ts will be bundled on the run
         if (ctx.path.indexOf(CLIENT_PUBLIC_PATH) > -1){
             ctx.res.setHeader('Content-Type', 'application/javascript')
-            ctx.body = fs.createReadStream(path.join(serverDevContext.litepackPath, 'src/client/client.ts'))
+            let result = await transformWithEsbuild(
+                fs.readFileSync(path.join(serverDevContext.litepackPath, 'src/client/client.ts')).toString(),
+                'src/client/client.ts')
+
+            ctx.body = result.code
         }
 
-        // will be deleted when client.st bundled return
+        // will be deleted when client.ts bundled return
         if (ctx.path.indexOf(ENV_PUBLIC_PATH) > -1){
             ctx.res.setHeader('Content-Type', 'application/javascript')
-            ctx.body = fs.createReadStream(path.join(serverDevContext.litepackPath, 'src/client/env.ts'))
+            let result = await transformWithEsbuild(
+                fs.readFileSync(path.join(serverDevContext.litepackPath, 'src/client/env.ts')).toString(), 
+                'src/client/client.ts')
+
+            ctx.body = result.code
+            // ctx.body = fs.createReadStream(path.join(serverDevContext.litepackPath, 'src/client/env.ts'))
         }
 
         await next();

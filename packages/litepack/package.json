@@ -55,6 +55,7 @@
     "@types/koa-static": "^4.0.1",
     "@vue/compiler-sfc": "^3.1.1",
     "es-module-lexer": "^0.6.0",
+    "esbuild": "^0.12.9",
     "husky": "^6.0.0",
     "koa": "^2.13.1",
     "koa-logger": "^3.2.1",

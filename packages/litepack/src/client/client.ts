@@ -2,8 +2,7 @@ import './env'
 
 const sheetsMap = new Map()
 
-// @ts-ignore
-export function updateStyle(id, content) {
+export function updateStyle(id: string, content: string) {
     let style = sheetsMap.get(id);
     if (!style) {
         style = document.createElement('style')

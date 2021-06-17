@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { parse, compileTemplate, SFCDescriptor, rewriteDefault } from '@vue/compiler-sfc'
 import { ServerDevContext } from '../context'
 import { CLIENT_PUBLIC_PATH } from '../constants'
-
+import { transformWithEsbuild} from './util'
 
 export default (serverDevContext: ServerDevContext) => {
     return async (ctx: Context, next: Next) => {
@@ -18,8 +18,8 @@ export default (serverDevContext: ServerDevContext) => {
         // first main request
         if (query.vue) {
             let content = fs.readFileSync(serverDevContext.resolvePath(filename));
-            let { code } = transformMain(content.toString(), filename)
-
+            let { code } = await transformMain(content.toString(), filename)
+            
             ctx.body = code
 
         } else if (query.type === 'style') {
@@ -55,11 +55,11 @@ function parseVueRequest(ctx: Context) {
     }
 }
 
-function transformMain(code: string, filename: string) {
+async function transformMain(code: string, filename: string) {
     // sfc source code
     const { descriptor } = createDescriptor(filename, code);
 
-    let { code: scriptCode } = genScriptCode(descriptor)
+    let { code: scriptCode } = await genScriptCode(descriptor)
     let { code: templateCode } = genTemplateCode(descriptor)
     let { code: styleCode } = genStyleCode(descriptor)
 
@@ -111,14 +111,22 @@ function genStyleCode(descriptor: SFCDescriptor) {
     }
 }
 
-function genScriptCode(descriptor: SFCDescriptor) {
-    let scriptCode = '';
+async function genScriptCode(descriptor: SFCDescriptor) {
+    let scriptCode = '',
+        script = descriptor.script;
 
     // TODO : needs to consider ts compile
-    if (descriptor.script) {
-        scriptCode = descriptor.script.content;
-
-
+    if (script) {
+        scriptCode = script.content;
+        // support <script lang='ts'>
+        if(script.lang === 'ts'){
+            const result = await transformWithEsbuild(
+                scriptCode,
+                descriptor.filename,
+                { loader: 'ts' }
+            )
+            scriptCode = result.code
+        }
         // export default defineComponent({..   ->   const _sfc_main = defineComponent({..
         scriptCode = rewriteDefault(scriptCode, `_sfc_main`)
     }
@@ -133,8 +141,15 @@ function genTemplateCode(descriptor: SFCDescriptor) {
     let result = compileTemplate({
         source: descriptor.template!.content,
         filename: descriptor.filename,
-        // @ts-ignore
-        id: descriptor.id
+        id: descriptor.id,
+
+        /**
+         * if not provided, <img src="x.png"> will be transformed to import xx from 'x.png' which throw error as
+         * Failed to load module script: The server responded with a non-JavaScript MIME type of "image/png". Strict MIME type checking is enforced for module scripts per HTML spec.
+         */
+        transformAssetUrls:{
+            base:'src'
+        }
     })
 
     return {
