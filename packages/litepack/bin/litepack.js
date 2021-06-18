@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 function start() {
-    require('../dist/index')
+    require('../dist/index').createServer()
 }
 
 start()

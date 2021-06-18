@@ -2,6 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import { parse, ImportSpecifier } from 'es-module-lexer'
 import MargicString from 'magic-string';
+import { PluginContainer } from './pluginContainer';
 
 export interface ServerDevContext {
     root: string
@@ -24,14 +25,16 @@ export interface ServerDevContext {
 
     // check module is third party by cacheDir
     needsModuleResolve: (filePath: string) => boolean
+
+    pluginContainer: PluginContainer
 }
 
-export default function createDevServerContext(root: string): ServerDevContext {
+export default function createDevServerContext(root: string, pluginContainer: PluginContainer): ServerDevContext {
     return {
         root,
         cacheDir: '/node_modules/.litepack/',
         litepackPath: process.cwd(),
-
+        pluginContainer,
         // 获取第三方模块可能的路径
         resolveModulePath(name: string): string {
             return path.join(this.cacheDir, name)

@@ -5,7 +5,8 @@
     "dev": "litepack"
   },
   "dependencies": {
-    "vue": "^3.0.5"
+    "vue": "^3.0.5",
+    "vue-router": "^4.0.9"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.2.2",

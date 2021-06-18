@@ -1,6 +1,10 @@
 import { Context, Next } from 'koa'
 import { ServerDevContext } from '../context'
-import { readBody } from './util'
+import { send } from '../send'
+import { transformRequest } from '../transformRequest'
+import { readBody } from '../util'
+
+const knownIgnoreList = new Set(['/', '/favicon.ico'])
 
 function needsModuleRewrite(ctx: Context): boolean {
     if (ctx.body) {
@@ -15,6 +19,17 @@ function needsModuleRewrite(ctx: Context): boolean {
 export default function transformMiddleware(serverDevContext: ServerDevContext) {
 
     return async (ctx: Context, next: Next) => {
+
+        if (ctx.method !== 'GET' || knownIgnoreList.has(ctx.path)) {
+            return next()
+        }
+        // resolve, load and transform using the plugin container
+        const result = await transformRequest(ctx.path, serverDevContext)
+
+        if (result) {
+            return send(ctx.req, ctx.res, 'js', result.code, result.etag)
+        }
+
         await next();
 
         if (needsModuleRewrite(ctx)) {

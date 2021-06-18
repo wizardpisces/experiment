@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { parse, compileTemplate, SFCDescriptor, rewriteDefault } from '@vue/compiler-sfc'
 import { ServerDevContext } from '../context'
 import { CLIENT_PUBLIC_PATH } from '../constants'
-import { transformWithEsbuild} from './util'
+import { transformWithEsbuild} from '../util'
 
 export default (serverDevContext: ServerDevContext) => {
     return async (ctx: Context, next: Next) => {

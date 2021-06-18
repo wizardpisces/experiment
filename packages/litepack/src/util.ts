@@ -18,6 +18,13 @@ export async function readBody(stream: any) {
     }
 }
 
+
+export const queryRE = /\?.*$/
+export const hashRE = /#.*$/
+
+export const cleanUrl = (url: string): string =>
+    url.replace(hashRE, '').replace(queryRE, '')
+
 export async function transformWithEsbuild(code: string, filename: string, options? : { loader: Loader }) {
     const ext = path.extname(filename)
     let loader = ext.slice(1)

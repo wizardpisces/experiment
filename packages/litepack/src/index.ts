@@ -12,45 +12,52 @@ import resolveModule from './middleware/resolveModule'
 import pluginVue from './middleware/plugin-vue'
 
 import createDevServerContext, { ServerDevContext } from './context'
+import { createPluginContainer } from './pluginContainer'
 
 let app = new Koa(),
     port = 8080
 
 const root = path.join(process.cwd(), 'template-vue-ts');
 
-let serverDevContext: ServerDevContext = createDevServerContext(root)
+export default async function createServer(){
 
-app.use(logger())
+    let container = await createPluginContainer({ plugins: [] })
+    let serverDevContext: ServerDevContext = createDevServerContext(root, container)
 
-// html 插入 client 脚本
-app.use(htmlRewrite(serverDevContext))
+    app.use(logger())
 
-// 这里需要最后运行，对所有的返回进行 esm import 重写（利用洋葱模型）
-app.use(transform(serverDevContext))
+    // html 插入 client 脚本
+    app.use(htmlRewrite(serverDevContext))
 
-// 根据路径解析出第三方文，eg: node_modules etc
-app.use(resolveModule(serverDevContext))
+    // 这里需要最后运行，对所有的返回进行 esm import 重写（利用洋葱模型）
+    app.use(transform(serverDevContext))
 
-// 解析 .vue 文件
-app.use(pluginVue(serverDevContext))
+    // 根据路径解析出第三方文，eg: node_modules etc
+    app.use(resolveModule(serverDevContext))
 
-// 根据路径解析出本地资源（一般是非三方资源）
-app.use(koaStatic(root, {
-    setHeaders(res, pathname) {
-        // Matches js, jsx, ts, tsx.
-        // The reason this is done, is that the .ts file extension is reserved
-        // for the MIME type video/mp2t. In almost all cases, we can expect
-        // these files to be TypeScript files, and for Vite to serve them with
-        // this Content-Type.
-        if (/\.[tj]sx?$/.test(pathname)) {
-            res.setHeader('Content-Type', 'application/javascript')
+    // 解析 .vue 文件
+    app.use(pluginVue(serverDevContext))
+
+    // 根据路径解析出本地资源（一般是非三方资源）
+    app.use(koaStatic(root, {
+        setHeaders(res, pathname) {
+            // Matches js, jsx, ts, tsx.
+            // The reason this is done, is that the .ts file extension is reserved
+            // for the MIME type video/mp2t. In almost all cases, we can expect
+            // these files to be TypeScript files, and for Vite to serve them with
+            // this Content-Type.
+            if (/\.[tj]sx?$/.test(pathname)) {
+                res.setHeader('Content-Type', 'application/javascript')
+            }
         }
-    }
-}));
+    }));
 
-console.log('restart')
+    console.log('restart')
 
-app.listen(port, () => {
-    console.log(`server started at http://localhost:${port}`)
-})
+    app.listen(port, () => {
+        console.log(`server started at http://localhost:${port}`)
+    })
+}
+
+createServer()
 
