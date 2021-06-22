@@ -1,4 +1,5 @@
 import { Readable } from 'stream'
+import debug from 'debug'
 import path from 'path'
 import {
     transform,
@@ -18,6 +19,22 @@ export async function readBody(stream: any) {
     }
 }
 
+const DEBUG = process.env.DEBUG
+
+export function createDebugger(
+    ns: string
+): debug.Debugger['log'] {
+    const log = debug(ns)
+
+    return (msg: string, ...args: any[]) => {
+
+        if (!DEBUG) {
+            return
+        }
+        console.log(`${ns}: ${msg}`,...args)
+        log(msg, ...args)
+    }
+}
 
 export const queryRE = /\?.*$/
 export const hashRE = /#.*$/
@@ -42,3 +59,4 @@ export async function transformWithEsbuild(code: string, filename: string, optio
         ...result
     }
 }
+

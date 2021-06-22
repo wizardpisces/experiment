@@ -1,40 +1,38 @@
+import path from 'path'
 import { Context, Next } from 'koa'
 import { ServerDevContext } from '../context'
 import { send } from '../send'
 import { transformRequest } from '../transformRequest'
-import { readBody } from '../util'
 
-const knownIgnoreList = new Set(['/', '/favicon.ico'])
+const knownIgnoreList = new Set(['/', '/favicon.ico', '/robots.txt'])
 
-function needsModuleRewrite(ctx: Context): boolean {
-    if (ctx.body) {
-        // .(j|t)s(x) .vue file
-        if (ctx.res.getHeader('Content-Type') === 'application/javascript') {
-            return true
-        }
+const Transform_Not_Supported_AssetList = ['.png']
+function isTransformSupportedAsset(filename: string) {
+    let assetType = path.extname(filename).toLocaleLowerCase()
+    if (Transform_Not_Supported_AssetList.includes(assetType)) {
+        return false
     }
-    return false
+    return true
 }
 
 export default function transformMiddleware(serverDevContext: ServerDevContext) {
 
     return async (ctx: Context, next: Next) => {
 
-        if (ctx.method !== 'GET' || knownIgnoreList.has(ctx.path)) {
+        if (ctx.method !== 'GET'
+            || knownIgnoreList.has(ctx.path)
+            || !isTransformSupportedAsset(ctx.path)
+            || ctx.path.indexOf('dist/serviceWorker.js') > -1) {
+
             return next()
         }
         // resolve, load and transform using the plugin container
-        const result = await transformRequest(ctx.path, serverDevContext)
+        const result = await transformRequest(ctx.originalUrl, serverDevContext)
 
         if (result) {
-            return send(ctx.req, ctx.res, 'js', result.code, result.etag)
+            return send(ctx.req, ctx.res, result.code)
         }
 
         await next();
-
-        if (needsModuleRewrite(ctx)) {
-            const content = await readBody(ctx.body);
-            ctx.body = serverDevContext.rewriteImports(content);
-        }
     }
 }

@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'fs'
 import getEtag from 'etag'
 
 import { ServerDevContext } from "./context";
@@ -9,15 +9,18 @@ export interface TransformResult {
     etag?: string
 }
 
-export async function transformRequest(url: string, { pluginContainer }: ServerDevContext) {
+export async function transformRequest(url: string, { pluginContainer,resolvePath }: ServerDevContext) {
     const id = (await pluginContainer.resolveId(url))?.id || url
+    // console.log('pluginContainer.resolveId:',id)
+    
     const loadResult = await pluginContainer.load(id)
     let code: string | null = null
 
     if (loadResult == null) {
         const file = cleanUrl(id)
 
-        code = await fs.readFile(file, 'utf-8')
+        // resolve real absolute path based on root
+        code = fs.readFileSync(resolvePath(file), 'utf-8')
     } else {
         if (typeof loadResult === 'object') {
             code = loadResult.code
@@ -34,8 +37,13 @@ export async function transformRequest(url: string, { pluginContainer }: ServerD
     } else {
         code = transformResult.code
     }
+
+    if(!code){
+        return null
+    }
+
     return {
-        code: transformResult?.code,
+        code: code,
         etag: getEtag(code, { weak: true })
     } as TransformResult
 }

@@ -6,5 +6,8 @@
     "ignore": [
         "src/**/*.spec.ts"
     ],
+    "env":{
+        "DEBUG":"true"
+    },
     "exec": "ts-node ./src/index.ts"
 }

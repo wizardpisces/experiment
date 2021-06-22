@@ -17,8 +17,11 @@ export interface ServerDevContext {
     // resolve resource path by root
     resolvePath: (resourcePath: string) => string
 
-    // resolve third party module source code
-    resolveModule: (name: string) => fs.ReadStream
+    // resolve resource path by root
+    resolveLitepackPath: (resourcePath: string) => string
+
+    // resolve third party module real path
+    resolveModuleRealPath: (name: string) => string
 
     // rewrite third party module import with resolveModulePath result
     rewriteImports: (source: string) => string
@@ -30,33 +33,39 @@ export interface ServerDevContext {
 }
 
 export default function createDevServerContext(root: string, pluginContainer: PluginContainer): ServerDevContext {
-    return {
+    const devServerContext = {
         root,
         cacheDir: '/node_modules/.litepack/',
         litepackPath: process.cwd(),
         pluginContainer,
         // 获取第三方模块可能的路径
         resolveModulePath(name: string): string {
-            return path.join(this.cacheDir, name)
+            return path.join(devServerContext.cacheDir, name)
         },
 
+        // 获取server启动的资源路径
         resolvePath(resourcePath: string): string {
-            return path.join(this.root, resourcePath)
+            return path.join(devServerContext.root, resourcePath)
+        },
+
+        // 获取vitepack框架内的资源路径
+        resolveLitepackPath(resourcePath: string): string {
+            return path.join(devServerContext.litepackPath, resourcePath)
         },
 
         needsModuleResolve(filePath: string) {
-            return filePath.indexOf(this.cacheDir) > -1
+            return filePath.indexOf(devServerContext.cacheDir) > -1
         },
 
         // resolve module path by package.json module path
-        resolveModule(filePath: string) {
-            let name = filePath.replace(this.cacheDir, '')
-            let moduleAbsoluteDir = path.join(root, 'node_modules', name)
-            let packageJsonPath: string = path.join(moduleAbsoluteDir, 'package.json')
-            let packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString())
-            let realPath: string = path.join(moduleAbsoluteDir, packageJson.module)
+        resolveModuleRealPath(filePath: string): string {
+            let name = filePath.replace(devServerContext.cacheDir, ''),
+                moduleAbsoluteDir = path.join(root, 'node_modules', name),
+                packageJsonPath: string = path.join(moduleAbsoluteDir, 'package.json'),
+                packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString()),
+                realRelativePath: string = path.join('node_modules', name, packageJson.module)
 
-            return fs.createReadStream(realPath)
+            return realRelativePath
         },
 
         rewriteImports(source: string) {
@@ -76,7 +85,7 @@ export default function createDevServerContext(root: string, pluginContainer: Pl
                          */
                         const reg = /^[^\/\.]/
                         if (reg.test(id)) {
-                            id = this.resolveModulePath(id);
+                            id = devServerContext.resolveModulePath(id);
                             magicString.overwrite(s, e, id);
                         }
                     })
@@ -89,4 +98,5 @@ export default function createDevServerContext(root: string, pluginContainer: Pl
         }
     }
 
+    return devServerContext
 }

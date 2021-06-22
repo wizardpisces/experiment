@@ -10,7 +10,7 @@ import {
     ResolvedId
 } from 'rollup'
 
-import { ResolvedConfig } from './config'
+import { ResolvedConfig } from './plugin'
 
 export interface PluginContainer {
     resolveId(
@@ -58,10 +58,13 @@ export async function createPluginContainer({ plugins }: ResolvedConfig): Promis
             const ctx = new Context()
             let id: string | null = null
             const partial: Partial<PartialResolvedId> = {}
+            
             for (const plugin of plugins) {
+                
+                // console.log('---------------------------',plugin.name, plugin.resolveId,rawId)
                 if (!plugin.resolveId) continue
                 const result = await plugin.resolveId.call(ctx as any, rawId, '', {})
-
+                
                 if (!result) continue
 
                 if (typeof result === 'string') {
@@ -70,12 +73,11 @@ export async function createPluginContainer({ plugins }: ResolvedConfig): Promis
                     id = result.id
                     Object.assign(partial, result)
                 }
-
                 break
             }
 
             if (id) {
-                // partial.id = isExternalUrl(id) ? id : normalizePath(id)
+                partial.id = id
                 return partial as PartialResolvedId
             } else {
                 return null
