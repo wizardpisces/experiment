@@ -1,6 +1,6 @@
 # Mono Project
 
-experiments project
+lunzi project
 
 ## how to run
 
