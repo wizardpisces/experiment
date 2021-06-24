@@ -3,9 +3,18 @@ import fs from 'fs'
 import { parse, ImportSpecifier } from 'es-module-lexer'
 import MargicString from 'magic-string';
 import { PluginContainer } from './pluginContainer';
+import { Plugin } from './plugin';
+import { WebSocketServer } from './ws';
+import { ModuleGraph } from './moduleGraph';
 
-export interface ServerDevContext {
+export type DevServerContextOptions = {
     root: string
+    pluginContainer: PluginContainer
+    plugins: Plugin[]
+    ws: WebSocketServer
+    moduleGraph: ModuleGraph
+}
+export interface ServerDevContext extends DevServerContextOptions {
     // will be external dependency dir
     cacheDir: string
     // package dir to import rendering helper
@@ -28,16 +37,17 @@ export interface ServerDevContext {
 
     // check module is third party by cacheDir
     needsModuleResolve: (filePath: string) => boolean
-
-    pluginContainer: PluginContainer
 }
 
-export default function createDevServerContext(root: string, pluginContainer: PluginContainer): ServerDevContext {
+export default function createDevServerContext({ root, pluginContainer, plugins, ws, moduleGraph }: DevServerContextOptions): ServerDevContext {
     const devServerContext = {
+        ws,
         root,
         cacheDir: '/node_modules/.litepack/',
+        plugins,
         litepackPath: process.cwd(),
         pluginContainer,
+        moduleGraph,
         // 获取第三方模块可能的路径
         resolveModulePath(name: string): string {
             return path.join(devServerContext.cacheDir, name)

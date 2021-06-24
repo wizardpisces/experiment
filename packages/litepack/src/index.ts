@@ -4,6 +4,7 @@ import path from 'path'
 import Koa from 'koa'
 // @ts-ignore
 import logger from 'koa-logger'
+import chokidar from 'chokidar'
 
 import htmlRewrite from './middleware/htmlRewrite'
 import transform from './middleware/transform'
@@ -13,6 +14,9 @@ import createDevServerContext, { ServerDevContext } from './context'
 import { createPluginContainer } from './pluginContainer'
 import { Plugin } from './plugin'
 import { resolvePlugins } from './plugins'
+import { createWebSocketServer } from './ws'
+import { handleHMRUpdate } from './hmr'
+import { ModuleGraph } from './moduleGraph'
 
 let app = new Koa(),
     port = 8080
@@ -24,31 +28,49 @@ export type ServerHook = (
 ) => (() => void) | void | Promise<(() => void) | void>
 
 export default async function createServer(){
+    const ws = createWebSocketServer()
 
     let plugins:Plugin[] = await resolvePlugins()
-    let container = await createPluginContainer({ plugins})
-    let serverDevContext: ServerDevContext = createDevServerContext(root,container)
-
-    // apply server configuration hooks from plugins
+    let pluginContainer = await createPluginContainer({ plugins})
+    const moduleGraph = new ModuleGraph(pluginContainer)
+    let serverDevContext: ServerDevContext = createDevServerContext({
+        root,
+        pluginContainer,
+        plugins,
+        moduleGraph,
+        ws
+    })
+    
+    // apply server configuration hooks from plugins before use middleware (plugins may register middleware)
     for (const plugin of plugins) {
         if (plugin.configureServer) {
             await plugin.configureServer(serverDevContext)
         }
     }
     
+    const watcher = chokidar.watch(root, {
+        ignored: ['**/node_modules/**', '**/.git/**'],
+        // ignoreInitial: true,
+        ignorePermissionErrors: true,
+        disableGlobbing: true
+    })
+
+    watcher.on('change', async (file) => {
+        // invalidate module graph cache on file change
+        // moduleGraph.onFileChange(file)
+        await handleHMRUpdate(file, serverDevContext)
+    })
+
     app.use(logger())
    
     // html 插入 client 脚本
     app.use(htmlRewrite(serverDevContext))
-
-    // serve static files under /public or /src/assets   eg: logo.png
-    // this applies before the transform middleware so that these files are served
-    // as-is without transforms.
-    // app.use()
-    staticMiddleware(serverDevContext, app)
-
+    
     app.use(transform(serverDevContext))
-   
+
+    // static assets should bypass transform
+    app.use(staticMiddleware(serverDevContext))
+
     app.listen(port, () => {
         console.log(`server started at http://localhost:${port}`)
     })

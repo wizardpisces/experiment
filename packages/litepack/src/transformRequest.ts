@@ -9,7 +9,7 @@ export interface TransformResult {
     etag?: string
 }
 
-export async function transformRequest(url: string, { pluginContainer,resolvePath }: ServerDevContext) {
+export async function transformRequest(url: string, { pluginContainer, resolvePath, moduleGraph }: ServerDevContext) {
     const id = (await pluginContainer.resolveId(url))?.id || url
     // console.log('pluginContainer.resolveId:',id)
     
@@ -18,7 +18,6 @@ export async function transformRequest(url: string, { pluginContainer,resolvePat
 
     if (loadResult == null) {
         const file = cleanUrl(id)
-
         // resolve real absolute path based on root
         code = fs.readFileSync(resolvePath(file), 'utf-8')
     } else {
@@ -29,6 +28,9 @@ export async function transformRequest(url: string, { pluginContainer,resolvePat
         }
 
     }
+
+    // ensure module in graph after successful load
+    const mod = await moduleGraph.ensureEntryFromUrl(url)
 
     const transformResult = await pluginContainer.transform(code, id)
 
@@ -42,7 +44,7 @@ export async function transformRequest(url: string, { pluginContainer,resolvePat
         return null
     }
 
-    return {
+    return mod.transformResult = {
         code: code,
         etag: getEtag(code, { weak: true })
     } as TransformResult

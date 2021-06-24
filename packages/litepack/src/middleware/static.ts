@@ -1,5 +1,4 @@
-import path from 'path'
-import Koa from 'koa'
+// import path from 'path'
 import koaStatic from 'koa-static'
 import { ServerDevContext } from '../context';
 
@@ -16,9 +15,6 @@ let options = {
     }
 }
 
-export default function staticMiddleware(serverDevContext:ServerDevContext,app:Koa) {
-    const publicDir = path.join(serverDevContext.root, './public');
-    const assetsDir = path.join(serverDevContext.root, './src/assets');
-    app.use(koaStatic(assetsDir, options));
-    app.use(koaStatic(publicDir, options));
+export default function staticMiddleware(serverDevContext:ServerDevContext) {
+    return koaStatic(serverDevContext.root, options)
 }

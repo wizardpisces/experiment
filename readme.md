@@ -1,16 +1,14 @@
-# Mono Project
+# Demo Project
 
-lunzi project
+[simplified vite](https://github.com/wizardpisces/lerna-repo/tree/master/packages/litepack)
+[simplified koa](https://github.com/wizardpisces/lerna-repo/tree/master/packages/server-async)
+[simplified express](https://github.com/wizardpisces/lerna-repo/tree/master/packages/node-server)
 
-## how to run
+## bootstrap
 
 ```
 npm install -g lerna
 lerna bootstrap # Link local packages together and install remaining package dependencies
 ```
 
-直接进入 packages/* 参照各自的 readme 进行运行
-
-## Reference
-
-* https://github.com/lerna/lerna/tree/main/commands/bootstrap#readme
+further refer to packages/* readme.md

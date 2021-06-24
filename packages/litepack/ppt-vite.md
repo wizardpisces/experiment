@@ -127,7 +127,8 @@ import.meta.hot = __vite__createHotContext("/src/store/index.ts");
 
 主要是处于完善阶段，很多功能还不是特别完善，eg:
 
-目前(vite@2.2.4) import.meta.hot.accept() 只支持 literal 的 字符串 或者 数组，导致批量载入情况例如：
+* 只能使用 **import** ，无法使用 require
+* 目前(vite@2.2.4) import.meta.hot.accept() 只支持 literal 的 字符串 或者 数组，导致批量载入情况例如：
 
 ```
 let pathList = []
@@ -145,7 +146,6 @@ if (import.meta.hot) {
 }
 ```
 会变的无效，如何解决？能否借鉴 context.require的方式，产生一个对应 context.id 的 import.meta.hot.contex.id 的依赖替代？
-
 ## 竞品分析
 
 [snowpack vs vite](https://www.npmtrends.com/snowpack-vs-vite)

@@ -20,7 +20,6 @@ export async function readBody(stream: any) {
 }
 
 const DEBUG = process.env.DEBUG
-
 export function createDebugger(
     ns: string
 ): debug.Debugger['log'] {
@@ -38,9 +37,17 @@ export function createDebugger(
 
 export const queryRE = /\?.*$/
 export const hashRE = /#.*$/
+export const cleanUrl = (url: string): string => url.replace(hashRE, '').replace(queryRE, '')
 
-export const cleanUrl = (url: string): string =>
-    url.replace(hashRE, '').replace(queryRE, '')
+const importQueryRE = /(\?|&)import(?:&|$)/
+export function removeImportQuery(url: string): string {
+    return url.replace(importQueryRE, '$1').replace(trailingSeparatorRE, '')
+}
+const trailingSeparatorRE = /[\?&]$/
+const timestampRE = /\bt=\d{13}&?\b/
+export function removeTimestampQuery(url: string): string {
+    return url.replace(timestampRE, '').replace(trailingSeparatorRE, '')
+}
 
 export async function transformWithEsbuild(code: string, filename: string, options? : { loader: Loader }) {
     const ext = path.extname(filename)

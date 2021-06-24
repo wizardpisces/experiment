@@ -25,6 +25,7 @@ export default function importPlugin(): Plugin {
             if(canSkip(id)){
                 return null
             }
+            
             return serverDevContext.rewriteImports(code)
         }
     }

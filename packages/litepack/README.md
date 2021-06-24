@@ -11,21 +11,24 @@ nodemon
 
 ## litepack todo
 
-* ~~support vite plugin mode~~
-* extract plugin-vue middleware as plugin
-* hot .vue css
+* ~~build rollup plugin system~~
+* ~~extract plugin-vue middleware as plugin~~
+* hot .vue css (self accept situation)
 * hot .vue template
 * hot .vue script
+* hot vuex (not self accept HRM situation + import dep collect)
 * add vue-router@4  and dynamic import ,(mainly to test dynamic import)，reference vite dynamicImport plugin
 * vue ssr
-* ~~.vue css 渲染~~
+* ~~.vue rendering properly~~
 * node_modules 预处理到 .litepack 文件,目前主要是 Vue
 * sourceMap support
 * ~~support \<script type='ts'\> , add ts build on the run~~
-* use server-async to replace koa, but still use koa middleware
 * litepack create-app
 * litepack build
 * litepack serve
+* Multiple servers sharing a single HTTP/S server
+* error handling
+* use server-async to replace koa, but still use koa middleware
 ## vite 疑问
 
 * vite vs snowpack

@@ -19,6 +19,7 @@ export default function transformMiddleware(serverDevContext: ServerDevContext) 
 
     return async (ctx: Context, next: Next) => {
 
+        // skip asset that is not intended for transform
         if (ctx.method !== 'GET'
             || knownIgnoreList.has(ctx.path)
             || !isTransformSupportedAsset(ctx.path)
@@ -26,6 +27,7 @@ export default function transformMiddleware(serverDevContext: ServerDevContext) 
 
             return next()
         }
+
         // resolve, load and transform using the plugin container
         const result = await transformRequest(ctx.originalUrl, serverDevContext)
 
