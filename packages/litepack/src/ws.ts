@@ -3,6 +3,7 @@ import { HMRPayload } from './type/hmr'
 
 export interface WebSocketServer {
     send(payload: HMRPayload): void
+    sendDebug(payload: any): void
     close(): Promise<void>
 }
 
@@ -20,12 +21,26 @@ export function createWebSocketServer(): WebSocketServer {
                 }
             })
         },
+        sendDebug(payload: any) {
+            if (process.env.DEBUG) {
+                payload = {
+                    type: 'debug',
+                    payload
+                }
+                const stringified = JSON.stringify(payload)
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(stringified)
+                    }
+                })
+            }
+        },
         close() {
             return new Promise((resolve, reject) => {
                 wss.close((err) => {
                     if (err) {
                         reject(err)
-                    }else{
+                    } else {
                         resolve()
                     }
                 })

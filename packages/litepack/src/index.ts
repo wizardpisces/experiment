@@ -13,6 +13,7 @@ import staticMiddleware from './middleware/static'
 import createDevServerContext, { ServerDevContext } from './context'
 import { createPluginContainer } from './pluginContainer'
 import { Plugin } from './plugin'
+import { normalizePath } from './util'
 import { resolvePlugins } from './plugins'
 import { createWebSocketServer } from './ws'
 import { handleHMRUpdate } from './hmr'
@@ -21,7 +22,8 @@ import { ModuleGraph } from './moduleGraph'
 let app = new Koa(),
     port = 8080
 
-const root = path.join(process.cwd(), 'template-vue-ts');
+const projectPath = './template-vue-ts'
+const root = path.join(process.cwd(), projectPath);
 
 export type ServerHook = (
     server: ServerDevContext
@@ -47,18 +49,20 @@ export default async function createServer(){
             await plugin.configureServer(serverDevContext)
         }
     }
-    
+
     const watcher = chokidar.watch(root, {
         ignored: ['**/node_modules/**', '**/.git/**'],
         // ignoreInitial: true,
         ignorePermissionErrors: true,
-        disableGlobbing: true
+        disableGlobbing: true,
+        cwd: root
     })
 
     watcher.on('change', async (file) => {
+        file = normalizePath(file)
         // invalidate module graph cache on file change
         // moduleGraph.onFileChange(file)
-        await handleHMRUpdate(file, serverDevContext)
+        await handleHMRUpdate('/'+file, serverDevContext)
     })
 
     app.use(logger())

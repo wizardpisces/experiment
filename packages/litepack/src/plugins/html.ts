@@ -4,7 +4,7 @@ import { CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH } from '../constants'
 import { transformWithEsbuild } from '../util'
 import fs from 'fs'
 
-function filter(id:string):boolean{
+export function filter(id:string):boolean{
     return id.indexOf('/src/client/client.ts') > -1 || id.indexOf('/src/client/env.ts') > -1
 }
 

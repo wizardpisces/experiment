@@ -3,6 +3,7 @@ import { Context, Next } from 'koa'
 import { ServerDevContext } from '../context'
 import { send } from '../send'
 import { transformRequest } from '../transformRequest'
+// import { isImportRequest } from '../util'
 
 const knownIgnoreList = new Set(['/', '/favicon.ico', '/robots.txt'])
 
@@ -23,10 +24,14 @@ export default function transformMiddleware(serverDevContext: ServerDevContext) 
         if (ctx.method !== 'GET'
             || knownIgnoreList.has(ctx.path)
             || !isTransformSupportedAsset(ctx.path)
-            || ctx.path.indexOf('dist/serviceWorker.js') > -1) {
+            || ctx.path.indexOf('dist/serviceWorker.js') > -1
+            ) {
+                
+                return next()
+            }
+            
+        //!isImportRequest(ctx.path) // eg: HMR dynamic import from client.ts
 
-            return next()
-        }
 
         // resolve, load and transform using the plugin container
         const result = await transformRequest(ctx.originalUrl, serverDevContext)

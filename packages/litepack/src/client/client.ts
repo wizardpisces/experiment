@@ -72,7 +72,6 @@ function handleMessage(payload: HMRPayload) {
     }
 }
 
-
 let pending = false
 let queued: Promise<(() => void) | undefined>[] = []
 
@@ -92,6 +91,26 @@ async function queueUpdate(p: Promise<(() => void) | undefined>) {
 
     }
 }
+
+async function waitForSuccessfulPing(ms = 1000) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        try {
+            await fetch(`${base}__vitepack_ping`)
+            break
+        } catch (e) {
+            await new Promise((resolve) => setTimeout(resolve, ms))
+        }
+    }
+}
+
+// ping server
+socket.addEventListener('close', async ({ wasClean }) => {
+    if (wasClean) return
+    console.log(`[vite] server connection lost. polling for restart...`)
+    await waitForSuccessfulPing()
+    location.reload()
+})
 
 interface HotModule {
     id: string

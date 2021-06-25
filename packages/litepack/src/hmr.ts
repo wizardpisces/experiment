@@ -17,9 +17,14 @@ export async function handleHMRUpdate(
     file: string,
     serverDevContext: ServerDevContext
 ): Promise<any> {
-    const { root, moduleGraph } = serverDevContext
+    const { root, moduleGraph, ws } = serverDevContext
     const mods = moduleGraph.getModulesByFile(file)
-    
+
+    console.info('update rawfile:', file)
+
+    ws.sendDebug(Array.from(moduleGraph.fileToModulesMap.entries()))
+    ws.sendDebug(Array.from(mods as any))
+
     const shortFile = getShortName(file, root)
 
     // check if any plugin wants to perform custom HMR handling, not implemented yet
@@ -40,8 +45,7 @@ function updateModules(
     timestamp: number,
     { ws }: ServerDevContext
 ) {
-    console.info('update file:',file)
-
+    console.info('update shortfile:', file)
     const updates: Update[] = []
     
     for (const mod of modules) {
@@ -82,7 +86,8 @@ function propagateUpdate(
     }>,
     // currentChain: ModuleNode[] = [node]
 ): boolean /* hasDeadEnd */ {
-    if (node.isSelfAccepting) {
+    // if (node.isSelfAccepting) {
+    if(true){
         boundaries.add({
             boundary: node,
             acceptedVia: node

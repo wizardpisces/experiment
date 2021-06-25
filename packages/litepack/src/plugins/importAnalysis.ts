@@ -1,5 +1,7 @@
+
 import { ServerDevContext } from "../context";
 import { Plugin } from "../plugin";
+import { filter } from './html'
 
 const directRequestRE = /(\?|&)direct\b/
 const cssLangs = `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`
@@ -8,10 +10,11 @@ export const isDirectCSSRequest = (request: string): boolean =>
     cssLangRE.test(request) && directRequestRE.test(request)
 
 const skipRE = /\.(map|json)$/
-const canSkip = (id: string) => skipRE.test(id) || isDirectCSSRequest(id)
+const canSkip = (id: string) => skipRE.test(id)
+    || isDirectCSSRequest(id)
 
 export default function importPlugin(): Plugin {
-    let serverDevContext:ServerDevContext;
+    let serverDevContext: ServerDevContext;
 
     return {
         name: 'litepack:importPlugin',
@@ -21,11 +24,11 @@ export default function importPlugin(): Plugin {
         },
 
         async transform(code, id) {
-            
-            if(canSkip(id)){
+
+            if (canSkip(id) || filter(id)) {
                 return null
             }
-            
+
             return serverDevContext.rewriteImports(code)
         }
     }

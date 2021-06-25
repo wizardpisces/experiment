@@ -2,7 +2,7 @@ import fs from 'fs'
 import getEtag from 'etag'
 
 import { ServerDevContext } from "./context";
-import { cleanUrl } from './util'
+import { cleanUrl, removeTimestampQuery } from './util'
 
 export interface TransformResult {
     code: string
@@ -10,6 +10,7 @@ export interface TransformResult {
 }
 
 export async function transformRequest(url: string, { pluginContainer, resolvePath, moduleGraph }: ServerDevContext) {
+    url = removeTimestampQuery(url)
     const id = (await pluginContainer.resolveId(url))?.id || url
     // console.log('pluginContainer.resolveId:',id)
     

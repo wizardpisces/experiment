@@ -1,5 +1,6 @@
 import { Readable } from 'stream'
 import debug from 'debug'
+import os from 'os'
 import path from 'path'
 import {
     transform,
@@ -35,11 +36,20 @@ export function createDebugger(
     }
 }
 
+export function slash(p: string): string {
+    return p.replace(/\\/g, '/')
+}
+export const isWindows = os.platform() === 'win32'
+export function normalizePath(id: string): string {
+    return path.posix.normalize(isWindows ? slash(id) : id)
+}
+
 export const queryRE = /\?.*$/
 export const hashRE = /#.*$/
 export const cleanUrl = (url: string): string => url.replace(hashRE, '').replace(queryRE, '')
 
 const importQueryRE = /(\?|&)import(?:&|$)/
+export const isImportRequest = (url: string): boolean => importQueryRE.test(url)
 export function removeImportQuery(url: string): string {
     return url.replace(importQueryRE, '$1').replace(trailingSeparatorRE, '')
 }

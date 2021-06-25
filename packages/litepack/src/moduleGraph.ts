@@ -1,7 +1,7 @@
 import { PluginContainer } from "./pluginContainer"
 import { TransformResult } from "./transformRequest"
-// import { extname } from 'path'
-// import { parse as parseUrl } from 'url'
+import { extname } from 'path'
+import { parse as parseUrl } from 'url'
 import {
     removeTimestampQuery,
     removeImportQuery,
@@ -75,11 +75,11 @@ export class ModuleGraph {
 
         // combine resolveId and url to make a unique url,(url maybe resolved to a specific resource with extension)
 
-        // const ext = extname(cleanUrl(resolvedId))
-        // const { pathname, search, hash } = parseUrl(url)
-        // if (ext && !pathname!.endsWith(ext)) {
-        //     url = pathname + ext + (search || '') + (hash || '')
-        // }
+        const ext = extname(cleanUrl(resolvedId))
+        const { pathname, search, hash } = parseUrl(url)
+        if (ext && !pathname!.endsWith(ext)) {
+            url = pathname + ext + (search || '') + (hash || '')
+        }
         return [url, resolvedId]
     }
 }
