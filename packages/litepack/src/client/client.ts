@@ -159,6 +159,8 @@ export function updateStyle(id: string, content: string) {
         style.setAttribute('type', 'text/css')
         style.innerHTML = content
         document.head.appendChild(style)
+    }else{
+        style.innerHTML = content
     }
 
     sheetsMap.set(id, style);

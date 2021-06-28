@@ -2,11 +2,13 @@ import path from 'path'
 import { Update } from "./type/hmr";
 import { ServerDevContext } from "./context";
 import { ModuleNode } from './moduleGraph';
+import fs from 'fs'
 
 export interface HmrContext {
     file: string
     timestamp: number
     modules: Array<ModuleNode>
+    read: () => string | Promise<string>
     serverDevContext: ServerDevContext
 }
 
@@ -17,7 +19,7 @@ export async function handleHMRUpdate(
     file: string,
     serverDevContext: ServerDevContext
 ): Promise<any> {
-    const { root, moduleGraph, ws } = serverDevContext
+    const { root, moduleGraph, ws,plugins } = serverDevContext
     const mods = moduleGraph.getModulesByFile(file)
 
     console.info('update rawfile:', file)
@@ -27,15 +29,26 @@ export async function handleHMRUpdate(
 
     const shortFile = getShortName(file, root)
 
-    // check if any plugin wants to perform custom HMR handling, not implemented yet
     const timestamp = Date.now()
+    
+    // check if any plugin wants to perform custom HMR handling, eg: .vue?type=style should update cached descriptor, or else will return cache
     const hmrContext: HmrContext = {
         file,
         timestamp,
         modules: mods ? [...Array.from(mods)] : [],
+        read: () => readModifiedFile( serverDevContext.resolvePath(file) ),
         serverDevContext
     }
-    
+
+    for (const plugin of plugins) {
+        if (plugin.handleHotUpdate) {
+            const filteredModules = await plugin.handleHotUpdate(hmrContext)
+            if (filteredModules) {
+                hmrContext.modules = filteredModules
+            }
+        }
+    }
+
     updateModules(shortFile, hmrContext.modules, timestamp, serverDevContext)
 }
 
@@ -96,4 +109,9 @@ function propagateUpdate(
     }
 
     return false
+}
+
+async function readModifiedFile(file: string): Promise<string> {
+    const content = fs.readFileSync(file, 'utf-8')
+    return content
 }

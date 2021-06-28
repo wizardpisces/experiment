@@ -5,10 +5,19 @@ import {
 } from '../src/util'
 
 let app = new AsyncApp(),
-    port = 8080
+    port = 8081
 
 app.use(middleware.logger())
 app.use(middleware.responseTime())
+
+/**
+ * 直接返回大的content会导致 nodejs CPU 拉满
+ */
+app.use('/test_big_content',(ctx)=>{
+    let content = 'testtestts'.repeat(100000000)
+    console.log('size', content.length / 1024 / 1024,'M')
+    ctx.body = content
+})
 
 app.use('/home', (ctx) => {
     ctx.body = info('home route is ok')

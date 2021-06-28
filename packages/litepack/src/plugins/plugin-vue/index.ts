@@ -5,7 +5,8 @@ import { createDebugger, transformWithEsbuild } from '../../util'
 import { Plugin } from '../../plugin'
 import { parseVueRequest } from './query'
 import { getDescriptor, createDescriptor } from './descriptor'
-
+import { HmrContext } from '../../hmr'
+import {handleHotUpdate} from './handleHotUpdate'
 declare module '@vue/compiler-sfc' {
     interface SFCDescriptor {
         id: string
@@ -27,6 +28,13 @@ export default function vuePlugin(): Plugin {
         // configureServer(context: ServerDevContext) {
         //     serverDevContext = context
         // },
+        handleHotUpdate(ctx:HmrContext) {
+            if (!filter(ctx.file)) {
+                return
+            }
+            return handleHotUpdate(ctx)
+        },
+
         resolveId(id) {
             if (parseVueRequest(id).query.vue) {
                 return id

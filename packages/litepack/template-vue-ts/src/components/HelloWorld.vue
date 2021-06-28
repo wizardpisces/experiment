@@ -45,7 +45,7 @@ export default defineComponent({
     }
   },
   setup: () => {
-    const count = ref(1)
+    const count = ref(2)
     return { count }
   }
 })
@@ -53,7 +53,7 @@ export default defineComponent({
 
 <style scoped>
 a {
-  color: #42b983;
+  color: silver;
 }
 
 label {
