@@ -20,18 +20,44 @@ export async function handleHotUpdate({
     setPrevDescriptor(file, prevDescriptor)
 
     const content = await read()
+    const affectedModules = new Set<ModuleNode | undefined>()
+
     const { descriptor } = createDescriptor(
         file,
         content,
         // server.config.root,
         // false
     )
+
+    const mainModule = modules.find(
+        (m) => !/type=/.test(m.url) || /type=script/.test(m.url)
+    )
+
+    const prevStyles = prevDescriptor.styles || []
+    const nextStyles = descriptor.styles || []
+
     // compare descriptor and return the real changed path
-    if (descriptor) {
-        // console.log('handleHotUpdated', file, descriptor.id)
+    // only need to update styles if not reloading, since reload forces
+    // style updates as well.
+    for (let i = 0; i < nextStyles.length; i++) {
+        const prev = prevStyles[i]
+        const next = nextStyles[i]
+        if (!prev || !isEqualBlock(prev, next)) {
+            const mod = modules.find((m) => m.url.includes(`type=style&index=${i}`))
+            if (mod) {
+                affectedModules.add(mod)
+            } else {
+                // new style block - force reload
+                affectedModules.add(mainModule)
+            }
+        }
+    }
+    if (prevStyles.length > nextStyles.length) {
+        // style block removed - force reload
+        affectedModules.add(mainModule)
     }
     // console.log(prevDescriptor,descriptor)
-    return modules
+    return [...Array.from(affectedModules)].filter(Boolean) as ModuleNode[]
 }
 
 export function isEqualBlock(a: SFCBlock | null, b: SFCBlock | null): boolean {

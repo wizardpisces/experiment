@@ -22,8 +22,6 @@ export async function handleHMRUpdate(
     const { root, moduleGraph, ws,plugins } = serverDevContext
     const mods = moduleGraph.getModulesByFile(file)
 
-    console.info('update rawfile:', file)
-
     ws.sendDebug(Array.from(moduleGraph.fileToModulesMap.entries()))
     ws.sendDebug(Array.from(mods as any))
 

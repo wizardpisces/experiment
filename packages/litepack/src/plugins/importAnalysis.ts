@@ -14,9 +14,11 @@ const canSkip = (id: string) => skipRE.test(id) || isDirectCSSRequest(id)
 //     return /\.(ts|js|vue)/.test(id) && !filter(id)
 // }
 
-let logger = createDebugger('handleHotUpdate');
+let logger = createDebugger('importAnalysis');
+
 
 export default function importPlugin(): Plugin {
+    logger('registered')
     let serverDevContext: ServerDevContext;
 
     return {
@@ -38,12 +40,12 @@ export default function importPlugin(): Plugin {
             // rewrite import third party dependency path
             try {
                 let imports = parse(source)[0]
-                logger(`imports.length:,${imports.length}`)
+                // logger(`imports.length:,${imports.length}`)
                 if (imports.length) {
                     imports.forEach((item: ImportSpecifier) => {
                         const { s: start, e: end } = item;
                         let rawUrl = source.substring(start, end);
-                        logger(`rawUrl:,${rawUrl}`)
+                        // logger(`rawUrl:,${rawUrl}`)
                         // check import.meta usage
                         if (rawUrl === 'import.meta') {
                             const prop = source.slice(end, end + 4)
