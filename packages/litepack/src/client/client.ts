@@ -1,6 +1,6 @@
 import './env'
 
-import { Update, HMRPayload} from '../type/hmr';
+import { Update, HMRPayload } from '../type/hmr';
 
 function warnFailedFetch(err: Error, path: string | string[]) {
     // if (!err.message.match('fetch')) {
@@ -25,6 +25,11 @@ socket.addEventListener('message', async ({ data }) => {
 })
 
 async function fetchUpdate({ path, acceptedPath, timestamp }: Update) {
+    const mod = hotModulesMap.get(path)
+    if(!mod){
+        console.error(`[hmr]: failed, ${path} is not registered to hotModulesMap`)
+        return
+    }
     const moduleMap = new Map()
     const isSelfUpdate = path === acceptedPath
     // make sure we only import each dep once
@@ -33,6 +38,11 @@ async function fetchUpdate({ path, acceptedPath, timestamp }: Update) {
     if (isSelfUpdate) {
         modulesToUpdate.add(path)
     }
+
+    // determine the qualified callbacks before we re-import the modules
+    const qualifiedCallbacks = mod.callbacks.filter(({ deps }) => {
+        return deps.some((dep) => modulesToUpdate.has(dep))
+    })
 
     await Promise.all(Array.from(modulesToUpdate).map(async (dep) => {
         const [path, query] = dep.split(`?`)
@@ -49,9 +59,9 @@ async function fetchUpdate({ path, acceptedPath, timestamp }: Update) {
     }))
 
     return () => {
-        // for (const { deps, fn } of qualifiedCallbacks) {
-        //     fn(deps.map((dep) => moduleMap.get(dep)))
-        // }
+        for (const { deps, fn } of qualifiedCallbacks) {
+            fn(deps.map((dep) => moduleMap.get(dep)))
+        }
         const loggedPath = isSelfUpdate ? path : `${acceptedPath} via ${path}`
         console.log(`[litepack] hot updated: ${loggedPath}`)
     }
@@ -87,7 +97,7 @@ async function queueUpdate(p: Promise<(() => void) | undefined>) {
         pending = false
         const loading = [...queued]
         queued = []
-            ; (await Promise.all(loading)).forEach((fn) => fn && fn())
+        ;(await Promise.all(loading)).forEach((fn) => fn && fn())
 
     }
 }
@@ -125,6 +135,13 @@ interface HotCallback {
 
 const hotModulesMap = new Map<string, HotModule>()
 export const createHotContext = (ownerPath: string) => {
+    // when a file is hot updated, a new context is created
+    // clear its stale callbacks
+    const mod = hotModulesMap.get(ownerPath)
+    if (mod) {
+        mod.callbacks = []
+    }
+
     function acceptDeps(deps: string[], callback: HotCallback['fn'] = () => { }) {
         const mod: HotModule = hotModulesMap.get(ownerPath) || {
             id: ownerPath,
@@ -159,7 +176,7 @@ export function updateStyle(id: string, content: string) {
         style.setAttribute('type', 'text/css')
         style.innerHTML = content
         document.head.appendChild(style)
-    }else{
+    } else {
         style.innerHTML = content
     }
 

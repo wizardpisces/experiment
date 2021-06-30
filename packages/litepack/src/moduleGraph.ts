@@ -61,6 +61,10 @@ export class ModuleGraph {
         return mod
     }
 
+    getModuleById(id: string): ModuleNode | undefined {
+        return this.idToModuleMap.get(removeTimestampQuery(id))
+    }
+
     getModulesByFile(file: string): Set<ModuleNode> | undefined {
         return this.fileToModulesMap.get(file)
     }

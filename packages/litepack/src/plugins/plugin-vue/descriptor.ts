@@ -2,6 +2,8 @@ import crypto from 'crypto'
 import { parse, SFCDescriptor } from '@vue/compiler-sfc'
 
 const cache = new Map<string, SFCDescriptor>()
+const prevCache = new Map<string, SFCDescriptor | undefined>()
+
 export function createDescriptor(filename: string, code: string, isProduction: boolean | undefined = false) {
     const { descriptor } = parse(code, { filename })
 
@@ -21,4 +23,15 @@ export function getDescriptor(filename: string) {
     } else {
         throw Error(`${filename} has not been cache yet! why?`)
     }
+}
+
+export function getPrevDescriptor(filename: string): SFCDescriptor | undefined {
+    return prevCache.get(filename)
+}
+
+export function setPrevDescriptor(
+    filename: string,
+    entry: SFCDescriptor
+): void {
+    prevCache.set(filename, entry)
 }

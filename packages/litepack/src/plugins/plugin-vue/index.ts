@@ -1,12 +1,11 @@
 import { compileTemplate, SFCDescriptor, rewriteDefault } from '@vue/compiler-sfc'
-// import { ServerDevContext } from '../../context'
-import { CLIENT_PUBLIC_PATH } from '../../constants'
 import { createDebugger, transformWithEsbuild } from '../../util'
 import { Plugin } from '../../plugin'
 import { parseVueRequest } from './query'
-import { getDescriptor, createDescriptor } from './descriptor'
+import { getDescriptor, createDescriptor, getPrevDescriptor } from './descriptor'
 import { HmrContext } from '../../hmr'
-import {handleHotUpdate} from './handleHotUpdate'
+import {handleHotUpdate, isOnlyTemplateChanged} from './handleHotUpdate'
+import { ServerDevContext } from '../../context'
 declare module '@vue/compiler-sfc' {
     interface SFCDescriptor {
         id: string
@@ -16,7 +15,15 @@ declare module '@vue/compiler-sfc' {
 let debug = createDebugger('vue-plugin')
 debug('why debug is not working properly?')
 
+type Options = {
+    serverDevContext?:ServerDevContext
+    isProduction:boolean
+}
+
 export default function vuePlugin(): Plugin {
+    let options: Options = {
+        isProduction: process.env.NODE_ENV === 'production'
+    }
 
     function filter(filename: string) {
         return filename.endsWith('.vue')
@@ -64,7 +71,7 @@ export default function vuePlugin(): Plugin {
                 return null
             }
             if (!query.vue) {
-                return transformMain(code, filename)
+                return transformMain(code, filename, options)
             } else {
                 const descriptor = getDescriptor(filename)
                 if (query.type === 'style') {
@@ -77,9 +84,10 @@ export default function vuePlugin(): Plugin {
     }
 }
 
-async function transformMain(code: string, filename: string) {
+async function transformMain(code: string, filename: string, options:Options) {
     // sfc source code
     const { descriptor } = createDescriptor(filename, code);
+    const prevDescriptor = getPrevDescriptor(filename)
 
     let { code: scriptCode } = await genScriptCode(descriptor)
     let { code: templateCode } = genTemplateCode(descriptor)
@@ -96,6 +104,30 @@ async function transformMain(code: string, filename: string) {
 
     output.push('export default _sfc_main')
 
+    // HMR
+    if (
+        !options.isProduction
+    ) {
+        output.push(`_sfc_main.__hmrId = ${JSON.stringify(descriptor.id)}`)
+        output.push(
+            `typeof __VUE_HMR_RUNTIME__ !== 'undefined' && ` +
+            `__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main)`
+        )
+        // check if the template is the only thing that changed
+        if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
+            output.push(`export const _rerender_only = true`)
+        }
+        output.push(
+            `import.meta.hot.accept(({ default: updated, _rerender_only }) => {`,
+            `  if (_rerender_only) {`,
+            `    __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render)`,
+            `  } else {`,
+            `    __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated)`,
+            `  }`,
+            `})`
+        )
+    }
+
     return {
         code: output.join('\n')
     }
@@ -103,15 +135,9 @@ async function transformMain(code: string, filename: string) {
 
 // TODOS: handle sass/less etc
 async function transformStyle(code: string, descriptor: SFCDescriptor) {
-
+    if(descriptor){}
     return {
-        code: [
-            `import { updateStyle } from "${CLIENT_PUBLIC_PATH}"`,
-            `const id = ${JSON.stringify(descriptor.id)}`,
-            `const css = ${JSON.stringify(code)}`,
-            `updateStyle(id,css)`,
-            `export default css`
-        ].join('\n')
+        code
     }
 }
 

@@ -99,6 +99,7 @@ function propagateUpdate(
     }>,
     // currentChain: ModuleNode[] = [node]
 ): boolean /* hasDeadEnd */ {
+    // isSelfAccepting value is based on file analyze whether hot.accept has array dep, if not, isSelfAccepting will be true
     // if (node.isSelfAccepting) {
     if(true){
         boundaries.add({

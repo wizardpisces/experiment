@@ -16,7 +16,7 @@ nodemon
 * hot .vue css (self accept situation)
 * hot .vue template
 * hot .vue script
-* hot vuex (not self accept HRM situation + import dep collect)
+* hot vuex ( not selfAccepet hot deps hot)
 * add vue-router@4  and dynamic import ,(mainly to test dynamic import)，reference vite dynamicImport plugin
 * vue ssr
 * websocket断线重连

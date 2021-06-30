@@ -3,6 +3,7 @@ import { Context, Next } from 'koa'
 import { ServerDevContext } from '../context'
 import { send } from '../send'
 import { transformRequest } from '../transformRequest'
+import { removeImportQuery } from '../util'
 // import { isImportRequest } from '../util'
 
 const knownIgnoreList = new Set(['/', '/favicon.ico', '/robots.txt'])
@@ -32,9 +33,10 @@ export default function transformMiddleware(serverDevContext: ServerDevContext) 
             
         //!isImportRequest(ctx.path) // eg: HMR dynamic import from client.ts
 
+        let url = removeImportQuery(ctx.originalUrl)
 
         // resolve, load and transform using the plugin container
-        const result = await transformRequest(ctx.originalUrl, serverDevContext)
+        const result = await transformRequest(url, serverDevContext)
 
         if (result) {
             return send(ctx.req, ctx.res, result.code)
