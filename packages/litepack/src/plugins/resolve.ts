@@ -1,3 +1,4 @@
+// import path from 'path'
 import { ServerDevContext } from "../context";
 import { Plugin } from "../plugin";
 
@@ -18,7 +19,9 @@ export default function resolve(): Plugin {
             if (filter(id)) {
                 return serverDevContext.resolveModuleRealPath(id)
             }
-            return null
+
+            return serverDevContext.resolvePath(id).substring(serverDevContext.root.length)
+            // return id
         }
     }
 }

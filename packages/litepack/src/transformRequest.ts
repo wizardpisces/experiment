@@ -9,7 +9,7 @@ export interface TransformResult {
     etag?: string
 }
 
-export async function transformRequest(url: string, { pluginContainer, resolvePath, moduleGraph }: ServerDevContext) {
+export async function transformRequest(url: string, { pluginContainer,resolvePath, moduleGraph }: ServerDevContext) {
     url = removeTimestampQuery(url)
     const id = (await pluginContainer.resolveId(url))?.id || url
     // console.log('pluginContainer.resolveId:',id)

@@ -30,7 +30,6 @@ HMR 热更新（主流的webpack），允许一个模块 “热替换” 它自�
 ### vite后
 
 HMR 是在原生 ESM 上执行的。当编辑一个文件时，Vite 只需要精确地使已编辑的模块与其最近的 HMR 边界之间的链失效（大多数时候只需要模块本身），使 HMR 更新始终快速，无论应用的大小。
-
 # vite 是什么？
 
 Vite 是一个由原生ESM 驱动的 Web 开发构建工具。在开发环境下基于浏览器原生ES imports 开发，在生产环境下基于Rollup打包。
@@ -45,28 +44,9 @@ Vite 是一个由原生ESM 驱动的 Web 开发构建工具。在开发环境下
 
 * 即时的模块热更新
 
-## demo
-
-### 第一次启动 vs 再次启动
-创建一个新的vite工程
-
-```
-$ npm init vite-app <project-name>
-$ cd <project-name>
-$ npm install
-$ npm run dev
-```
-
-第一次启动时会有一个**优化依赖**的过程。所以相对较慢。
-再次启动时你会发现它的速度基本时毫秒级，完全没有Webpack启动项目那般的沉重感。
-
-### vite 热替换 vs webpack 热替换
-
-启动 https://github.com/wizardpisces/vite-site ，修改后查看热替换速度
-
 ## 基本架构
 
-![基本架构图](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ed6a083356014c4c87b59b4cfb9520a6~tplv-k3u1fbpfcp-zoom-1.image)
+[基本架构图](https://app.diagrams.net/#Hwizardpisces%2Flerna-repo%2Fmaster%2Fpackages%2Flitepack%2Flitepack%20Diagram.html)
 
 1. 启用服务 node + connect中间件
 2. 浏览器module载入 -> 访问拦截（路径改写，代码插入等，例如对 .vue 的改写成 query形式的 css 以及 render）->
@@ -96,7 +76,47 @@ Esbuild 使用 Go 编写，并且比以 JavaScript 编写的打包器预构建�
 ![构建速度对比](https://image-static.segmentfault.com/261/069/2610694591-1cb5e4e6fe22c3b3_fix732)
 
 
-### vite HRM原理
+## vite HRM
+
+### demo
+
+* self accept
+demo .vue css
+demo .vue template
+demo .vue script
+
+* array accept
+demo accept array
+
+### 原理
+
+**server build moduleGraph**
+
+分析 源文件 import -> build 父子关系图
+分析 源文件 import.meta.hot -> build 热替换依赖图
+
+**client build hotModulesMap**
+```
+// hot injection
+import { createHotContext as __litepack__createHotContext } from "/@litepack/client";
+import.meta.hot = __litepack__createHotContext("/src/mimic-store/index.ts");
+
+// compile 后的源码
+...
+
+// hot injection
+if (import.meta.hot) {
+  import.meta.hot.accept(["/src/mimic-store/module1.ts"], ([module12, module22]) => {
+    let param = {};
+    if (module12) {
+      param["module1"] = module12.default;
+    }
+    module.hotUpdate(param);
+  });
+}
+
+```
+
 
 vite分析源码中*import.meta.hot*的存在从而进行 *__vite__createHotContext* 上线文插入，例如:
 文件 '/src/store/index.ts' 中存在如下 import.meta.hot 的守卫
@@ -113,10 +133,7 @@ if (import.meta.hot) {
 }
 ```
 则会在文件'/src/store/index.ts'返回源码头部插入如下
-```
-import { createHotContext as __vite__createHotContext } from "/@vite/client";
-import.meta.hot = __vite__createHotContext("/src/store/index.ts");
-```
+
 
 ## vite 插件机制
 

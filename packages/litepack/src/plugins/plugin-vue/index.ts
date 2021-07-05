@@ -4,7 +4,7 @@ import { Plugin } from '../../plugin'
 import { parseVueRequest } from './query'
 import { getDescriptor, createDescriptor, getPrevDescriptor } from './descriptor'
 import { HmrContext } from '../../hmr'
-import {handleHotUpdate, isOnlyTemplateChanged} from './handleHotUpdate'
+import { handleHotUpdate, isOnlyTemplateChanged } from './handleHotUpdate'
 import { ServerDevContext } from '../../context'
 declare module '@vue/compiler-sfc' {
     interface SFCDescriptor {
@@ -16,8 +16,8 @@ let logger = createDebugger('vue-plugin')
 logger('why debug is not working properly?')
 
 type Options = {
-    serverDevContext?:ServerDevContext
-    isProduction:boolean
+    serverDevContext?: ServerDevContext
+    isProduction: boolean
 }
 
 export default function vuePlugin(): Plugin {
@@ -35,7 +35,7 @@ export default function vuePlugin(): Plugin {
         // configureServer(context: ServerDevContext) {
         //     serverDevContext = context
         // },
-        handleHotUpdate(ctx:HmrContext) {
+        handleHotUpdate(ctx: HmrContext) {
             if (!filter(ctx.file)) {
                 return
             }
@@ -84,9 +84,9 @@ export default function vuePlugin(): Plugin {
     }
 }
 
-async function transformMain(code: string, filename: string, options:Options) {
+async function transformMain(code: string, filename: string, options: Options) {
     // sfc source code
-    const { descriptor } = createDescriptor(filename, code);
+    const { descriptor } = createDescriptor(filename, code, options.isProduction);
     const prevDescriptor = getPrevDescriptor(filename)
 
     let { code: scriptCode } = await genScriptCode(descriptor)
@@ -114,7 +114,7 @@ async function transformMain(code: string, filename: string, options:Options) {
             `__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main)`
         )
         // check if the template is the only thing that changed
-        logger(`prevDescriptor:  ${prevDescriptor}; descriptor: ${descriptor}`)
+        // logger(`prevDescriptor:  ${prevDescriptor}; descriptor: ${descriptor}`)
         if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
             output.push(`export const _rerender_only = true`)
         }
@@ -136,7 +136,7 @@ async function transformMain(code: string, filename: string, options:Options) {
 
 // TODOS: handle sass/less etc
 async function transformStyle(code: string, descriptor: SFCDescriptor) {
-    if(descriptor){}
+    if (descriptor) { }
     return {
         code
     }

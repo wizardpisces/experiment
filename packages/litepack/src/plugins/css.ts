@@ -4,11 +4,14 @@ import { Plugin } from "../plugin";
 
 const cssLangs = `\\.(css|scss)($|\\?)`
 const cssLangRE = new RegExp(cssLangs)
-const directRequestRE = /(\?|&)direct\b/
+const directRequestRE = /(\?|&)direct\b/  //这个在啥场景触发？
 
 export const isDirectCSSRequest = (request: string): boolean =>
     cssLangRE.test(request) && directRequestRE.test(request)
 
+export const isCSSRequest = (request: string): boolean =>
+    cssLangRE.test(request) && !directRequestRE.test(request)
+    
 export default function cssPostPlugin(): Plugin {
     // let serverDevContext: ServerDevContext
     function filter(id: string) {

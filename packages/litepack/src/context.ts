@@ -4,7 +4,8 @@ import { PluginContainer } from './pluginContainer';
 import { Plugin } from './plugin';
 import { WebSocketServer } from './ws';
 import { ModuleGraph } from './moduleGraph';
-
+import { DEFAULT_EXTENSIONS } from './constants'
+import { createDebugger } from './util';
 export type DevServerContextOptions = {
     root: string
     pluginContainer: PluginContainer
@@ -12,6 +13,8 @@ export type DevServerContextOptions = {
     ws: WebSocketServer
     moduleGraph: ModuleGraph
 }
+
+let logger = createDebugger('devContext')
 export interface ServerDevContext extends DevServerContextOptions {
     // will be external dependency dir
     cacheDir: string
@@ -34,6 +37,22 @@ export interface ServerDevContext extends DevServerContextOptions {
     needsModuleResolve: (filePath: string) => boolean
 }
 
+
+function tryFsResolve(name: string): string {
+    if (path.extname(name)) {
+        return name
+    }
+    for (const ext of DEFAULT_EXTENSIONS) {
+        let p = name + ext
+        logger(p)
+        if (fs.existsSync(p)) {
+            return p
+        }
+    }
+
+    throw Error('404')
+}
+
 export default function createDevServerContext({ root, pluginContainer, plugins, ws, moduleGraph }: DevServerContextOptions): ServerDevContext {
     const serverDevContext = {
         ws,
@@ -50,7 +69,12 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
 
         // 获取server启动的资源路径
         resolvePath(resourcePath: string): string {
-            return path.join(serverDevContext.root, resourcePath)
+            if (resourcePath.indexOf(serverDevContext.root)>-1) {
+                return resourcePath
+            }
+            
+            let fullPath = path.join(serverDevContext.root, resourcePath)
+            return tryFsResolve(fullPath)
         },
 
         // 获取vitepack框架内的资源路径
@@ -70,7 +94,7 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
                 packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString()),
                 realRelativePath: string = path.join('node_modules', name, packageJson.module)
 
-            return realRelativePath
+            return serverDevContext.resolvePath(realRelativePath)
         }
     }
 

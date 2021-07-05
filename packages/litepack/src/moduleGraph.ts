@@ -69,6 +69,52 @@ export class ModuleGraph {
         return this.fileToModulesMap.get(file)
     }
 
+    /**
+   * Update the module graph based on a module's updated imports information
+   * If there are dependencies that no longer have any importers, they are
+   * returned as a Set.
+   */
+    async updateModuleInfo(
+        mod: ModuleNode,
+        importedModules: Set<string | ModuleNode>,
+        acceptedModules: Set<string | ModuleNode>,
+        isSelfAccepting: boolean
+    ): Promise<Set<ModuleNode> | undefined> {
+        mod.isSelfAccepting = isSelfAccepting
+        const prevImports = mod.importedModules
+        const nextImports = (mod.importedModules = new Set())
+        let noLongerImported: Set<ModuleNode> | undefined
+        // update import graph
+        for (const imported of Array.from(importedModules)) {
+            const dep =
+                typeof imported === 'string'
+                    ? await this.ensureEntryFromUrl(imported)
+                    : imported
+            dep.importers.add(mod)
+            nextImports.add(dep)
+        }
+        // remove the importer from deps that were imported but no longer are.
+        prevImports.forEach((dep) => {
+            if (!nextImports.has(dep)) {
+                dep.importers.delete(mod)
+                // if (!dep.importers.size) {
+                //     // dependency no longer imported
+                //     ; (noLongerImported || (noLongerImported = new Set())).add(dep)
+                // }
+            }
+        })
+        // update accepted hmr deps
+        const deps = (mod.acceptedHmrDeps = new Set())
+        for (const accepted of Array.from(acceptedModules)) {
+            const dep =
+                typeof accepted === 'string'
+                    ? await this.ensureEntryFromUrl(accepted)
+                    : accepted
+            deps.add(dep)
+        }
+        return noLongerImported
+    }
+
     // for incoming urls, it is important to:
     // 1. remove the HMR timestamp query (?t=xxxx)
     // 2. resolve its extension so that urls with or without extension all map to

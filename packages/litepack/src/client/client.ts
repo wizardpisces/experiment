@@ -26,8 +26,8 @@ socket.addEventListener('message', async ({ data }) => {
 
 async function fetchUpdate({ path, acceptedPath, timestamp }: Update) {
     const mod = hotModulesMap.get(path)
-    if(!mod){
-        console.error(`[hmr]: failed, ${path} is not registered to hotModulesMap`)
+    if (!mod) {
+        console.error(`[hmr]: ${path} is not registered to hotModulesMap`)
         return
     }
     const moduleMap = new Map()
@@ -37,6 +37,15 @@ async function fetchUpdate({ path, acceptedPath, timestamp }: Update) {
 
     if (isSelfUpdate) {
         modulesToUpdate.add(path)
+    } else {
+        // dep update
+        for (const { deps } of mod.callbacks) {
+            deps.forEach((dep) => {
+                if (acceptedPath === dep) {
+                    modulesToUpdate.add(dep)
+                }
+            })
+        }
     }
 
     // determine the qualified callbacks before we re-import the modules
@@ -97,7 +106,7 @@ async function queueUpdate(p: Promise<(() => void) | undefined>) {
         pending = false
         const loading = [...queued]
         queued = []
-        ;(await Promise.all(loading)).forEach((fn) => fn && fn())
+            ; (await Promise.all(loading)).forEach((fn) => fn && fn())
 
     }
 }
@@ -154,11 +163,14 @@ export const createHotContext = (ownerPath: string) => {
         hotModulesMap.set(ownerPath, mod)
     }
     const hot = {
-        // accept(deps: any, callback?: any) {
-        accept(deps: any) {
+        accept(deps: any, callback?: any) {
             if (typeof deps === 'function' || !deps) {
                 // self-accept: hot.accept(() => {})
                 acceptDeps([ownerPath], ([mod]) => deps && deps(mod))
+            } else if (Array.isArray(deps)) {
+                acceptDeps(deps, callback)
+            } else {
+                throw new Error(`invalid hot.accept() usage.`)
             }
         }
     }

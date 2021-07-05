@@ -27,7 +27,7 @@
     <a href="https://v3.vuejs.org/" target="_blank">Vue 3 Docs</a>
   </p>
 
-  <button @click="count++">count i: {{ count }}</button>
+  <button @click="count++">count isss: {{ count }}</button>
   <p>
     Edit
     <code>components/HelloWorld.vue</code> to test hot module replacement.
@@ -45,7 +45,7 @@ export default defineComponent({
     }
   },
   setup: () => {
-    const count = ref(1)
+    const count = ref(2)
     return { count }
   }
 })
@@ -53,7 +53,7 @@ export default defineComponent({
 
 <style scoped>
 a {
-  color: silver;
+  color: green;
 }
 
 label {

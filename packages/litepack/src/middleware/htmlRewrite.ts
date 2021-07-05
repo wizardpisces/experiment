@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import { Context, Next } from 'koa'
 import { CLIENT_PUBLIC_PATH} from '../constants'
 import {send} from '../send'
@@ -10,7 +11,7 @@ export default function htmlRewrite(serverDevContext:ServerDevContext) {
 
     return async (ctx: Context, next: Next) => {
         if(ctx.path === '/'){
-            let filename = serverDevContext.resolvePath('index.html'),
+            let filename = path.join(serverDevContext.root,'index.html'),
                 rawBody = fs.readFileSync(filename, 'utf-8'),
                 content = rawBody.replace(/<head>/, `<head> ${clientScript}`)
 

@@ -25,17 +25,26 @@ export async function handleHotUpdate({
     const { descriptor } = createDescriptor(
         file,
         content,
-        // server.config.root,
-        // false
+        false
     )
 
     const mainModule = modules.find(
         (m) => !/type=/.test(m.url) || /type=script/.test(m.url)
     )
 
+    let needRerender = false
+    const templateModule = modules.find((m) => /type=template/.test(m.url))
+
+    if (!isEqualBlock(descriptor.template, prevDescriptor.template)) {
+        needRerender = true;
+    }
+
+    if (!isEqualBlock(descriptor.script, prevDescriptor.script)) {
+        affectedModules.add(mainModule)
+    }
+
     const prevStyles = prevDescriptor.styles || []
     const nextStyles = descriptor.styles || []
-
     // compare descriptor and return the real changed path
     // only need to update styles if not reloading, since reload forces
     // style updates as well.
@@ -56,6 +65,14 @@ export async function handleHotUpdate({
         // style block removed - force reload
         affectedModules.add(mainModule)
     }
+
+    if (needRerender) {
+        // template is inlined into main, add main module instead,  .vue SFC in this scenario
+        if (!templateModule) {
+            affectedModules.add(mainModule)
+        }
+    }
+
     // console.log(prevDescriptor,descriptor)
     return [...Array.from(affectedModules)].filter(Boolean) as ModuleNode[]
 }
