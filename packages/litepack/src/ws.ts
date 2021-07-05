@@ -7,6 +7,21 @@ export interface WebSocketServer {
     close(): Promise<void>
 }
 
+// safely handles circular references
+// @ts-ignore
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (_: any, value: any) => {
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                return 'circular: '+value.toString();
+            }
+            seen.add(value);
+        }
+        return value;
+    };
+};
+
 export function createWebSocketServer(): WebSocketServer {
     let wss: WebSocket.Server = new WebSocket.Server({ port: 24679 })
     wss.on('connection', (socket) => {
@@ -27,7 +42,9 @@ export function createWebSocketServer(): WebSocketServer {
                     type: 'debug',
                     payload
                 }
-                const stringified = JSON.stringify(payload)
+
+                // @ts-ignore
+                const stringified = JSON.stringify((payload), getCircularReplacer())
                 wss.clients.forEach((client) => {
                     if (client.readyState === WebSocket.OPEN) {
                         client.send(stringified)

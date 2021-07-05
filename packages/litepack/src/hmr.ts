@@ -16,6 +16,24 @@ export interface HmrContext {
 function getShortName(file: string, root: string) {
     return file.startsWith(root + '/') ? path.posix.relative(root, file) : file
 }
+
+function tranformMapToObject(map: Map<string, Set<ModuleNode>>) {
+    let result: Record<string, ModuleNode[]> = {}
+    Array.from(map, ([name, value]) => {
+        result[name] = Array.from(value).map(node=>{
+
+            // @ts-ignore
+            node.acceptedHmrDepsArray = Array.from(node.acceptedHmrDeps).map(mod=>{
+            // @ts-ignore
+                mod.importersArray = Array.from(mod.importers)
+                return mod
+            })
+            return node
+        })
+    })
+    return result;
+}
+
 export async function handleHMRUpdate(
     file: string,
     serverDevContext: ServerDevContext
@@ -23,8 +41,9 @@ export async function handleHMRUpdate(
     const { root, moduleGraph, ws, plugins } = serverDevContext
     const mods = moduleGraph.getModulesByFile(file)
 
-    ws.sendDebug(Array.from(moduleGraph.fileToModulesMap.entries()))
-    ws.sendDebug(Array.from(mods as any))
+
+    ws.sendDebug( tranformMapToObject(moduleGraph.fileToModulesMap) )
+    ws.sendDebug(Array.from(mods as Set<ModuleNode>))
 
     const shortFile = getShortName(file, root)
 
@@ -93,7 +112,7 @@ function updateModules(
         ws.send({
             type: 'full-reload'
         })
-    }else{
+    } else {
         ws.send({
             type: 'update',
             updates
