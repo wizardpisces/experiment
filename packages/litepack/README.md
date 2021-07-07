@@ -1,6 +1,8 @@
 # litepack
 
-light vite
+一步步源码分析的轻量版本 vite（适合对vite实现原理源码感兴趣，但是又觉得vite整体代码难啃的人）
+
+[原理分析](https://github.com/wizardpisces/lerna-repo/blob/master/packages/litepack/ppt-vite.md)
 
 ## How to develop
 
@@ -41,9 +43,3 @@ nodemon
 * Multiple servers sharing a single HTTP/S server
 * error handling
 * use server-async to replace koa, but still use koa middleware
-## vite 疑问
-
-* vite vs snowpack
-* 为什么vite选择rollup 而不是webpack
-* vite 首次启动是如何预处理node_modules的？
-* vite HRM 具体原理？
