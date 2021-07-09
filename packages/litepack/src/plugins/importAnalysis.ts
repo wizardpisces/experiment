@@ -1,7 +1,7 @@
 import path from 'path'
-import { parse, ImportSpecifier } from 'es-module-lexer'
+import { init, parse, ImportSpecifier } from 'es-module-lexer'
 import MargicString from 'magic-string';
-import { CLIENT_PUBLIC_PATH } from '../constants';
+import { CLIENT_PUBLIC_PATH, MODULE_DEPENDENCY_RE } from '../constants';
 import { ServerDevContext } from "../context";
 import { Plugin } from "../plugin";
 import { createDebugger } from '../util';
@@ -15,7 +15,7 @@ const canSkip = (id: string) => skipRE.test(id)
 
 // || isDirectCSSRequest(id)
 
-let logger = createDebugger('importAnalysis');
+let logger = createDebugger('litepack:importPlugin');
 
 
 export default function importPlugin(): Plugin {
@@ -60,6 +60,7 @@ export default function importPlugin(): Plugin {
                 
             // rewrite import third party dependency path
             try {
+                await init
                 let imports = parse(source)[0]
                 // logger(`imports.length:,${imports.length}`)
                 if (imports.length) {
@@ -92,8 +93,8 @@ export default function importPlugin(): Plugin {
                              * replace third party dependency eg:
                              * import { createApp } from 'vue'; => import {createApp} from "/node_modules/.vite/vue.js?v=fd8a7c9a";
                              */
-                            const reg = /^[^\/\.]/
-                            if (reg.test(specifier)) {
+                            // const reg = /^[\w@][^:]/
+                            if (MODULE_DEPENDENCY_RE.test(specifier)) {
                                 let realModulePath = serverDevContext.resolveModulePath(specifier);
                                 magicString.overwrite(start, end, realModulePath);
                             }else{

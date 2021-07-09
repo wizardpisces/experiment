@@ -12,8 +12,8 @@ declare module '@vue/compiler-sfc' {
     }
 }
 
-let logger = createDebugger('vue-plugin')
-logger('why debug is not working properly?')
+let logger = createDebugger('litepack:vuePlugin')
+logger('registered!')
 
 type Options = {
     serverDevContext?: ServerDevContext

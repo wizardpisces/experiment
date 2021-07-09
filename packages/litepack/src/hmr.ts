@@ -4,7 +4,9 @@ import { Update } from "./type/hmr";
 import { ServerDevContext } from "./context";
 import { ModuleNode } from './moduleGraph';
 import fs from 'fs'
+import { createDebugger } from './util';
 
+let debug = createDebugger('litepack:hmr')
 export interface HmrContext {
     file: string
     timestamp: number
@@ -38,6 +40,7 @@ export async function handleHMRUpdate(
     file: string,
     serverDevContext: ServerDevContext
 ): Promise<any> {
+    let s = Date.now()
     const { root, moduleGraph, ws, plugins } = serverDevContext
     const mods = moduleGraph.getModulesByFile(file)
 
@@ -68,6 +71,8 @@ export async function handleHMRUpdate(
     }
 
     updateModules(shortFile, hmrContext.modules, timestamp, serverDevContext)
+
+    debug(`HMR completed in ${Date.now() - s}ms`)
 }
 
 function updateModules(

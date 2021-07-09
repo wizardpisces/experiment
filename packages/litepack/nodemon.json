@@ -7,7 +7,7 @@
         "src/**/*.spec.ts"
     ],
     "env":{
-        "DEBUG":"true"
+        "DEBUG":"litepack:*"
     },
     "exec": "ts-node ./src/index.ts"
 }

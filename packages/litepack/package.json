@@ -62,6 +62,7 @@
     "es-module-lexer": "^0.6.0",
     "esbuild": "^0.12.9",
     "etag": "^1.8.1",
+    "fast-glob": "^3.2.6",
     "husky": "^6.0.0",
     "koa": "^2.13.1",
     "koa-logger": "^3.2.1",

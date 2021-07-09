@@ -1,7 +1,7 @@
 /**
  * https://vitejs.dev/guide/api-plugin.html#rollup-plugin-compatibility
  */
-
+import path from 'path'
 import {
     PartialResolvedId,
     LoadResult,
@@ -15,6 +15,7 @@ import { ResolvedConfig } from './plugin'
 export interface PluginContainer {
     resolveId(
         id: string,
+        importer?: string
     ): Promise<PartialResolvedId | null>
     transform(
         code: string,
@@ -28,11 +29,11 @@ type PluginContext = Pick<
     'resolve'
 >
 
-export async function createPluginContainer({ plugins }: ResolvedConfig): Promise<PluginContainer> {
+export async function createPluginContainer({ plugins, root }: ResolvedConfig): Promise<PluginContainer> {
 
     class Context implements PluginContext {
-        async resolve(id: string) {
-            let out = await container.resolveId(id)
+        async resolve(id: string, importer?: string) {
+            let out = await container.resolveId(id, importer)
             if (typeof out === 'string') out = { id: out }
             return out as ResolvedId | null
         }
@@ -54,17 +55,17 @@ export async function createPluginContainer({ plugins }: ResolvedConfig): Promis
     }
 
     const container: PluginContainer = {
-        async resolveId(rawId) {
+        async resolveId(rawId, importer = path.join(root, 'index.html')) {
             const ctx = new Context()
             let id: string | null = null
             const partial: Partial<PartialResolvedId> = {}
-            
+
             for (const plugin of plugins) {
-                
+
                 // console.log('---------------------------',plugin.name, plugin.resolveId,rawId)
                 if (!plugin.resolveId) continue
-                const result = await plugin.resolveId.call(ctx as any, rawId, '', {})
-                
+                const result = await plugin.resolveId.call(ctx as any, rawId, importer, {})
+
                 if (!result) continue
 
                 if (typeof result === 'string') {

@@ -21,6 +21,7 @@ export async function readBody(stream: any) {
 }
 
 const DEBUG = process.env.DEBUG
+
 export function createDebugger(
     ns: string
 ): debug.Debugger['log'] {
@@ -31,7 +32,7 @@ export function createDebugger(
         if (!DEBUG) {
             return
         }
-        console.log(`${ns}: ${msg}`,...args)
+        // log.enabled = true
         log(msg, ...args)
     }
 }

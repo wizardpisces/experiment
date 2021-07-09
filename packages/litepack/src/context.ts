@@ -18,6 +18,10 @@ let logger = createDebugger('devContext')
 export interface ServerDevContext extends DevServerContextOptions {
     // will be external dependency dir
     cacheDir: string
+
+    _isRunningOptimizer:boolean
+
+    mode: string
     // package dir to import rendering helper
     litepackPath: string
 
@@ -50,11 +54,13 @@ function tryFsResolve(name: string): string {
         }
     }
 
-    throw Error('404')
+    throw Error(`404: ${name}`)
 }
 
 export default function createDevServerContext({ root, pluginContainer, plugins, ws, moduleGraph }: DevServerContextOptions): ServerDevContext {
     const serverDevContext = {
+        mode: process.env.NODE_ENV ? process.env.NODE_ENV : 'development',
+        _isRunningOptimizer:false,
         ws,
         root,
         cacheDir: '/node_modules/.litepack/',
