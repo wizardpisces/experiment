@@ -1,8 +1,8 @@
-# Demo Project
+# 原理分析
 
-[simplified vite](https://github.com/wizardpisces/lerna-repo/tree/master/packages/litepack)
-[simplified koa](https://github.com/wizardpisces/lerna-repo/tree/master/packages/server-async)
-[simplified express](https://github.com/wizardpisces/lerna-repo/tree/master/packages/node-server)
+* [simplified vite](https://github.com/wizardpisces/lerna-repo/tree/master/packages/litepack)
+* [simplified koa](https://github.com/wizardpisces/lerna-repo/tree/master/packages/server-async)
+* [simplified express](https://github.com/wizardpisces/lerna-repo/tree/master/packages/node-server)
 
 ## bootstrap
 

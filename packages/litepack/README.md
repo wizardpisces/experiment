@@ -1,6 +1,8 @@
 # litepack
 
-light vite
+一步步源码分析的轻量版本 vite（适合对vite实现原理源码感兴趣，但是又觉得vite整体代码难啃的人）
+
+[原理分析](https://github.com/wizardpisces/lerna-repo/blob/master/packages/litepack/ppt-vite.md)
 
 ## How to develop
 
@@ -15,6 +17,7 @@ nodemon
 * ~~build rollup plugin system~~
 * ~~extract plugin-vue middleware as plugin~~
 * ~~basic websocket~~
+* sourceMap
 
 **HMR**
 * ~~hot .vue css (self accept situation)~~
@@ -32,16 +35,16 @@ nodemon
 **预处理：第三方依赖的打包**
 
 **vue**
-* ~~.vue rendering properly~~
+* ~~.vue render~~
 * ~~support \<script type='ts'\> , add ts build on the run~~
-
-* add vue-router@4  and dynamic import ,(mainly to test dynamic import)，reference vite dynamicImport plugin
+* dynamic import (eg: add vue-router@4 mainly to test dynamic import)，reference vite dynamicImport plugin
 * vue ssr
-* optimize (node_modules 预处理到 .litepack 文件,eg: Vue)
-* sourceMap support
+* ws share HTTP server
+
+**cli**
 * litepack create-app
 * litepack build
 * litepack serve
-* Multiple servers sharing a single HTTP/S server
-* error handling
-* use server-async to replace koa, but still use koa middleware
+
+**tech replace**
+* use own server-async to replace koa, but still use koa middleware
