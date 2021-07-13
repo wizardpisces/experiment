@@ -29,7 +29,7 @@ export default function resolve(): Plugin {
                 resolvedId = serverDevContext.resolveModuleRealPath(id)
             }else{
 
-                resolvedId = serverDevContext.resolvePath(path.join(prefix, id)).substring(serverDevContext.root.length)
+                resolvedId = serverDevContext.resolvePath(path.join(prefix, id),true)
             }
 
             debug(resolvedId)

@@ -1,4 +1,5 @@
 // import path from 'path'
+// import fs from 'fs'
 import { Plugin } from 'esbuild'
 import { ServerDevContext } from '../context';
 import { createDebugger } from '../util';
@@ -43,10 +44,12 @@ export function esbuildDepPlugin(
                         paths: [resolveDir]
                     })
 
-                    debug(cjsPath, kind, serverDevContext.mode)
+                    let esmPath = serverDevContext.resolveModuleRealPath(id)
+
+                    debug(cjsPath, kind, id, esmPath)
 
                     return {
-                        path: cjsPath
+                        path: esmPath
                     }
                 }
             )

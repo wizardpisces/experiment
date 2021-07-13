@@ -79,11 +79,13 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
 
         // 获取server启动的资源路径
         resolvePath(resourcePath: string,relative:boolean=false): string {
+            let fullPath
             if (resourcePath.indexOf(serverDevContext.root)>-1) {
-                return resourcePath
+                fullPath = resourcePath
+            }else{
+                fullPath = path.join(serverDevContext.root, resourcePath)
             }
             
-            let fullPath = path.join(serverDevContext.root, resourcePath)
             let resolved =  tryFsResolve(fullPath)
             if (relative){
                 resolved = resolved.substring(serverDevContext.root.length)

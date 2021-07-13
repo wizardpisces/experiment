@@ -8,7 +8,7 @@ import { createDebugger } from '../util';
 // import { isDirectCSSRequest } from './css';
 import { constPathFilter, filter } from './html'
 import { lexAcceptedHmrDeps } from '../hmr'
-import { isCSSRequest } from './css'
+// import { isCSSRequest } from './css'
 
 const skipRE = /\.(map|json)$/
 const canSkip = (id: string) => skipRE.test(id)
@@ -30,8 +30,7 @@ export default function importPlugin(): Plugin {
 
         async transform(source, importer) {
 
-            // if (canSkip(importer) || filter(importer)) {
-            if (canSkip(importer) || filter(importer)) {
+            if (canSkip(importer) || filter(importer) || importer.includes('node_modules')) {
                 return null
             }
 
@@ -99,7 +98,8 @@ export default function importPlugin(): Plugin {
                              */
                             // const reg = /^[\w@][^:]/
                             if (MODULE_DEPENDENCY_RE.test(specifier)) {
-                                let realModulePath = serverDevContext.resolveModuleRealPath(specifier);
+                                // let realModulePath = serverDevContext.resolveModuleRealPath(specifier);
+                                let realModulePath = serverDevContext.resolveModulePath(specifier);
                                 magicString.overwrite(start, end, realModulePath);
                             }else{
                                 
@@ -150,7 +150,7 @@ export default function importPlugin(): Plugin {
             // update the module graph for HMR analysis.
             // node CSS imports does its own graph update in the css plugin so we
             // only handle js graph updates here.
-            if (!isCSSRequest(importer)) {
+            // if (!isCSSRequest(importer)) {
                 const prunedImports = await moduleGraph.updateModuleInfo(
                     importerModule,
                     importedUrls,
@@ -158,15 +158,18 @@ export default function importPlugin(): Plugin {
                     isSelfAccepting
                 )
 
+                // debug('importerModule',importerModule)
+
                 prunedImports && debug('have prunedImports(should be implemented)')
 
                 // not implemented yet
                 // if (hasHMR && prunedImports) {
                 //     handlePrunedModules(prunedImports, server)
                 // }
-            }
+            // }
 
             return magicString.toString()!;
         }
     }
 }
+
