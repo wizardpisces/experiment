@@ -70,6 +70,8 @@ export async function handleHMRUpdate(
         }
     }
 
+    debug(hmrContext.modules)
+
     updateModules(shortFile, hmrContext.modules, timestamp, serverDevContext)
 
     debug(`HMR completed in ${Date.now() - s}ms`)
@@ -81,7 +83,7 @@ function updateModules(
     timestamp: number,
     { ws }: ServerDevContext
 ) {
-    console.info('update shortfile:', file)
+    debug('update shortfile:', file)
     const updates: Update[] = []
     let needFullReload = false
 

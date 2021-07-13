@@ -12,8 +12,8 @@ declare module '@vue/compiler-sfc' {
     }
 }
 
-let logger = createDebugger('litepack:vuePlugin')
-logger('registered!')
+let debug = createDebugger('litepack:vuePlugin')
+debug('registered!')
 
 type Options = {
     serverDevContext?: ServerDevContext
@@ -55,7 +55,6 @@ export default function vuePlugin(): Plugin {
                 const descriptor = getDescriptor(filename)!
                 let block;
                 if (query.type === 'style') {
-                    logger('query.type', query.type)
                     block = descriptor.styles[query.index!]
                     return {
                         code: block.content
@@ -114,7 +113,7 @@ async function transformMain(code: string, filename: string, options: Options) {
             `__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main)`
         )
         // check if the template is the only thing that changed
-        // logger(`prevDescriptor:  ${prevDescriptor}; descriptor: ${descriptor}`)
+        // debug(`prevDescriptor:  ${prevDescriptor}; descriptor: ${descriptor}`)
         if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
             output.push(`export const _rerender_only = true`)
         }

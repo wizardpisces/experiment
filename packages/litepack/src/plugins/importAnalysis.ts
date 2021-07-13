@@ -6,7 +6,7 @@ import { ServerDevContext } from "../context";
 import { Plugin } from "../plugin";
 import { createDebugger } from '../util';
 // import { isDirectCSSRequest } from './css';
-import { filter } from './html'
+import { constPathFilter, filter } from './html'
 import { lexAcceptedHmrDeps } from '../hmr'
 import { isCSSRequest } from './css'
 
@@ -15,11 +15,10 @@ const canSkip = (id: string) => skipRE.test(id)
 
 // || isDirectCSSRequest(id)
 
-let logger = createDebugger('litepack:importPlugin');
+let debug = createDebugger('litepack:importPlugin');
 
 
 export default function importPlugin(): Plugin {
-    logger('registered')
     let serverDevContext: ServerDevContext;
 
     return {
@@ -62,12 +61,17 @@ export default function importPlugin(): Plugin {
             try {
                 await init
                 let imports = parse(source)[0]
-                // logger(`imports.length:,${imports.length}`)
+
                 if (imports.length) {
                     imports.forEach((item: ImportSpecifier) => {
                         const { s: start, e: end, n: specifier } = item;
+
+                        if (specifier && constPathFilter(specifier)){
+                            return
+                        }
+
                         let rawUrl = source.substring(start, end);
-                        // logger(`rawUrl:,${rawUrl}`)
+                        // debug(`rawUrl:,${rawUrl}`)
                         // check import.meta usage
                         if (rawUrl === 'import.meta') {
                             const prop = source.slice(end, end + 4)
@@ -95,16 +99,22 @@ export default function importPlugin(): Plugin {
                              */
                             // const reg = /^[\w@][^:]/
                             if (MODULE_DEPENDENCY_RE.test(specifier)) {
-                                let realModulePath = serverDevContext.resolveModulePath(specifier);
+                                let realModulePath = serverDevContext.resolveModuleRealPath(specifier);
                                 magicString.overwrite(start, end, realModulePath);
                             }else{
-                                importedUrls.add(toAbsoluteUrl(specifier))
+                                
+                                let resolvedId = serverDevContext.resolvePath(toAbsoluteUrl(specifier),true)
+                                // debug('specifier', specifier, resolvedId)
+                                // importedUrls.add(toAbsoluteUrl(specifier))
+                                magicString.overwrite(start, end, resolvedId);
+
+                                importedUrls.add(resolvedId)
                             }
                         }
                     })
                 }
             } catch (e) {
-                logger('[Rewrite Error]: ', e)
+                debug('[Rewrite Error]: ', e)
             }
             
             // normalize and rewrite accepted urls
@@ -120,6 +130,14 @@ export default function importPlugin(): Plugin {
 
 
             if (hasHMR) {
+                debug(
+                    `${isSelfAccepting
+                        ? `[self-accepts]`
+                        : acceptedUrls.size
+                            ? `[accepts-deps]`
+                            : `[detected api usage]`
+                    } ${importer}`
+                )
                 // inject hot context
                 magicString.prepend(
                     `import { createHotContext as __litepack__createHotContext } from "${CLIENT_PUBLIC_PATH}";` +
@@ -140,7 +158,7 @@ export default function importPlugin(): Plugin {
                     isSelfAccepting
                 )
 
-                prunedImports && logger('have prunedImports(should be implemented)')
+                prunedImports && debug('have prunedImports(should be implemented)')
 
                 // not implemented yet
                 // if (hasHMR && prunedImports) {

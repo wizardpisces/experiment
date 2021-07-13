@@ -8,6 +8,10 @@ export function filter(id:string):boolean{
     return id.indexOf('/src/client/client.ts') > -1 || id.indexOf('/src/client/env.ts') > -1
 }
 
+export function constPathFilter(id:string){
+    return id.indexOf(CLIENT_PUBLIC_PATH) > -1 || id.indexOf(ENV_PUBLIC_PATH) > -1
+}
+
 export default function htmlPlugin(): Plugin {
     let serverDevContext: ServerDevContext
     return {

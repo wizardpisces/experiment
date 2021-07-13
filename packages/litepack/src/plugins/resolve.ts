@@ -4,12 +4,13 @@ import { ServerDevContext } from "../context";
 import { Plugin } from "../plugin";
 import { createDebugger } from '../util';
 
-let debug = createDebugger('litepack:resolvePlugin')
+let debug = createDebugger('litepack-hide:resolvePlugin')
 // resolve third party module path
 export default function resolve(): Plugin {
     let serverDevContext: ServerDevContext
     function filter(id: string) {
-        return serverDevContext.needsModuleResolve(id) || MODULE_DEPENDENCY_RE.test(id)
+        // used in scan mode
+        return MODULE_DEPENDENCY_RE.test(id)
     }
     return {
         name: 'litepack:resolve',
@@ -20,14 +21,20 @@ export default function resolve(): Plugin {
 
         resolveId(id, importer) {
             let prefix = importer ? path.dirname(importer) : '.'
-            debug(importer, id)
+            let resolvedId
+            // debug(importer, id)
             if (filter(id)) {
+                // will only run in optimize scan
                 debug('enter resolve node_modules')
-                return serverDevContext.resolveModuleRealPath(id)
+                resolvedId = serverDevContext.resolveModuleRealPath(id)
+            }else{
+
+                resolvedId = serverDevContext.resolvePath(path.join(prefix, id)).substring(serverDevContext.root.length)
             }
 
-            return serverDevContext.resolvePath(path.join(prefix, id)).substring(serverDevContext.root.length)
-            // return serverDevContext.resolvePath(id).substring(serverDevContext.root.length)
+            debug(resolvedId)
+
+            return resolvedId
         }
     }
 }

@@ -14,10 +14,11 @@ export type DevServerContextOptions = {
     moduleGraph: ModuleGraph
 }
 
-let logger = createDebugger('devContext')
+let logger = createDebugger('litepack:devContext')
 export interface ServerDevContext extends DevServerContextOptions {
     // will be external dependency dir
     cacheDir: string
+    cacheDirRelative: string
 
     _isRunningOptimizer:boolean
 
@@ -29,7 +30,7 @@ export interface ServerDevContext extends DevServerContextOptions {
     resolveModulePath: (name: string) => string
 
     // resolve resource path by root
-    resolvePath: (resourcePath: string) => string
+    resolvePath: (resourcePath: string,relative?:boolean) => string
 
     // resolve resource path by root
     resolveLitepackPath: (resourcePath: string) => string
@@ -48,8 +49,8 @@ function tryFsResolve(name: string): string {
     }
     for (const ext of DEFAULT_EXTENSIONS) {
         let p = name + ext
-        logger(p)
         if (fs.existsSync(p)) {
+            logger(p)
             return p
         }
     }
@@ -58,29 +59,37 @@ function tryFsResolve(name: string): string {
 }
 
 export default function createDevServerContext({ root, pluginContainer, plugins, ws, moduleGraph }: DevServerContextOptions): ServerDevContext {
+    let cacheDirRelative = '/node_modules/.litepack/'
+    let cacheDir = path.join(root, cacheDirRelative)
     const serverDevContext = {
         mode: process.env.NODE_ENV ? process.env.NODE_ENV : 'development',
         _isRunningOptimizer:false,
         ws,
         root,
-        cacheDir: '/node_modules/.litepack/',
+        cacheDirRelative,
+        cacheDir,
         plugins,
         litepackPath: process.cwd(),
         pluginContainer,
         moduleGraph,
         // 获取第三方模块可能的路径
         resolveModulePath(name: string): string {
-            return path.join(serverDevContext.cacheDir, name)
+            return path.join(cacheDirRelative, name)
         },
 
         // 获取server启动的资源路径
-        resolvePath(resourcePath: string): string {
+        resolvePath(resourcePath: string,relative:boolean=false): string {
             if (resourcePath.indexOf(serverDevContext.root)>-1) {
                 return resourcePath
             }
             
             let fullPath = path.join(serverDevContext.root, resourcePath)
-            return tryFsResolve(fullPath)
+            let resolved =  tryFsResolve(fullPath)
+            if (relative){
+                resolved = resolved.substring(serverDevContext.root.length)
+            }
+
+            return resolved
         },
 
         // 获取vitepack框架内的资源路径
@@ -89,12 +98,12 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
         },
 
         needsModuleResolve(filePath: string) {
-            return filePath.indexOf(serverDevContext.cacheDir) > -1
+            return filePath.indexOf(cacheDirRelative) > -1
         },
 
         // resolve module path by package.json module path
         resolveModuleRealPath(filePath: string): string {
-            let name = filePath.replace(serverDevContext.cacheDir, ''),
+            let name = filePath.replace(cacheDirRelative, ''),
                 moduleAbsoluteDir = path.join(root, 'node_modules', name),
                 packageJsonPath: string = path.join(moduleAbsoluteDir, 'package.json'),
                 packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString()),

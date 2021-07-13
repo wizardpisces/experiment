@@ -5,10 +5,10 @@ import {
 } from 'esbuild'
 import { ServerDevContext } from "../context";
 import { createDebugger } from '../util';
-import { scanImports} from './scan'
-// import { esbuildDepPlugin} from './esbuildDepPlugin'
+import { scanImports } from './scan'
+import { esbuildDepPlugin } from './esbuildDepPlugin'
 
-let debug = createDebugger('litepack:optimizer')
+let debug = createDebugger('litepack:optimizer-index')
 
 export async function optimizeDeps(
     serverDevContext: ServerDevContext,
@@ -18,7 +18,7 @@ export async function optimizeDeps(
     const define: Record<string, string> = {
         'process.env.NODE_ENV': JSON.stringify(mode)
     }
-    if (!cacheDir) {
+    if (!fs.existsSync(cacheDir)) {
         fs.mkdirSync(cacheDir, { recursive: true })
     }
 
@@ -26,8 +26,8 @@ export async function optimizeDeps(
 
     // missing: Record<string, string>
     if (!newDeps) {
-        ; ({ 
-            deps, 
+        ; ({
+            deps,
             // missing 
         } = await scanImports(serverDevContext))
 
@@ -49,7 +49,12 @@ export async function optimizeDeps(
         treeShaking: 'ignore-annotations',
         metafile: true,
         define,
-        // plugins: [esbuildDepPlugin()]
+        plugins: [
+            esbuildDepPlugin(
+                deps,
+                serverDevContext
+            )
+        ]
     })
 
     const meta = result.metafile!

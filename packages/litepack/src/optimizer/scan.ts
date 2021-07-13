@@ -199,7 +199,7 @@ function esbuildScanPlugin(
                     debug('resolved: ', resolved)
                     if (resolved) {
                         return {
-                            path: serverDevContext.resolvePath((resolved)),
+                            path: serverDevContext.resolvePath(resolved),
                         }
                     } else {
                         // resolve failed... probably unsupported type
