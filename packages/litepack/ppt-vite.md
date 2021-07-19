@@ -165,13 +165,7 @@ if (import.meta.hot) {
 目前看起来不会
 
 **原因：**
-* vite还是专注于dev场景体验还没有取代webpack的可能
 * webpack能覆盖更多的奇特的场景，生态也更丰富
-### 多种构建工具的比对
-
-1. webpack :强调对web开发的支持，尤其是内置了HMR的支持，插件系统比较强大，对各种模块系统兼容性最佳(amd,cjs,umd,esm等，兼容性好的有点过分了，这实际上有利有弊,导致面向webpack编程），有丰富的生态，缺点是产物不够干净，产物不支持生成esm格式， 插件开发上手较难，不太适合库的开发。
-2. rollup: 强调对库开发的支持，基于ESM模块系统，对tree shaking有着良好的支持，产物非常干净，支持多种输出格式，适合做库的开发，插件api比较友好，缺点是对cjs支持需要依赖插件，且支持效果不佳需要较多的hack，不支持HMR，做应用开发时需要依赖各种插件。
-3. esbuild: 强调性能，内置了对css、图片、react、typescript等内置支持，编译速度特别快（是webpack和rollup速度的100倍+),缺点是目前插件系统较为简单，生态不如webpack和rollup成熟。
 
 ### vite还有哪些问题？
 1. 服务端渲染 (SSR) 支持还处在实验阶段，产线使用仍需等待
@@ -181,10 +175,7 @@ if (import.meta.hot) {
 不会
 
 **原因：**
-* 由于预构建，node_modules里面的源代码已经被打包到 node_modules/.vite下面，第三方依赖都会走这个改写的路径
-
-
-
+* 由于预构建，node_modules里面的源代码已经被打包到 node_modules/.vite下面，目前此路径并未注册到热替换图里面
 
 ## Reference
 
@@ -192,3 +183,11 @@ if (import.meta.hot) {
 * https://github.com/evanw/esbuild
 * https://xiaohanglin.site/pages/b632f1/#%E8%83%8C%E6%99%AF
 * https://segmentfault.com/a/1190000039264055
+
+## 下期预告（多种构建工具的比对）
+
+1. webpack :强调对web开发的支持，尤其是内置了HMR的支持，插件系统比较强大，对各种模块系统兼容性最佳(amd,cjs,umd,esm等，兼容性好的有点过分了，这实际上有利有弊,导致面向webpack编程），有丰富的生态，缺点是产物不够干净，产物不支持生成esm格式， 插件开发上手较难，不太适合库的开发。
+
+2. rollup: 强调对库开发的支持，基于ESM模块系统，对tree shaking有着良好的支持，产物非常干净，支持多种输出格式，适合做库的开发，插件api比较友好，缺点是对cjs支持需要依赖插件，且支持效果不佳需要较多的hack，不支持HMR，做应用开发时需要依赖各种插件。
+
+3. esbuild: 强调性能，内置了对css、图片、react、typescript等内置支持，编译速度特别快（是webpack和rollup速度的100倍+),缺点是目前插件系统较为简单（框架作者还在迭代中），生态不如webpack和rollup成熟。

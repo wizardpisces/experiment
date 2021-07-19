@@ -9,6 +9,7 @@ import chokidar from 'chokidar'
 import htmlRewrite from './middleware/htmlRewrite'
 import transform from './middleware/transform'
 import staticMiddleware from './middleware/static'
+import hmrPing from './middleware/hmrPing'
 
 import createDevServerContext, { ServerDevContext } from './context'
 import { createPluginContainer } from './pluginContainer'
@@ -69,6 +70,8 @@ export default async function createServer() {
     })
 
     app.use(logger())
+
+    app.use(hmrPing())
 
     // html 插入 client 脚本
     app.use(htmlRewrite(serverDevContext))

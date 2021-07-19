@@ -14,25 +14,31 @@ nodemon
 ## litepack feature list
 
 **server frame**
-* ~~build rollup plugin system~~
-* ~~extract plugin-vue middleware as plugin~~
-* ~~basic websocket~~
+* ~~add rollup plugin handling system~~
+* ~~add plugin-vue~~
+* ~~basic http server~~
 * sourceMap
 
 **HMR**
 * ~~hot .vue css (self accept situation)~~
 * ~~hot .vue template~~
 * ~~hot .vue script~~
-* ~~websocket断线重连~~
-
 * ~~hot deps accept (eg: vuex modules accept, not selfAccepet hot deps hot)~~
-* hot prune (主要发生在依赖变动，需要更新moduleGraph，清理失效的对象占用的内存)
+* sass hot
+* hot prune ：hot 图动态维护，清理失效的对象
+
+**websocket**
+* ~~basic websocket~~
+* ~~websocket断线重连~~
 
 **css**
 * 处理 css的 @import?
 * 处理 sass,less etc
 
-**预处理：第三方依赖的打包**
+**预处理**
+* ~~依赖搜集~~
+* ~~依赖预处理 esm~~
+* 依赖动态维护：dev时对新增以及删除的依赖做 动态图维护
 
 **vue**
 * ~~.vue render~~

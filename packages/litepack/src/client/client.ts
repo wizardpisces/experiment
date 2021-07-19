@@ -115,7 +115,7 @@ async function waitForSuccessfulPing(ms = 1000) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         try {
-            await fetch(`${base}__vitepack_ping`)
+            await fetch(`${base}__litepack_ping`)
             break
         } catch (e) {
             await new Promise((resolve) => setTimeout(resolve, ms))

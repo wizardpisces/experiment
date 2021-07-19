@@ -1,8 +1,8 @@
-# 原理分析
+# Code in depth
 
-* [simplified vite](https://github.com/wizardpisces/lerna-repo/tree/master/packages/litepack)
-* [simplified koa](https://github.com/wizardpisces/lerna-repo/tree/master/packages/server-async)
-* [simplified express](https://github.com/wizardpisces/lerna-repo/tree/master/packages/node-server)
+* [mimic vite](https://github.com/wizardpisces/lerna-repo/tree/master/packages/litepack)
+* [mimic koa](https://github.com/wizardpisces/lerna-repo/tree/master/packages/server-async)
+* [mimic express](https://github.com/wizardpisces/lerna-repo/tree/master/packages/node-server)
 
 ## bootstrap
 

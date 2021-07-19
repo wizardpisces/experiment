@@ -17,6 +17,7 @@ export function esbuildDepPlugin(
             function resolveEntry(id: string, isEntry: boolean, resolveDir: string) {
                 // debug(id, isEntry, resolveDir, serverDevContext.root)
                 if (id in qualified) {
+                    // id is already esm
                     let cjsPath = require.resolve(qualified[id], {
                         paths: [resolveDir]
                     })
