@@ -1,0 +1,64 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "mini-webpack",
+  "author": "刘泽",
+  "module": "dist/mini-webpack.esm.js",
+  "size-limit": [
+    {
+      "path": "dist/mini-webpack.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/mini-webpack.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/parser": "^7.15.2",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/traverse": "^7.15.0",
+    "@size-limit/preset-small-lib": "^5.0.2",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.4.13",
+    "husky": "^7.0.1",
+    "size-limit": "^5.0.2",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5"
+  }
+}
