@@ -2,7 +2,7 @@
 
 一步步源码分析的轻量版本 vite（适合对vite实现原理源码感兴趣，但是又觉得vite整体代码难啃的人）
 
-[原理分析](https://github.com/wizardpisces/lerna-repo/blob/master/packages/litepack/ppt-vite.md)
+[原理分析](https://wizardpisces.github.io/blog/vite%20%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%8E%9F%E7%90%86)
 
 ## How to develop
 
