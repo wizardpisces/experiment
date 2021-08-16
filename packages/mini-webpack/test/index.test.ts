@@ -11,7 +11,7 @@ describe('mini webpack', () => {
     let distCodePath = path.join(__dirname, `/test_dist/main.js`)
     fs.writeFileSync(distCodePath,code);
     // eval(code)
-    new vm.Script(code).runInThisContext()
+    new vm.Script(code).runInContext(vm.createContext({console:console}))
 
     expect(console.log).toHaveBeenCalledWith('hello world');
   });

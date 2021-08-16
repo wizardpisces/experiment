@@ -9,18 +9,65 @@ export {
   build
 }
 
+type Dependencies = Record<string, number>
+type DepGraph = {
+  [filename: string]: {
+    dependencies: Dependencies,
+    code: string
+  }
+}
+
+type FilenameIdMap = Record<string, number>
+
+let context: {
+  id: number
+  filenameIdMap: FilenameIdMap
+  dirname: string,
+  _newId: () => number,
+  init:(entry:string)=>void,
+  generateId: (filename:string) => number,
+  makeAbsolutePath:(filename:string)=>string
+} = {
+  id: -1,
+  filenameIdMap: {},
+  dirname: '',
+  _newId() {
+    return ++context.id
+  },
+  init(entry:string){
+    context.generateId(entry)
+    context.dirname = path.dirname(entry)
+  },
+  generateId(filename:string){
+    let absoluteFilePath = context.makeAbsolutePath(filename)
+    if (!context.filenameIdMap[absoluteFilePath]) {
+      context.filenameIdMap[absoluteFilePath] = context._newId()
+    }
+    // 保证指向同一路径的 不同 relativePath以及绝对路径 指向同一个 id
+    context.filenameIdMap[filename] = context.filenameIdMap[absoluteFilePath]
+    return context.filenameIdMap[filename]
+  },
+  makeAbsolutePath(filename:string) {
+    if (path.isAbsolute(filename)) {
+      return filename
+    }
+    return path.join(context.dirname, filename)
+  }
+}
+
 function transform(filename: string) {
-  const content = fs.readFileSync(filename, 'utf-8')
+  let absoluteFilePath = context.makeAbsolutePath(filename)
+
+  const content = fs.readFileSync(absoluteFilePath, 'utf-8')
   const ast = parser.parse(content, {
     sourceType: 'module'//babel官方规定必须加这个参数，不然无法识别ES Module
   })
-  const dependencies: Record<string, string> = {}
+
+  const dependencies: Dependencies = {}
 
   traverse(ast, {
     ImportDeclaration({ node }) {
-      const dirname = path.dirname(filename)
-      const newFile = path.join(dirname, node.source.value)
-      dependencies[node.source.value] = newFile
+      dependencies[node.source.value] = context.generateId(node.source.value)
     }
   })
 
@@ -35,30 +82,23 @@ function transform(filename: string) {
   }
 }
 
-type DepGraph = {
-  [filename: string]: {
-    dependencies: Record<string, string>,
-    code: string
-  }
-}
-
 // 生成依赖图
 function buildDepGraph(entry: string): DepGraph {
+  context.init(entry)
   const entryModule = transform(entry)
   const graphArray = [entryModule]
   for (let i = 0; i < graphArray.length; i++) {
     const item = graphArray[i];
     const { dependencies } = item;
-    for (let j in dependencies) {
+    for (let filename of Object.keys(dependencies)) {
       graphArray.push(
-        transform(dependencies[j])
+        transform(filename)
       )
     }
   }
   const graph: DepGraph = {}
-
   graphArray.forEach(item => {
-    graph[item.filename] = {
+    graph[context.filenameIdMap[item.filename]] = {
       dependencies: item.dependencies,
       code: item.code as string
     }
@@ -76,24 +116,24 @@ function codeGen(entry: string): string {
   (function (graph) {
 
     var installedModules: {
-      [filename: string]: {
-        id: string;
+      [id: number]: {
+        id: number;
         exports: {}
       }
     } = {};
 
-    function __mini_require(_module: string) {
+    function __mini_require(id: number) {
 
       function _localRequire(subModule: string) {
-        return __mini_require(graph[_module].dependencies[subModule])
+        return __mini_require(graph[id].dependencies[subModule])
       }
 
-      if (installedModules[_module]) {
-        return installedModules[_module].exports
+      if (installedModules[id]) {
+        return installedModules[id].exports
       }
 
-      let module = installedModules[_module] = {
-        id: _module,
+      let module = installedModules[id] = {
+        id: id,
         exports: {}
       };
 
@@ -101,12 +141,12 @@ function codeGen(entry: string): string {
       ; (function (require, exports, code) {
         // console.log(require, JSON.stringify(exports))
         eval(code)
-      })(_localRequire, module.exports, graph[_module].code);
+      })(_localRequire, module.exports, graph[id].code);
 
       return module.exports;
     }
 
-    __mini_require(entry)
+    __mini_require(0)
 
     // cache
     __mini_require.c = installedModules
@@ -151,7 +191,7 @@ function codeGen(entry: string): string {
       return module.exports;
     }
 
-    __mini_require("${entry}")
+    __mini_require(0)
 
     // cache
     __mini_require.c = installedModules
