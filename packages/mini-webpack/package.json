@@ -56,6 +56,7 @@
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.13",
     "husky": "^7.0.1",
+    "js-beautify": "^1.14.0",
     "size-limit": "^5.0.2",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.0",
