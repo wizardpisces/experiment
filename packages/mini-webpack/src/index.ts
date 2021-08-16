@@ -98,7 +98,7 @@ function codeGen(entry: string): string {
       };
 
       // @ts-ignore
-      ;(function (require, exports, code) {
+      ; (function (require, exports, code) {
         // console.log(require, JSON.stringify(exports))
         eval(code)
       })(_localRequire, module.exports, graph[_module].code);
@@ -116,31 +116,37 @@ function codeGen(entry: string): string {
    * -----next code gen end ----
    */
 
-  const graph = JSON.stringify(graphJSON);
+  let modules = '';
+  Object.keys(graphJSON).forEach(key => {
+    let mod = graphJSON[key];
+    modules += `"${key}": [
+      function (require, module, exports) {
+        ${mod.code}
+      },
+      ${JSON.stringify(mod.dependencies)},
+    ],`;
+  });
 
-  let result =  `(function (graph) {
+  let result = `(function (modules) {
 
     var installedModules = {};
 
-    function __mini_require(_module) {
-
+    function __mini_require(id) {
+      const [fn, dependencies] = modules[id];
       function _localRequire(subModule) {
-        return __mini_require(graph[_module].dependencies[subModule])
+        return __mini_require(dependencies[subModule])
       }
 
-      if (installedModules[_module]) {
-        return installedModules[_module].exports
+      if (installedModules[id]) {
+        return installedModules[id].exports
       }
 
-      let module = installedModules[_module] = {
-        id: _module,
+      let module = installedModules[id] = {
+        id: id,
         exports: {}
       };
 
-      // @ts-ignore
-      ;(function (require, exports, code) {
-        eval(code)
-      })(_localRequire, module.exports, graph[_module].code);
+      fn(_localRequire,module, module.exports)
 
       return module.exports;
     }
@@ -150,7 +156,7 @@ function codeGen(entry: string): string {
     // cache
     __mini_require.c = installedModules
 
-  })(${graph})`
+  })({${modules}})`
 
   return result
 }

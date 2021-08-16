@@ -14,6 +14,5 @@ describe('mini webpack', () => {
     new vm.Script(code).runInThisContext()
 
     expect(console.log).toHaveBeenCalledWith('hello world');
-    expect(code).toMatchSnapshot();
   });
 });
