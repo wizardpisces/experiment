@@ -1,0 +1,14 @@
+{
+  "name": "inversify",
+  "version": "1.0.0",
+  "description": "IOC (Inversion of control)，DI (dependency injection)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "刘泽",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}
