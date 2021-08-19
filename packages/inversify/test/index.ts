@@ -4,5 +4,5 @@ import { Warrior } from "./interfaces";
 
 const ninja = myContainer.get<Warrior>(TYPES.Warrior);
 
-console.log(ninja.fight() === 'cut!') // true
-console.log(ninja.sneak() === 'hit!') // true
+console.log(ninja.fight(),ninja.fight() === 'cut!') // true
+console.log(ninja.sneak(),ninja.sneak() === 'hit!') // true
