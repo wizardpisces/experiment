@@ -4,5 +4,13 @@ import { Warrior } from "./interfaces";
 
 const ninja = myContainer.get<Warrior>(TYPES.Warrior);
 
-console.log(ninja.fight(),ninja.fight() === 'cut!') // true
-console.log(ninja.sneak(),ninja.sneak() === 'hit!') // true
+expect(ninja.fight()).eql("cut!"); // true
+expect(ninja.sneak()).eql("hit!"); // true
+
+function expect(input:any){
+    return {
+        eql(val:any){
+            console.log(`expect ${input} eql to ${val} :`, input === val)
+        }
+    }
+}

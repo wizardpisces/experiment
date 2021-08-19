@@ -26,12 +26,15 @@ function getMetadata(metadataKey: MetaDataKeyType, target: TargetType, propertyK
     if (propertyKey) {
         log('not support porpertyKey yet!')
     }
-    let data = Metadata.get(target)
-    if (!data || !data.get(metadataKey)) {
+
+    if (!Reflect.hasOwnMetadata(metadataKey,target)) {
+        log('Metadata', metadataKey, Metadata.get(target), Metadata.get(target)?.get(metadataKey))
+
         log(`${metadataKey} key not set yet`)
         return null
     }
-    return data.get(metadataKey)
+
+    return Metadata.get(target)?.get(metadataKey)
 }
 
 function hasOwnMetadata(metadataKey: MetaDataKeyType, target: TargetType) {
