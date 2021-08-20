@@ -28,9 +28,7 @@ function getMetadata(metadataKey: MetaDataKeyType, target: TargetType, propertyK
     }
 
     if (!Reflect.hasOwnMetadata(metadataKey,target)) {
-        log('Metadata', metadataKey, Metadata.get(target), Metadata.get(target)?.get(metadataKey))
-
-        log(`${metadataKey} key not set yet`)
+        // log(metadataKey,` key not set yet`)
         return null
     }
 
@@ -39,11 +37,7 @@ function getMetadata(metadataKey: MetaDataKeyType, target: TargetType, propertyK
 
 function hasOwnMetadata(metadataKey: MetaDataKeyType, target: TargetType) {
     let data = Metadata.get(target)
-    if(!data){
-        return false
-    }else{
-        return data.has(metadataKey)
-    }
+    return data && data.has(metadataKey)
 }
 
 makeExporter(Reflect, 'defineMetadata', defineMetadata)

@@ -17,13 +17,14 @@ class ClassicalMusic {
     }
 }
 container.bind('request2').to(ClassicalMusic)
-
 @injectable()
 class Music {
     pm: any
     cm: any
     constructor(
+        // @ts-ignore
         @inject('request1') popMusic: any,
+        // @ts-ignore
         @inject('request2') classicalMusic: any) {
         this.pm = popMusic
         this.cm = classicalMusic
