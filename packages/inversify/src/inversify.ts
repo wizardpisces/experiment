@@ -1,6 +1,7 @@
 // import { inject, injectable, Container } from 'inversify'
 
 import './reflect-metadata'
+// import 'reflect-metadata'
 
 export {
     inject,
@@ -15,7 +16,7 @@ export const CLASS_KEY = 'ioc:tagged_class';
 const log = (...args: any[]) => console.log('[inversify.ts]', ...args)
 const warn = (...args: any[]) => console.warn('[inversify.ts]', ...args)
 
-type Idenfifier = string | Symbol
+type Idenfifier = string | Symbol | Object
 type MetaItem = {
     type:Idenfifier;
     _is_injected:boolean
@@ -32,7 +33,7 @@ function injectable(constructorArgs: Array<any> = []) {
     };
 }
 
-function inject(identifier: Idenfifier) {
+function inject(identifier?: Idenfifier) {
     function tagProperty(identifier: Idenfifier, annotationTarget: any, targetKey: string) {
         let props: Record<string, MetaItem> = {};
         if (Reflect.hasOwnMetadata(PROPS_KEY, annotationTarget)) {
@@ -47,8 +48,8 @@ function inject(identifier: Idenfifier) {
         Reflect.defineMetadata(PROPS_KEY, props, annotationTarget);
     }
 
-
     function tagParameter(identifier: Idenfifier, target: any, index: number) {
+        log(target)
         log(`tag ${target.name} constructor parameter ${index}`)
         let constructorArgs: MetaItem[] = Reflect.getMetadata(CLASS_KEY,target) || []
 
@@ -65,20 +66,35 @@ function inject(identifier: Idenfifier) {
             /**
              * 代表是 constructor params 的 decorator 
              */
+            if (!identifier) {
+                identifier = Reflect.getMetadata('design:paramtypes', target, indexOrPropertyDescriptor)
+
+                // console.log('identifier', identifier)
+            }
+            // @ts-ignore
             tagParameter(identifier, target, indexOrPropertyDescriptor)
         } else {
+            if (!identifier){
+                /**
+                 * https://www.typescriptlang.org/docs/handbook/decorators.html runtime injection
+                 * typescript metadata injection at runtime when 'emitDecoratorMetadata' opened
+                 */
+                identifier = Reflect.getMetadata('design:type', target, targetKey)
+            }
             /**
              * 属性装饰器的本意是要“装饰”类的实例，但是这个时候实例还没生成，所以只能去装饰原型
              * 这不同于类的装饰，那种情况时target参数指的是类本身
              * 所以这里需要使用 target.constructor 获取类本身来当做 metaData key
              */
+
+            // @ts-ignore
             tagProperty(identifier, target.constructor, targetKey)
         }
     };
 }
 
 class Container {
-    bindMap: Map<Idenfifier, {
+    bindMap: Map<Idenfifier | Object, {
         clazz: Function;
         constructorArgs: MetaItem[]
     }> = new Map();
@@ -98,6 +114,7 @@ class Container {
     get<T>(identifier: Idenfifier): T {
         const target = this.bindMap.get(identifier);
         if (!target) {
+            console.log('this.bindMap', this.bindMap)
             throw Error(`${identifier} is not registered yet`)
         }
         const { clazz, constructorArgs } = target;

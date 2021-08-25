@@ -1,4 +1,5 @@
 import { inject, injectable, Container } from '../index'
+import { expect } from './util'
 
 const container = new Container()
 
@@ -38,4 +39,5 @@ class Music {
 container.bind('Plan').to(Music)
 
 const music: any = container.get('Plan')
-console.log(music.getName()) // 流行音乐古典音乐
+
+expect(music.getName()).eql('流行音乐古典音乐') // 流行音乐古典音乐

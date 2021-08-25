@@ -1,13 +1,13 @@
 
 import { injectable, inject } from "../index";
-import { Weapon, ThrowableWeapon, Warrior } from "./interfaces";
+import { Weapon, ThrowableWeapon, Warrior, Run} from "./interfaces";
 import { TYPES } from "./types";
 
 // 武士刀
 @injectable()
 class Katana implements Weapon {
     public hit() {
-        return "cut!";
+        return "hit!";
     }
 }
 
@@ -15,7 +15,13 @@ class Katana implements Weapon {
 @injectable()
 class Shuriken implements ThrowableWeapon {
     public throw() {
-        return "hit!";
+        return "throw!";
+    }
+}
+@injectable()
+class FastRun implements Run {
+    public runaway() {
+        return "run fast!";
     }
 }
 
@@ -46,8 +52,15 @@ class Ninja implements Warrior {
     @inject(TYPES.Weapon) private _katana: Weapon;
     // @ts-ignore
     @inject(TYPES.ThrowableWeapon) private _shuriken: ThrowableWeapon;
+
+    // @ts-ignore
+    @inject() private _run: FastRun;
+    // @ts-ignore
+    // @inject() _weapon: Weapon;
+
     public fight() { return this._katana.hit(); }
     public sneak() { return this._shuriken.throw(); }
+    public run() { return this._run.runaway(); }
 }
 
-export { Ninja, Katana, Shuriken };
+export { Ninja, Katana, Shuriken, FastRun };

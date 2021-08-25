@@ -1,6 +1,7 @@
 export interface Warrior {
     fight(): string;
     sneak(): string;
+    run():string;
 }
 
 export interface Weapon {
@@ -9,4 +10,7 @@ export interface Weapon {
 
 export interface ThrowableWeapon {
     throw(): string;
+}
+export interface Run {
+    runaway(): string;
 }
