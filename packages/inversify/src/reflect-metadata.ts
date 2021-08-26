@@ -58,6 +58,12 @@ function OrdinaryGetOwnMetadata(MetadataKey: any, O: any, P: string | symbol | u
     return metadataMap.get(MetadataKey);
 }
 
+function OrdinaryHasOwnMetadata(MetadataKey: any, O: any, P: string | symbol | undefined): boolean {
+    const metadataMap = GetOrCreateMetadataMap(O, P, /*Create*/ false);
+    if (IsUndefined(metadataMap)) return false;
+    return metadataMap.has(MetadataKey);
+}
+
 function defineMetadata(metadataKey: MetaDataKeyType, metadataValue: any, target: TargetType, propertyKey?: PropertyKeyType) {
     return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
 }
@@ -76,9 +82,13 @@ function getOwnMetadata(metadataKey: MetaDataKeyType, target: TargetType, proper
     return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
 }
 
-function hasOwnMetadata(metadataKey: MetaDataKeyType, target: TargetType) {
-    let data = Metadata.get(target)
-    return data && data.has(metadataKey)
+// function hasOwnMetadata(metadataKey: MetaDataKeyType, target: TargetType) {
+//     let data = Metadata.get(target)
+//     return data && data.has(metadataKey)
+// }
+
+function hasOwnMetadata(metadataKey: any, target: any, propertyKey?: string | symbol): boolean {
+    return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
 }
 
 function DecorateConstructor(decorators: ClassDecorator[], target: Function): Function {
