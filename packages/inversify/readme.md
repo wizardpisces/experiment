@@ -6,20 +6,15 @@ IOC (Inversion of control)，DI (dependency injection)
 ioc是目的，di是手段。ioc是指让生成类的方式由传统方式（new）反过来，程序员不调用new，需要类的时候由框架注入（di）
 
 相比于类继承的方式，控制反转解耦了父类和子类的联系。
-## server
-* js
-nestjs
-midway
+## 框架
+* nestjs
+* midway
 
-InversifyJS
+* inversifyJS
 
-* java
-spring
-
-## Angular
-
-## Vue
-依赖注入 provide/inject
+* java （spring）
+* Angular
+* Vue （依赖注入 provide/inject）
 
 ## reference
 
