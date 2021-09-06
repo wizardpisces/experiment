@@ -1,0 +1,14 @@
+{
+  "name": "rpc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "刘泽",
+  "license": "ISC",
+  "devDependencies": {
+    "sofa-rpc-node": "^2.0.0"
+  }
+}
