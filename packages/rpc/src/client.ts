@@ -1,11 +1,15 @@
-import { Registry, interfaceOption, Methods} from './registry'
+import { Registry, interfaceOption } from './registry'
+
 export {
     RpcClient
 }
+
 type RpcClientOptions = {
     logger:any;
     registry: Registry
 }
+
+const log = (...args: any[]) => console.log('[client.ts]', ...args)
 
 class RpcClient {
     registry:Registry;
@@ -14,14 +18,8 @@ class RpcClient {
         this.registry = options.registry
     }
     createConsumer(interfaceOption: interfaceOption){
-        let methods = this.registry.createConsumer(interfaceOption)
-        return {
-            async ready(){
+        let consumer = this.registry.createConsumer(interfaceOption)
 
-            },
-            invoke(methodName:string,params:any[],options:any){
-                return methods[methodName].apply(params)
-            }
-        }
+        return consumer
     }
 }

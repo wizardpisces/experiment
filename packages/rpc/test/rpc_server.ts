@@ -18,7 +18,12 @@ server.addService({
     interfaceName: 'com.nodejs.test.TestService',
 }, {
     async plus(a:number, b:number) {
-        return a + b;
+        return new Promise(resolve=>{
+            setTimeout(()=>{
+
+                resolve(a + b);
+            },5000)
+        })
     },
 });
 

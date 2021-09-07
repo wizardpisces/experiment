@@ -17,7 +17,7 @@ async function invoke() {
     });
     await consumer.ready();
 
-    const result = await consumer.invoke('plus', [1, 2], { responseTimeout: 3000 });
+    const result = await consumer.invoke('plus', [1, 2], { responseTimeout: 1000 });
     console.log('1 + 2 = ' + result);
 }
 
