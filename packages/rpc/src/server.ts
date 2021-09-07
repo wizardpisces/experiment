@@ -11,7 +11,7 @@ type RpcClientOptions = {
     registry: Registry;
     port: number
 }
-
+let connectedSessionNumber = 0;
 const log = (...args: any[]) => console.log('[server.ts]', ...args)
 
 class RpcServer {
@@ -36,6 +36,9 @@ class RpcServer {
         const server = http2.createServer();
 
         server.on('stream', (stream, requestHeaders) => {
+            server.getConnections((err,count)=>{
+                log(++connectedSessionNumber, count)
+            })
             log('headers',requestHeaders[':path'],requestHeaders[':method'])
             let data = ''
 

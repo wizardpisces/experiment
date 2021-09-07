@@ -22,7 +22,7 @@ server.addService({
             setTimeout(()=>{
 
                 resolve(a + b);
-            },5000)
+            },2000)
         })
     },
 });

@@ -17,8 +17,11 @@ async function invoke() {
     });
     await consumer.ready();
 
-    const result = await consumer.invoke('plus', [1, 2], { responseTimeout: 1000 });
-    console.log('1 + 2 = ' + result);
+    let count = 0
+    while(++count<20){
+        const result = await consumer.invoke('plus', [count, count+1], { responseTimeout: 1000 });
+        console.log(`${count} + ${count+1} = ` + result);
+    }
 }
 
 invoke().catch(console.error);

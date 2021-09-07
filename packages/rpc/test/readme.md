@@ -1,5 +1,5 @@
 
-## How to run
+## How to test
 ```bash
 ts-node ./rpc_server.ts
 ts-node ./rpc_client.ts
