@@ -8,7 +8,7 @@ Implementing frameworks, tools and concepts in simplified version，already in p
 * express
 * inversify - (IOC/DI framework)
 * rpc
-* etc
+* more to come
 
 more info: packages/* readme.md
 
