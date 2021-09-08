@@ -1,14 +1,14 @@
-## Project content
+## Project Description
 
-Learn by doing
+Implementing frameworks, tools and concepts in simplified version，already in progress:
 
-* vite - esm bundle tool
-* webpack - memory based bundle tool
-* koa - nodejs framework
-* express - nodejs framework
+* vite
+* webpack
+* koa
+* express
 * inversify - (IOC/DI framework)
+* rpc
 * etc
-
 
 more info: packages/* readme.md
 
