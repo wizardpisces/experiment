@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test":"ts-node ./test/rpc_server.ts && ts-node ./test/rpc_client.ts"
+    "test": "ts-node test/sofa-rpc/server.ts & ts-node test/sofa-rpc/client.ts"
   },
   "author": "刘泽",
   "license": "ISC",
   "devDependencies": {
     "sofa-rpc-node": "^2.0.0"
+  },
+  "dependencies": {
+    "protobufjs": "^6.11.2"
   }
 }

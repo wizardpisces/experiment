@@ -1,6 +1,6 @@
 import http2 from 'http2'
 
-import { createPromiseCallback, request } from './util';
+import { createPromiseCallback, encode, request } from './util';
 export {
     Registry,
     interfaceOption,
@@ -33,38 +33,18 @@ class Registry {
         return request.post<Metadata>(this.fullAddress, interfaceName, body)
     }
 
-    createConsumer(interfaceOption: interfaceOption) {
-        let url: string = '';
-        const fetchMeta = async () => {
+    createConsumer<T>(interfaceOption: interfaceOption) {
+        const fetchMeta = async <T>() => {
             return request.get<Metadata>(this.fullAddress, interfaceOption.interfaceName).then((metaData) => {
                 if (!metaData) {
                     throw Error(`${interfaceOption.interfaceName} Not registered`)
                 }
 
-                url = metaData.address
+                return metaData
             })
         }
 
-        let promise = fetchMeta()
-
-        return {
-            async ready() {
-                await promise
-            },
-            async invoke(methodName: string, params: any[], options: { responseTimeout: number }) {
-
-                log('url', url);
-                return request.post({
-                    url,
-                    path: interfaceOption.interfaceName,
-                    body: {
-                        params,
-                        methodName
-                    },
-                    timeout: options.responseTimeout
-                })
-            }
-        }
+        return fetchMeta<T>()
     }
 
     async serve() {
@@ -91,10 +71,10 @@ class Registry {
             })
             stream.on('end', () => {
                 if (method === 'POST') {
-                    registryTable.set(requestHeaders[':path']?.split('/')[1] as string, JSON.parse(data))
+                    registryTable.set(requestHeaders[':path']?.split('/')[1] as string, encode.deserialize(data))
                     stream.end(`Register ${requestHeaders[':path']} successs`);
                 } else if (method === 'GET') {
-                    stream.end(JSON.stringify(registryTable.get(requestHeaders[':path']?.split('/')[1] as string)))
+                    stream.end(encode.serialize(registryTable.get(requestHeaders[':path']?.split('/')[1] as string)))
                 }
             })
         });

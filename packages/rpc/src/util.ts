@@ -2,8 +2,10 @@ import http2 from 'http2';
 
 export {
     createPromiseCallback,
-    request
+    request,
+    encode
 }
+
 function createPromiseCallback<T>() {
     let resolve: Function, reject: Function
     const promise: Promise<T> = new Promise((_resolve, _reject) => {
@@ -36,9 +38,8 @@ const request = {
         }
 
         const client = http2.connect(url);
-       
 
-        const buffer = Buffer.from(JSON.stringify(body));
+        const buffer = Buffer.from(encode.serialize(body));
 
         const req = client.request({
             [http2.constants.HTTP2_HEADER_SCHEME]: "http",
@@ -48,7 +49,7 @@ const request = {
             "Content-Length": buffer.length,
         });
 
-        req.setTimeout(1000, () => {
+        req.setTimeout(timeout || 1000, () => {
             () => {
                 req.close(http2.constants.HTTP_STATUS_REQUEST_TIMEOUT)
                 throw Error('http2.constants.HTTP_STATUS_REQUEST_TIMEOUT')
@@ -85,7 +86,16 @@ const request = {
         });
         req.end();
         req.on('end', () => {
-            resolve(JSON.parse(data));
+            resolve(encode.deserialize(data));
         });
     })
+}
+
+const encode = {
+    serialize(o:any){
+        return JSON.stringify(o)
+    },
+    deserialize(str:string){
+        return JSON.parse(str)
+    }
 }

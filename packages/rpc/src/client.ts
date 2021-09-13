@@ -1,4 +1,6 @@
-import { Registry, interfaceOption } from './registry'
+import { Registry, interfaceOption, Metadata } from './registry'
+import { request } from './util';
+import protobuf from 'protobufjs'
 
 export {
     RpcClient
@@ -18,8 +20,26 @@ class RpcClient {
         this.registry = options.registry
     }
     createConsumer(interfaceOption: interfaceOption){
-        let consumer = this.registry.createConsumer(interfaceOption)
+        let consumer = this.registry.createConsumer<Metadata>(interfaceOption)
+        let url = '';
+        return {
+            async ready() {
+                let metaData = await consumer
+                url = metaData.address
+            },
+            async invoke(methodName: string, params: any[], options: { responseTimeout: number }) {
 
-        return consumer
+                log('url', url);
+                return request.post({
+                    url,
+                    path: interfaceOption.interfaceName,
+                    body: {
+                        params,
+                        methodName
+                    },
+                    timeout: options.responseTimeout
+                })
+            }
+        }
     }
 }

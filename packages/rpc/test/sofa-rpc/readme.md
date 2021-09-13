@@ -1,8 +1,8 @@
 
 ## How to test
 ```bash
-ts-node ./rpc_server.ts
-ts-node ./rpc_client.ts
+ts-node ./server.ts
+ts-node ./client.ts
 ```
 
 ## reference

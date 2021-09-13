@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package math;
+
+service Method { rpc plus(AddRequest) returns (AddResponse){} }
+
+message AddRequest { repeated int32 id = 1; }
+
+message AddResponse { int32 message = 1; }
+// message EmployeeDetails {
+//   int32 id = 1;
+//   string email = 2;
+//   string firstName = 3;
+//   string lastName = 4;
+// }

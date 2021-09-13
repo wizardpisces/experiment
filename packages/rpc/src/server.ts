@@ -1,6 +1,6 @@
 import http2 from 'http2'
 import { Registry, interfaceOption, CallMeta } from './registry'
-import { createPromiseCallback } from './util'
+import { createPromiseCallback, encode } from './util'
 
 export {
     RpcServer
@@ -39,7 +39,6 @@ class RpcServer {
             server.getConnections((err,count)=>{
                 log(++connectedSessionNumber, count)
             })
-            log('headers',requestHeaders[':path'],requestHeaders[':method'])
             let data = ''
 
             stream.on('data', (chunk) => {
@@ -47,10 +46,15 @@ class RpcServer {
             })
             stream.on('end', async () => {
                 if (requestHeaders[':method'] === 'POST') {
-                    let callMeta: CallMeta = JSON.parse(data);
+                    let callMeta: CallMeta = encode.deserialize(data);
                     let interfaceName = requestHeaders[':path']?.split('/')[1] as string
+                    log('interfaceName', interfaceName, 
+                    'methodName:', callMeta.methodName, 
+                    'headers', requestHeaders[':path'], 
+                    'method',requestHeaders[':method'],
+                    'payload',callMeta.params)
                     let res = await this.invoke(interfaceName, callMeta)
-                    stream.end((res.toString()));
+                    stream.end(JSON.stringify(res));
                 }
             })
         });
@@ -66,14 +70,13 @@ class RpcServer {
 
     async invoke(interfaceName: string, callMeta: CallMeta){
         const methods = this.serviceTable.get(interfaceName);
-        log('interfaceName',interfaceName)
         if(!methods){
             throw Error(`${interfaceName} not found`)
         }
 
         const result = methods[callMeta.methodName].apply(null,callMeta.params)
 
-        if(result.then){
+        if (result && result.then){
             return await result
         }else{
             return result
