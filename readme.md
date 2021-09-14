@@ -1,14 +1,6 @@
-## Project Description
+## Introduction
 
-Implementing frameworks, tools and concepts in simplified version，already in progress:
-
-* vite
-* webpack
-* koa
-* express
-* inversify - (IOC/DI framework)
-* rpc
-* more to come
+Implementing frameworks, tools and concepts in simplified version
 
 more info: packages/* readme.md
 
