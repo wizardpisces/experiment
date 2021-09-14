@@ -1,10 +1,12 @@
-# mini-koa
+## Introduction
 
-轻量 koa style server
+mini implementation of [koa](https://github.com/koajs/koa)
 
-## How to run 
+## How to test 
 
 ```
+npm install
+
 ts-node test/router.ts
 ```
 

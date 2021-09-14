@@ -24,10 +24,10 @@ export default function htmlPlugin(): Plugin {
         resolveId(id) {
             // client.ts will be bundled on the run
             if (id.indexOf(CLIENT_PUBLIC_PATH) > -1) {
-                return serverDevContext.resolvemini-vitePath('./src/client/client.ts')
+                return serverDevContext.resolveResourcePath('./src/client/client.ts')
 
             } else if (id.indexOf(ENV_PUBLIC_PATH) > -1) {
-                return serverDevContext.resolvemini-vitePath('./src/client/env.ts')
+                return serverDevContext.resolveResourcePath('./src/client/env.ts')
 
             }
             return null

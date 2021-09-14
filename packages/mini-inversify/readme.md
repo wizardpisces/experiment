@@ -1,6 +1,15 @@
-# 控制反转
+## Introduction
 
 mini implementation of [inversifyjs](https://github.com/inversify/InversifyJS)
+
+## How to test
+
+```
+npm install
+npm run test
+```
+
+## 控制反转
 
 IOC (Inversion of control)，DI (dependency injection)
 

@@ -23,7 +23,7 @@ class MimicStore {
 
 let module = new MimicStore({ module1, module2 })
 
-module.notChange = ' property will not be changed by hot updates'
+module.notChange = ' property will not be changed by hot updates?'
 
 // @ts-ignore
 if (import.meta.hot) {

@@ -24,7 +24,7 @@ export interface ServerDevContext extends DevServerContextOptions {
 
     mode: string
     // package dir to import rendering helper
-    mini-vitePath: string
+    ctxPath: string
 
     // resolve third party module path by cacheDir
     resolveModulePath: (name: string) => string
@@ -33,7 +33,7 @@ export interface ServerDevContext extends DevServerContextOptions {
     resolvePath: (resourcePath: string,relative?:boolean) => string
 
     // resolve resource path by root
-    resolvemini-vitePath: (resourcePath: string) => string
+    resolveResourcePath: (resourcePath: string) => string
 
     // resolve third party module real path
     resolveModuleRealPath: (name: string) => string
@@ -69,7 +69,7 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
         cacheDirRelative,
         cacheDir,
         plugins,
-        mini-vitePath: process.cwd(),
+        ctxPath: process.cwd(),
         pluginContainer,
         moduleGraph,
         // 获取第三方模块可能的路径
@@ -95,8 +95,8 @@ export default function createDevServerContext({ root, pluginContainer, plugins,
         },
 
         // 获取vitepack框架内的资源路径
-        resolvemini-vitePath(resourcePath: string): string {
-            return path.join(serverDevContext.mini-vitePath, resourcePath)
+        resolveResourcePath(resourcePath: string): string {
+            return path.join(serverDevContext.ctxPath, resourcePath)
         },
 
         needsModuleResolve(filePath: string) {

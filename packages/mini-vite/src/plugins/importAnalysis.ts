@@ -140,8 +140,8 @@ export default function importPlugin(): Plugin {
                 )
                 // inject hot context
                 magicString.prepend(
-                    `import { createHotContext as __mini-vite__createHotContext } from "${CLIENT_PUBLIC_PATH}";` +
-                    `import.meta.hot = __mini-vite__createHotContext(${JSON.stringify(
+                    `import { createHotContext as __mini_vite__createHotContext } from "${CLIENT_PUBLIC_PATH}";` +
+                    `import.meta.hot = __mini_vite__createHotContext(${JSON.stringify(
                         importerModule.url
                     )});`
                 )

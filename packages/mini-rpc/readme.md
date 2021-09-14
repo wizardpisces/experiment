@@ -1,9 +1,14 @@
 ## Introduction
 
-Simple RPC implementation reference API of well known ones(eg: sofa-rpc, grpc etc)
+mini implementation of [sofa-rpc-node](https://github.com/sofastack/sofa-rpc-node/blob/master/example/server.js)
 
-more could reference test cases
+## How to test
+```
+npm install
 
+npm run server
+npm run client
+```
 ## Reference
 
 ### RPC Framework
