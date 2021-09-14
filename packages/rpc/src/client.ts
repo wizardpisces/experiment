@@ -1,5 +1,5 @@
 import { Registry, interfaceOption, Metadata } from './registry'
-import { request } from './util';
+import { encode, request } from './util';
 import protobuf from 'protobufjs'
 
 export {
@@ -38,7 +38,7 @@ class RpcClient {
                         methodName
                     },
                     timeout: options.responseTimeout
-                })
+                }).then((data:any)=>encode.deserialize(data))
             }
         }
     }

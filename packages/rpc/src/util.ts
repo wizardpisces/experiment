@@ -39,14 +39,14 @@ const request = {
 
         const client = http2.connect(url);
 
-        const buffer = Buffer.from(encode.serialize(body));
+        const payload = encode.serialize(body);
 
         const req = client.request({
             [http2.constants.HTTP2_HEADER_SCHEME]: "http",
             [http2.constants.HTTP2_HEADER_METHOD]: http2.constants.HTTP2_METHOD_POST,
             [http2.constants.HTTP2_HEADER_PATH]: `/${path}`,
             "Content-Type": "application/json",
-            "Content-Length": buffer.length,
+            "Content-Length": Buffer.from(payload).length,
         });
 
         req.setTimeout(timeout || 1000, () => {
@@ -62,7 +62,7 @@ const request = {
         req.on('data', (chunk) => {
             data += chunk;
         });
-        req.write(buffer);
+        req.write(payload);
         req.end();
         req.on('end', () => {
             resolve(data);

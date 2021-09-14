@@ -11,6 +11,7 @@ const registry = new Registry({
 async function invoke() {
     const root = await protobuf.load(__dirname+'/proto/employee.proto');
     const EmployeeRequest = root.lookupType('employee.EmployeeRequest');
+    const EmployeeDetails = root.lookupType('employee.EmployeeDetails');
     const client = new RpcClient({
         logger,
         registry,
@@ -24,10 +25,14 @@ async function invoke() {
     const result = await consumer.invoke('plus', [count, count + 1], { responseTimeout: 1000 });
     console.log(`${count} + ${count + 1} = ` + result);
 
-    let employId = 1, encoded = EmployeeRequest.encode({ id: employId}).finish()
+    let employId = 1, 
+        encoded = EmployeeRequest.encode({ id: employId}).finish()
     console.log('encoded employee data', encoded, Object.prototype.toString.call(encoded))
-    const result2 = await consumer.invoke('getDetails', [encoded], { responseTimeout: 1000 });
-    console.log(`employee ${employId} info: ` + JSON.stringify(result2));
+
+    const result2:any = await consumer.invoke('getDetails', [encoded], { responseTimeout: 1000 });
+    console.log('result2:', result2)
+    console.log(Buffer.from(result2))
+    console.log(`employee ${employId} info: ` , EmployeeDetails.decode(Buffer.from(result2)));
 }
 
 invoke().catch(console.error);

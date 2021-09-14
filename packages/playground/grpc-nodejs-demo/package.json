@@ -1,0 +1,16 @@
+{
+  "name": "grpc-nodejs-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@grpc/proto-loader": "^0.1.0",
+    "grpc": "^1.11.0",
+    "lodash": "^4.6.1"
+  },
+  "author": "Name",
+  "license": "MIT"
+}

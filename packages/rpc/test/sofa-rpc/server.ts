@@ -15,6 +15,7 @@ let port = 12200
 async function start(){
     const root = await protobuf.load(__dirname+'/proto/employee.proto');
     const EmployeeRequest = root.lookupType('employee.EmployeeRequest');
+    const EmployeeDetails = root.lookupType('employee.EmployeeDetails');
     const server = new RpcServer({
         logger,
         registry,
@@ -44,7 +45,9 @@ async function start(){
                     msg:'not found'
                 }
             }
-            return res;
+            console.log(EmployeeDetails.encode(res).finish());
+            
+            return EmployeeDetails.encode(res).finish();
         }
     });
     await server.start()

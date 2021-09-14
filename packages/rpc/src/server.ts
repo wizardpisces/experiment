@@ -37,7 +37,7 @@ class RpcServer {
 
         server.on('stream', (stream, requestHeaders) => {
             server.getConnections((err,count)=>{
-                log(++connectedSessionNumber, count)
+                // log(++connectedSessionNumber, count)
             })
             let data = ''
 
