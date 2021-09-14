@@ -1,0 +1,13 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "ts,json",
+    "ignore": [
+        "src/**/*.spec.ts"
+    ],
+    "env":{
+        "DEBUG":"mini-vite:*"
+    },
+    "exec": "ts-node ./src/index.ts"
+}
