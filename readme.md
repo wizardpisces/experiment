@@ -1,8 +1,10 @@
 ## Introduction
 
-Implementing frameworks, tools and concepts in simplified version
+Frameworks in mini version
 
-more info: packages/* readme.md
+(koa, express, vite, webpack, inversify, rpc etc)
+
+More info: packages/* readme.md
 
 ## Bootstrap
 

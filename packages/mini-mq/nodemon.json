@@ -1,0 +1,13 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "ts,json",
+    "ignore": [
+        "src/**/*.spec.ts"
+    ],
+    "env":{
+        "DEBUG":"mp-example:*"
+    },
+    "exec": "ts-node example/index.ts"
+}

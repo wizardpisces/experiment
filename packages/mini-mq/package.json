@@ -1,0 +1,16 @@
+{
+  "name": "mini-mq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "ts-node example/index.ts",
+    "nodemon": "nodemon"
+  },
+  "author": "刘泽",
+  "license": "ISC",
+  "dependencies": {
+    "bullmq": "^1.46.5"
+  }
+}
