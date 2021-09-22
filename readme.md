@@ -2,7 +2,7 @@
 
 Frameworks in mini version
 
-(koa, express, vite, webpack, inversify, rpc etc)
+(koa, express, vite, webpack, inversify, rpc, react, vue etc)
 
 More info: packages/* readme.md
 

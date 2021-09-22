@@ -6,17 +6,27 @@ export {
 
 const logger = createLogger('[hooks]')
 
-let _state: any;
+let stateList:any[] = [],
+    stateIndex:number;
+
+function resetStateIndex(){
+    stateIndex = -1
+}
+
+resetStateIndex()
+
 function useState<T>(initState: T): [T, Function] {
-    if (!_state) {
-        _state = initState
+    let curIndex = ++stateIndex
+    if (!stateList[curIndex]) {
+        stateList[curIndex] = initState
     }
-    logger('enter useState')
+    
     function setState(s: T): T {
         logger('triggered', s);
-        _state = s
+        stateList[curIndex] = s
+        resetStateIndex()
         rerender()
         return s
     }
-    return [_state, setState]
+    return [stateList[curIndex], setState]
 }

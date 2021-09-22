@@ -21,7 +21,7 @@ function updateDom(dom:Element,props:VNode['props']){
 }
 
 function createElement(OriginalVnode:VNode){
-    
+    // to unwrap functional component
     let vnode = transformVNode(OriginalVnode)
 
     if(vnode.type === 'text'){
