@@ -1,26 +1,25 @@
 import { render, h, useState, Fragment } from "../../src/index"
 
+export {
+  App
+}
+
 function App() {
   console.log('父组件')
   const [count, setCount] = useState(0)
-  const [buttonText, setButtonText] = useState("Click me,   please");
 
-  function handleClick() {
-    return setButtonText("Thanks, been clicked!");
-  }
   return (
     <div>
+      <h1>useState</h1>
       <SimpleChild i={1}/>
+      <br />
       <MultipleUseState/>
       <br/>
       {/* <SimpleChild i={2}/> */}
-      <h1>You clicked {count} times</h1>
+      <h9>You clicked {count} times</h9>
       <div>
         <button onClick={() => setCount(count + 1) }>+</button>
       </div>
-
-      <br />
-      <button onClick={handleClick}>{buttonText}</button>
     </div>
   )
 }
@@ -42,4 +41,3 @@ function MultipleUseState(){
   )
 }
 
-render(<App />, document.getElementById("app"))

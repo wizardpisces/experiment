@@ -9,24 +9,20 @@ export {
 
 const logger = createLogger('[render]')
 
-let _vnode: VNode, _parentDom: Element, _prevDom: Element | Text
+let _vnode: VNode, _parentDom: Element, _prevDom: Element | Text | DocumentFragment
 
-function render(vnode: VNode, parentDom: Element, appendChild?:Function) {
+function render(vnode: VNode, parentDom: Element) {
     _vnode = vnode;
     _parentDom = parentDom;
 
-    let rootDom = createElement(vnode)
-    if (appendChild){
-        appendChild(rootDom)
-    }else{
-        parentDom.appendChild(rootDom)
-    }
-
-    _prevDom = rootDom
+    /**
+     * DocumentFragment has no parent , so it could not be replaced;
+     * So fisrt empty it , then append
+     */
+    parentDom.innerHTML = ''
+    parentDom.appendChild(createElement(vnode))
 }
 
 function rerender() {
-    render(_vnode, _parentDom, (currentDom:Element) => {
-        _parentDom.replaceChild(currentDom,_prevDom)
-    })
+    render(_vnode, _parentDom)
 }
