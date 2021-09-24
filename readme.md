@@ -6,6 +6,7 @@ Frameworks in mini version
 
 More info: packages/* readme.md
 
+**Learn by doing, explain things in the simplest way**
 ## Bootstrap
 
 ```

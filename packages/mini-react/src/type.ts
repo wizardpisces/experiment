@@ -1,6 +1,7 @@
 export {
     VNode,
-    SimpleNode
+    SimpleNode,
+    ComponentChild
 }
 
 type VNodeProps = {

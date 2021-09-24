@@ -3,6 +3,7 @@ import { createLogger, isFunction, isSimpleNode } from "./util"
 
 export {
     h,
+    Fragment,
     transformVNode
 }
 
@@ -35,7 +36,7 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
 }
 
 // transform functional vnode to normal vnode
-function transformVNode(vnode: VNode):VNode {
+function transformVNode(vnode: VNode):VNode | VNode[] {
     let { type, props } = vnode
     let normalizedProps: VNode['props'] = props || {}
 
@@ -45,8 +46,12 @@ function transformVNode(vnode: VNode):VNode {
         if (isSimpleNode(result)) { // simple ele, treat as text value;
             return createVNode('text', normalizedProps)
         } else {
-            return result as VNode
+            return transformVNode(result)
         }
     }
     return vnode
+}
+
+function Fragment(props:VNode['props']) {
+    return props.children;
 }

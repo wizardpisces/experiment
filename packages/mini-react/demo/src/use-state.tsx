@@ -1,4 +1,4 @@
-import { render, h, useState } from "../../src/index"
+import { render, h, useState, Fragment } from "../../src/index"
 
 function App() {
   console.log('父组件')
@@ -10,9 +10,10 @@ function App() {
   }
   return (
     <div>
-      <B i={1}/>
+      <SimpleChild i={1}/>
+      <MultipleUseState/>
       <br/>
-      {/* <B i={2}/> */}
+      {/* <SimpleChild i={2}/> */}
       <h1>You clicked {count} times</h1>
       <div>
         <button onClick={() => setCount(count + 1) }>+</button>
@@ -24,9 +25,21 @@ function App() {
   )
 }
 
-function B({i}){
+function SimpleChild({i}){
   console.log('子组件',i)
   return `${i}组件`
+}
+
+function MultipleUseState(){
+  const [up, setUp] = useState(0)
+  const [down, setDown] = useState(0)
+  return (
+    // Support Fragment
+    <>
+      <span>{up}</span><button onClick={() => setUp(up + 1)}>+</button>
+      <span>{down}</span><button onClick={() => setDown(down - 1)}>-</button>
+    </>
+  )
 }
 
 render(<App />, document.getElementById("app"))

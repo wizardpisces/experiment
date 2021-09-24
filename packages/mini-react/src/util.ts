@@ -2,7 +2,8 @@ export {
     createLogger,
     isString,
     isFunction,
-    isSimpleNode
+    isSimpleNode,
+    isArray
 }
 const createLogger = (prefix = "[Mini React]") => (...args: any[]) => console.log(`${prefix}`, ...args)
 
@@ -20,4 +21,8 @@ function isFunction(t: any) {
 
 function isSimpleNode(vnode:any){
     return isNumber(vnode) || isString(vnode);
+}
+
+function isArray(t:any){
+    return Array.isArray(t);
 }
