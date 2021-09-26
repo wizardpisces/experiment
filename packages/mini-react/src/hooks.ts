@@ -1,8 +1,10 @@
-import { createLogger } from "./util"
-import { rerender } from './render'
+import { createLogger, isFunction } from "./util"
+import { rerender, setPostRenderQueue } from './render'
 export {
     useState,
-    useReducer
+    useReducer,
+    Reducer,
+    useEffect
 }
 
 const logger = createLogger('[hooks]')
@@ -16,34 +18,36 @@ function resetStateIndex() {
 
 resetStateIndex()
 
-function useState<T>(initialState: T): [T, Function] {
-    let curIndex = ++stateIndex
-    if (!stateList[curIndex]) {
-        stateList[curIndex] = initialState
+// reuse useReducer
+function useState<S>(initialState: S | (() => S)) {
+    const reducer = (state: S, action: S) => {
+        return action
     }
 
-    function setState(s: T): T {
-        logger('triggered', s);
-        stateList[curIndex] = s
-        resetStateIndex()
-        rerender()
-        return s
-    }
-    return [stateList[curIndex], setState]
+    return useReducer<S, S>(reducer, initialState)
 }
 
-type Action = { type: string }
-function useReducer<T>(reducer: (state: T, action: Action) => T, initialState: T) {
+type Reducer<S, A> = (prevState: S, action: A) => S;
+function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | (() => S)): [S, (action: A) => void] {
     let curIndex = ++stateIndex
+
+    if(isFunction(initialState)) {
+        initialState = (<Function>initialState)()
+    }
+
     if (!stateList[curIndex]) {
         stateList[curIndex] = initialState
     }
 
-    const dispatch = (action: Action) => {
+    const dispatch = (action:A) => {
         stateList[curIndex] = reducer(stateList[curIndex], action)
         resetStateIndex()
         rerender()
     }
 
     return [stateList[curIndex], dispatch]
+}
+
+function useEffect(cb:Function,deps?:any[]){
+    setPostRenderQueue(cb,deps)
 }

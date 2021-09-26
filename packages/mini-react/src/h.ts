@@ -13,7 +13,7 @@ function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props
     // logger(type, normalizedProps.props, children)
     normalizedProps.children = children
 
-    logger(typeof type)
+    // logger(typeof type)
 
     // if(isFunction(type)){
     //     let result = (type as Function)(props)

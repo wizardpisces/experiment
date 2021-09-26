@@ -9,6 +9,7 @@
   "author": "刘泽",
   "license": "ISC",
   "devDependencies": {
+    "preact": "^10.5.14",
     "typescript": "^4.4.3"
   }
 }
