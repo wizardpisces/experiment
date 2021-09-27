@@ -1,4 +1,4 @@
-import { render, h, useEffect, Fragment } from "../../src/index"
+import { render, h, useEffect, Fragment, useState } from "../../src/index"
 
 import { App as UseStateApp } from './use-state'
 import { App as UseReducerApp } from './use-reducer'
@@ -8,10 +8,17 @@ function App() {
     useEffect(() => {
         console.log('mounted App main useEffect Root')
     }, []);
+    
+    const [count, setCount] = useState(0)
+
+    function upCount(){
+        setCount(count + 1)
+    }
+
     return <>
-        <UseStateApp />
-        <UseReducerApp/>
-        <UseEffectApp/>
+        <UseStateApp count={count} upCount={upCount} />
+        <UseReducerApp />
+        <UseEffectApp count={count}/>
     </>
 }
 
