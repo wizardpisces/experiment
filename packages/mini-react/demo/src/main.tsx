@@ -3,6 +3,7 @@ import { render, h, useEffect, Fragment, useState } from "../../src/index"
 import { App as UseStateApp } from './use-state'
 import { App as UseReducerApp } from './use-reducer'
 import { App as UseEffectApp } from './use-effect'
+import { App as UseMemoApp } from './use-memo'
 
 function App() {
     useEffect(() => {
@@ -19,6 +20,7 @@ function App() {
         <UseStateApp count={count} upCount={upCount} />
         <UseReducerApp />
         <UseEffectApp count={count}/>
+        <UseMemoApp count={count}/>
     </>
 }
 

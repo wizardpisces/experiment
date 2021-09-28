@@ -7,26 +7,30 @@ export {
 
 function App(props) {
     let { count } = props;
-    let [countDown,setCountDown] = useState(3);
+    let [countDown, setCountDown] = useState(3);
     const [data, setData] = useState([{
         id: 'id',
-        title: 'title1'
+        title: 'fetching data......'
     }]);
 
     useEffect(() => {
         document.title = data[0].title
         console.log('mounted useEffect child')
-    }, [count]);
+    }, []);
+
     useEffect(() => {
+        setCountDown(countDown = 3)
+        let timeoutID
+
         const fetchData = async () => {
             function countDownFn() {
-                setTimeout(() => {
+                timeoutID = setTimeout(() => {
                     setCountDown(--countDown)
                     if (countDown <= 0) {
                         setData([
                             {
                                 id: 'id changed',
-                                title: 'title changed'
+                                title: 'data fetched'
                             }
                         ]);
                         return
@@ -37,15 +41,18 @@ function App(props) {
 
             countDownFn()
         };
+
         fetchData();
 
-    }, []);
+        return () => {
+            clearTimeout(timeoutID)
+        }
+    }, [count]);
 
-   
     return (
         <>
             <h1>Use effect</h1>
-            <div>title change in {countDown} seconds:</div>
+            <div>title change in {countDown} seconds (countState will change by parent):</div>
             <ul>
                 {data.map(item => (
                     <li key={item.id}>

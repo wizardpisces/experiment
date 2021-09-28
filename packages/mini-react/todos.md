@@ -1,12 +1,15 @@
 * ~~JSX~~
-* ~~Fragment~~
+* [X] Fragment
 * hooks
-    * ~~useState~~
-    * ~~useReducer~~
-* vnode diff
-* use useContext/useEffect
-* Concurrent Rendering
+    * [X] useState
+    * [X] useReducer
+    * [X] useEffect
+    * [X] useMemo
+    * 
+* [] vnode diff
+* [] use useContext/useEffect
+* [] Concurrent Rendering
 
-Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries和Concurrent Rendering
+Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries, Concurrent Rendering
 
 refer to solidjs
