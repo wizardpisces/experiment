@@ -51,7 +51,7 @@ function App(props) {
 
     return (
         <>
-            <h1>Use effect</h1>
+            <h1>useEffect</h1>
             <div>title change in {countDown} seconds (countState will change by parent):</div>
             <ul>
                 {data.map(item => (

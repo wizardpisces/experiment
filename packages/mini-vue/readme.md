@@ -1,9 +1,4 @@
-# vue tutorial project
+## Introdution
+Vue in mini version
 
-## Basic vue
-
-### reactive
-
-## SFC
-
-rewrite in jsx to avoid template compiler
+needs to be rewrited

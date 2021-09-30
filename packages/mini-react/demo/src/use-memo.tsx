@@ -12,7 +12,7 @@ function App(props) {
 
     return (
         <>
-            <h1>Use Memo</h1>
+            <h1>useMemo</h1>
             <div>this is memo count*2 value: {memoValue}</div>
         </>
     );
