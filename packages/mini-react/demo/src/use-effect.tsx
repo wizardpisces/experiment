@@ -30,7 +30,7 @@ function App(props) {
                         setData([
                             {
                                 id: 'id changed',
-                                title: 'data fetched'
+                                title: 'data fetched : ' + Math.random()
                             }
                         ]);
                         return

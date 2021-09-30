@@ -15,7 +15,7 @@ function App(props) {
       <MultipleUseState />
       <br />
       {/* <SimpleChild i={2}/> */}
-      <h9>You clicked {count} times (changed by parent)</h9>
+      <h9>You clicked {count} times ( click below button will trigger useEffect and useMemo view change)</h9>
       <div>
         <button onClick={upCount}>+</button>
       </div>

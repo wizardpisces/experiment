@@ -85,7 +85,6 @@ function useEffect(fn: EffectCallback, deps?: any[]) {
             active = depsChanged(prevEffect.deps, deps)
         }
     }
-    // logger('active', active, curHookIndex)
     // if (curHookIndex>10) return
     effectMap.set(curHookIndex, {
         fn,
@@ -102,8 +101,6 @@ function runEffect() {
     }
 
     cleanUpEffect() // cleans up effects from the previous render before running the effects next time.
-
-    // logger('active length', Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).length)
 
     Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse().forEach(([id, effect]) => { // reverse to let child effect execute before parent
         let unsubscribe = effect.fn();

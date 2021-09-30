@@ -5,11 +5,11 @@
     * [X] useReducer
     * [X] useEffect
     * [X] useMemo
-    * 
-* [] vnode diff
-* [] use useContext/useEffect
+    * [] useLayout
+    * [] useRef
 * [] Concurrent Rendering
+* [] vnode diff
 
-Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries, Concurrent Rendering
+Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries
 
 refer to solidjs
