@@ -6,9 +6,9 @@
     * [X] useEffect
     * [X] useMemo
     * [] useLayout
-    * [] useRef
+    * [X] useRef
+* [] vnode diff (only rerender changed part)
 * [] Concurrent Rendering
-* [] vnode diff
 
 Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries
 

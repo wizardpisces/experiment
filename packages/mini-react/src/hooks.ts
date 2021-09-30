@@ -5,7 +5,8 @@ export {
     useReducer,
     Reducer,
     useEffect,
-    useMemo
+    useMemo,
+    useRef
 }
 
 const logger = createLogger('[hooks]')
@@ -28,17 +29,20 @@ addPostRenderTask(resethookIndex, runEffect)
 
 let stateMap = new Map<number, any>()
 // reuse useReducer
-function useState<S>(initialState: S | (() => S)) {
+function useState<S>(initialState: S | ((preState: S) => S)) {
 
-    const reducer = (state: S, action: S) => {
+    const reducer = (state: S, action: S | ((preState: S) => S)) => {
+        if (isFunction(action)) {
+            return (action as Function)(state)
+        }
         return action
     }
 
-    return useReducer<S, S>(reducer, initialState)
+    return useReducer<S, S | ((preState: S) => S)>(reducer, initialState)
 }
 
 type Reducer<S, A> = (prevState: S, action: A) => S;
-function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | (() => S)): [S, (action: A) => void] {
+function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: S) => S)): [S, (action: A) => void] {
     let curIndex = incHookIndex()
 
     if (isFunction(initialState)) {
@@ -96,7 +100,9 @@ function useEffect(fn: EffectCallback, deps?: any[]) {
 
 function runEffect() {
     function cleanUpEffect() {
-        Array.from(effectCleanUpSet).forEach(fn => fn())
+        Array.from(effectCleanUpSet).forEach(fn => {
+            fn()
+        })
         effectCleanUpSet.clear()
     }
 
@@ -104,6 +110,7 @@ function runEffect() {
 
     Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse().forEach(([id, effect]) => { // reverse to let child effect execute before parent
         let unsubscribe = effect.fn();
+
         if (isFunction(unsubscribe)) {
             effectCleanUpSet.add(unsubscribe as Function)
         }
@@ -139,6 +146,18 @@ function useMemo<T>(factory: () => T, deps?: any[]) {
     return value
 }
 
+/**
+ * https://dmitripavlutin.com/react-useref-guide/
+ * useRef vs useState
+ * sync vs async
+ * reference vs immutable
+ */
+
+let refMap = new Map<number, { current: any }>()
+
+function useRef(initialValue?: any) {
+    return useMemo(() => ({ current: initialValue }), [])
+}
 
 function depsChanged(oldDeps: any[] | undefined, newDeps: any[] | undefined) {
     return (

@@ -12,7 +12,6 @@ function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props
     let normalizedProps: VNode['props'] = props || {}
     // logger(type, normalizedProps.props, children)
     normalizedProps.children = children
-
     // logger(typeof type)
 
     // if(isFunction(type)){

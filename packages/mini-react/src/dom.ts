@@ -48,9 +48,13 @@ function createElement(vnodeOrChild: VNode | ComponentChild) {
 
     let dom = document.createElement(vnode.type as string)
 
+    if (vnode.props.ref){
+        vnode.props.ref.current = dom; // 建立 ref 引用关系
+    }
+    
     updateDom(dom, vnode.props) 
     
     vnode.props.children.forEach((child) => dom?.appendChild(createElement(child)))
-    
+
     return dom
 }
