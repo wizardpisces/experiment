@@ -5,6 +5,7 @@ import { App as UseReducerApp } from './use-reducer'
 import { App as UseEffectApp } from './use-effect'
 import { App as UseMemoApp } from './use-memo'
 import { App as UseRefApp } from './use-ref'
+import { default as Demo } from './demo'
 
 function App() {
     useEffect(() => {
@@ -22,7 +23,8 @@ function App() {
         <UseReducerApp />
         <UseEffectApp count={count}/>
         <UseMemoApp count={count}/>
-        <UseRefApp count={count}/>
+        <UseRefApp/>
+        <Demo/>
     </>
 }
 

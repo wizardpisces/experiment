@@ -153,8 +153,6 @@ function useMemo<T>(factory: () => T, deps?: any[]) {
  * reference vs immutable
  */
 
-let refMap = new Map<number, { current: any }>()
-
 function useRef(initialValue?: any) {
     return useMemo(() => ({ current: initialValue }), [])
 }

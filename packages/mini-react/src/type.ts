@@ -1,7 +1,9 @@
 export {
     VNode,
     SimpleNode,
-    ComponentChild
+    ComponentChild,
+    FunctionComponent,
+    FragmentType
 }
 
 type VNodeProps = {
@@ -14,16 +16,22 @@ interface VNode<P = {}> {
     props: VNodeProps
 }
 
-type ComponentType = FunctionComponent
+type ComponentType = FunctionComponent | ClassComponent
 
-export interface FunctionComponent<P = {}> {
-    (props: VNodeProps): VNode<any> | null;
-}
+// TODOS
+type ClassComponent = any
+
+type FunctionComponent = (props: VNodeProps) => ComponentChild | ComponentChild[];
+// export interface FunctionComponent<P = {}> {
+//     (props: VNodeProps): VNode<any> | SimpleNode | FragmentType | null;
+// }
 
 type ComponentChildren = ComponentChild[]
 
-type ComponentChild = VNode | SimpleNode
+type ComponentChild = VNode<any> | SimpleNode | FragmentType
 
 type SimpleNode =
     | string
     | number
+
+type FragmentType = (props: VNode['props']) => VNode['props']['children'];

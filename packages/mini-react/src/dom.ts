@@ -1,6 +1,5 @@
-import { transformVNode } from "./h"
 import { VNode, SimpleNode, ComponentChild } from "./type"
-import { isFunction, isString, isSimpleNode, isArray } from "./util"
+import { isString, isSimpleNode, isArray } from "./util"
 
 export {
     createElement
@@ -28,19 +27,17 @@ function createFragmentNode(vnodeList: VNode[]) {
     return fragment
 }
 
-function createElement(vnodeOrChild: VNode | ComponentChild) {
+function createElement(vnodeOrList: ComponentChild | ComponentChild[]) {
 
-    if (isSimpleNode(vnodeOrChild)) {
-        return document.createTextNode(vnodeOrChild as SimpleNode + '')
-    }
-    // unwrap functional component
-    let vnodeTransformed = transformVNode(vnodeOrChild as VNode)
-
-    if (isArray(vnodeTransformed)) {
-        return createFragmentNode(vnodeTransformed as VNode[])
+    if (isSimpleNode(vnodeOrList)) {
+        return document.createTextNode(vnodeOrList as SimpleNode + '')
     }
 
-    let vnode: VNode = vnodeTransformed as VNode
+    if (isArray(vnodeOrList)) {
+        return createFragmentNode(vnodeOrList as VNode[])
+    }
+
+    let vnode: VNode = vnodeOrList as VNode
 
     if (vnode.type === 'text') {
         return document.createTextNode(vnode.props.value)

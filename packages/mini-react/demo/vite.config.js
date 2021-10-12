@@ -1,3 +1,5 @@
+import vue from '@vitejs/plugin-vue'
+
 export default {
   port: '8000',
   esbuild: {

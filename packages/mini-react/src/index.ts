@@ -1,10 +1,10 @@
-export * from './hooks'
+// export * from './hooks'
 
-export * from './h'
+// export * from './h'
 
-export * from './render'
+// export * from './render'
 
 
-// export * from 'preact'
+export * from 'preact'
 
-// export { useState,useEffect,useReducer } from 'preact/hooks'
+export { useState,useEffect,useReducer,useMemo,useRef } from 'preact/hooks'

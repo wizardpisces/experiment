@@ -1,6 +1,7 @@
 import { createElement } from "./dom"
+import { transformVNode } from "./h"
 import { VNode } from "./type"
-import { createLogger, isFunction } from "./util"
+import { createLogger } from "./util"
 
 export {
     render,
@@ -13,15 +14,21 @@ const logger = createLogger('[render]')
 let _vnode: VNode, _parentDom: Element, _prevDom: Element | Text | DocumentFragment
 
 function render(vnode: VNode, parentDom: Element) {
+    // original is a function type VNode
     _vnode = vnode;
+    
     _parentDom = parentDom;
 
+    // recursive execute functional VNode
+    let vnodeTrasformed = transformVNode(vnode)
+    console.log('vnodeTrasformed',vnodeTrasformed)
+    console.log('vnode',vnode,(vnode.type)())
     /**
      * DocumentFragment has no parent , so it could not be replaced;
      * So fisrt empty it , then append
      */
     parentDom.innerHTML = ''
-    parentDom.appendChild(createElement(vnode))
+    parentDom.appendChild(createElement(vnodeTrasformed))
 
     postRender()
 }

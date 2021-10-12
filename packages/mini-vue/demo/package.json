@@ -1,0 +1,15 @@
+{
+  "name": "mini-hello",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.9.3",
+    "vite": "^2.1.5",
+    "vue": "^3.2.13"
+  }
+}

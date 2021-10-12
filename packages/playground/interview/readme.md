@@ -16,6 +16,7 @@
     * https://segmentfault.com/a/1190000020110045###
     * https://zhuanlan.zhihu.com/p/60307571
 
+2. React Hooks 跟 Vue Hooks的区别（Vue Composition-Api）?
 ## 模式
 
 * 什么是 IOC/DI？解决什么问题
