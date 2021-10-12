@@ -17,6 +17,12 @@
     * https://zhuanlan.zhihu.com/p/60307571
 
 2. React Hooks 跟 Vue Hooks的区别（Vue Composition-Api）?
+3. 谈一谈 Mixin、HOC、Render props、Hooks
+
+### 进阶问题
+1. Vue 和 React 的核心差异，以及核心差异对后续设计产生的“不可逆”影响
+2. Vue 和 React 在 API 设计风格和哲学理念（甚至作者个人魅力）上的不同
+3. Vue 和 React 在工程化预编译构建阶段，AOT 和 JIT 优化的本质差异和设计
 ## 模式
 
 * 什么是 IOC/DI？解决什么问题

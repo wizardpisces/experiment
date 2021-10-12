@@ -42,21 +42,26 @@ function transformSimpleNode(vnode: SimpleNode): VNode {
 function transformVNodeChildren(children: ComponentChild[]) {
     let nodeList: ComponentChild[] = []
     children.forEach(node => {
-        if (isSimpleNode(node)) {
-            nodeList.push(transformSimpleNode(node as SimpleNode))
-        } else {
-            let maybeVNodeList = transformVNode(node as VNode)
-            if (isArray(maybeVNodeList)) {
-                nodeList = nodeList.concat(maybeVNodeList)
-            }
+        let maybeVNodeList = transformVNode(node as VNode)
+        if (isArray(maybeVNodeList)) { // Fragment
+            nodeList = nodeList.concat(maybeVNodeList)
+        }else{
+            nodeList.push(maybeVNodeList as SimpleNode)
         }
     });
 
     return nodeList
 }
 
-// transform functional and Fragment vnode to normal vnode
-function transformVNode(vnode: VNode): VNode | ComponentChild[] {
+
+/**
+ * transform functional and Fragment vnode to normal vnode
+ * 
+ * functional return Array will be treated as Fragment
+ * 
+ * ComponentType => string
+ */
+function transformVNode(vnode: VNode): ComponentChild | ComponentChild[] {
     let { type, props } = vnode
     let normalizedProps: VNode['props'] = props || {}
 
