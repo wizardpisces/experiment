@@ -117,7 +117,7 @@ Vue Composition API （VCA）跟 hooks 本质上的区别。VCA 在实现上也�
 ## Reference
 
 * https://v3.vuejs.org/guide/composition-api-introduction.html
-* https://reactjs.org/docs/getting-started.html
+* https://reactjs.org/docs/hooks-intro.html
 * https://juejin.cn/post/6844903877574295560#heading-3
 * https://zhuanlan.zhihu.com/p/133819602
 * https://github.com/vuejs/rfcs/issues/89

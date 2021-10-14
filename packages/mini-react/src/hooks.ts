@@ -1,12 +1,14 @@
 import { createLogger, isFunction } from "./util"
-import { rerender, addPostRenderTask } from './render'
+import { update, addPostRenderTask } from './render'
+import { getCurrentInfo } from "./h";
 export {
     useState,
     useReducer,
     Reducer,
     useEffect,
     useMemo,
-    useRef
+    useRef,
+    updateHookIndex
 }
 
 const logger = createLogger('[hooks]')
@@ -17,8 +19,12 @@ function resethookIndex() {
     hookIndex = 0
 }
 
+function updateHookIndex(index:number){
+    hookIndex = index
+}
+
 function incHookIndex() {
-    return ++hookIndex
+    return hookIndex++
 }
 
 addPostRenderTask(resethookIndex, runEffect)
@@ -44,10 +50,16 @@ function useState<S>(initialState: S | ((preState: S) => S)) {
 type Reducer<S, A> = (prevState: S, action: A) => S;
 function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: S) => S)): [S, (action: A) => void] {
     let curIndex = incHookIndex()
+    let currentVNode = getCurrentInfo()
+
+    if(currentVNode.updateInfo.hookIndex===-1){ // set on initial render
+        currentVNode.updateInfo.hookIndex = curIndex
+    }
 
     if (isFunction(initialState)) {
         initialState = (<Function>initialState)()
     }
+
 
     // make sure state will change by event
     if (!stateMap.has(curIndex)) {
@@ -56,7 +68,7 @@ function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: 
 
     const dispatch = (action: A) => {
         stateMap.set(curIndex, reducer(stateMap.get(curIndex), action))
-        rerender()
+        update(currentVNode) // will run useState or useReducer again which will affect curIndex
     }
 
     return [stateMap.get(curIndex), dispatch]
@@ -80,7 +92,7 @@ let effectCleanUpSet = new Set<Function>()
 
 function useEffect(fn: EffectCallback, deps?: any[]) {
     let curHookIndex = incHookIndex()
-    let active = true;
+    let active = false; // default is inactive
 
     if (effectMap.has(curHookIndex)) {
         let prevEffect = effectMap.get(curHookIndex) as EffectType;

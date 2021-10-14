@@ -1,5 +1,5 @@
 import { h, Fragment, useReducer, useState, useEffect } from "../../src/index"
-
+import Demo from './demo'
 export {
     App
 }
@@ -60,6 +60,7 @@ function App(props) {
                     </li>
                 ))}
             </ul>
+            {/* <Demo/> */}
         </>
     );
 }

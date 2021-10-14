@@ -7,6 +7,7 @@ export {
 function App(props) {
   // console.log('父组件')
   let { count, upCount } = props
+  console.log('useState executed!!!!!')
   return (
     <div>
       <h1>useState</h1>

@@ -4,7 +4,7 @@ export default function Counter() {
     const [count, setCount] = useState(0);
 
     const add = () => setCount((prev) => prev + 1);
-    console.log('Counter executed')
+    console.log('Counter executed!!!!!')
     useEffect(() => {
         console.log("count updated!", count);
     }, [count]);

@@ -1,10 +1,13 @@
-import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType } from "./type"
+import { createElement } from "./dom"
+import { updateHookIndex } from "./hooks"
+import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType, HTMLElementX } from "./type"
 import { createLogger, isArray, isFunction, isSimpleNode, isString } from "./util"
 
 export {
     h,
     Fragment,
-    transformVNode
+    traverseVNode,
+    getCurrentInfo
 }
 
 const logger = createLogger('[h]')
@@ -12,81 +15,82 @@ function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props
     let normalizedProps: VNode['props'] = props || {}
     // logger(type, normalizedProps.props, children)
     normalizedProps.children = children
-    // logger(typeof type)
-
-    // if(isFunction(type)){
-    //     let result = (type as Function)(props)
-    //     if(isSimpleNode(result)){ // simple ele, treat as text value;
-    //         normalizedProps.value = result
-    //         return createVNode('text', normalizedProps)
-    //     }else{
-    //         return result as VNode
-    //     }
-    // }
-
     return createVNode(type, normalizedProps)
 }
 
 function createVNode(type: VNode['type'], props: VNode['props']): VNode {
     return {
         type,
-        props
+        props,
+        updateInfo: {
+            node: undefined,
+            parentNode: undefined,
+            functionComponent: undefined,
+            hookIndex:-1
+        }
     }
 }
 
-function transformSimpleNode(vnode: SimpleNode): VNode {
-    let normalizedProps: VNode['props'] = { value: vnode, children: [] }
+function transformSimpleNode(simpleNode: SimpleNode): VNode {
+    let normalizedProps: VNode['props'] = { value: simpleNode, children: [] }
     return createVNode('text', normalizedProps)
 }
 
-function transformVNodeChildren(children: ComponentChild[]) {
-    let nodeList: ComponentChild[] = []
-    children.forEach(node => {
-        let maybeVNodeList = transformVNode(node as VNode)
-        if (isArray(maybeVNodeList)) { // Fragment
-            nodeList = nodeList.concat(maybeVNodeList)
-        }else{
-            nodeList.push(maybeVNodeList as SimpleNode)
-        }
-    });
+let currentVNode: VNode;
 
-    return nodeList
+function traverseChildren(children:ComponentChild[],parentNode:HTMLElementX){
+    children.forEach(child=>{
+        if(isSimpleNode(child)){
+            parentNode.appendChild(createElement(transformSimpleNode(child as SimpleNode)))
+        }else{
+            traverseVNode(child as VNode, parentNode)
+        }
+    })
 }
 
+function traverseVNode(vnode: VNode, parentNode?: HTMLElementX): void {
+    const { type, props, updateInfo } = vnode
 
-/**
- * transform functional and Fragment vnode to normal vnode
- * 
- * functional return Array will be treated as Fragment
- * 
- * ComponentType => string
- */
-function transformVNode(vnode: VNode): ComponentChild | ComponentChild[] {
-    let { type, props } = vnode
-    let normalizedProps: VNode['props'] = props || {}
-
-    if (isFunction(type)) {
-        let result = (type as FunctionComponent)(props)
-        normalizedProps.value = result
-        if (isSimpleNode(result)) { // simple ele, treat as text value;
-            return transformSimpleNode(result as SimpleNode)
-        } else if (isArray(result)) { // Fragment
-            return transformVNodeChildren(result as ComponentChild[])
-        } else {
-            // maybe vnode or fragment
-            return transformVNode(result as VNode)
-        }
-    } else if (isString(type)) {
-        return {
-            ...vnode,
-            props: {
-                ...vnode.props,
-                children: transformVNodeChildren(vnode.props.children),
-            }
-        }
+    if (parentNode) {
+        updateInfo.parentNode = parentNode
+    }else{ // first time invoke or root invoke, should emptify parentNode
+        updateHookIndex(updateInfo.hookIndex)
+        console.log('empty parent',updateInfo.parentNode);
+        // (updateInfo.parentNode as HTMLElement).innerHTML = ''
     }
 
-    return vnode
+    
+    if (isFunction(type)) {
+        console.log(vnode, updateInfo.parentNode,type)
+
+        updateInfo.functionComponent = type as FunctionComponent // is currently running function component
+        currentVNode = vnode
+
+        let result = updateInfo.functionComponent(props)// where hooks will be running (eg: useState, useEffect etc)
+
+        if (isSimpleNode(result)) { // simple ele, treat as text value;
+
+            updateInfo.node = createElement(transformSimpleNode(result as SimpleNode));
+            (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
+
+        } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]
+            traverseChildren(result as ComponentChild[],updateInfo.parentNode as HTMLElement)
+        } else {
+            // Fragment result
+            if (( (result as VNode).props.children.length>0 )){ // is h(Fragment) result
+                traverseChildren((result as VNode).props.children,updateInfo.parentNode as HTMLElementX)
+            }
+        }
+    } else if (isString(type)) {
+        updateInfo.node = createElement(vnode);
+        traverseChildren(vnode.props.children,updateInfo.node as HTMLElementX);
+        
+        (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
+    }
+}
+
+const getCurrentInfo = () => {
+    return currentVNode
 }
 
 function Fragment(props: VNode['props']) {

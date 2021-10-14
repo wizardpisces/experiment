@@ -1,11 +1,11 @@
-import { VNode, SimpleNode, ComponentChild } from "./type"
+import { VNode, SimpleNode, ComponentChild, HTMLElementX } from "./type"
 import { isString, isSimpleNode, isArray } from "./util"
 
 export {
     createElement
 }
 
-function updateDom(dom: Element, props: VNode['props']) {
+function patchProps(dom: HTMLElement, props: VNode['props']) {
     for (let name in props) {
         let value = props[name]
         if (name[0] === "o" && name[1] === "n") { // eg: onClick
@@ -27,31 +27,29 @@ function createFragmentNode(vnodeList: VNode[]) {
     return fragment
 }
 
-function createElement(vnodeOrList: ComponentChild | ComponentChild[]) {
+function createElement(vnode: VNode): HTMLElementX {
 
-    if (isSimpleNode(vnodeOrList)) {
-        return document.createTextNode(vnodeOrList as SimpleNode + '')
-    }
+    // if (isArray(vnodeOrList)) {
+    //     return createFragmentNode(vnodeOrList as VNode[])
+    // }
 
-    if (isArray(vnodeOrList)) {
-        return createFragmentNode(vnodeOrList as VNode[])
-    }
+    // if (isSimpleNode(vnodeOrList)) {
+    //     return document.createTextNode(vnodeOrList as SimpleNode + '')
+    // }
 
-    let vnode: VNode = vnodeOrList as VNode
+    // let vnode: VNode = vnodeOrList as VNode
+    let dom: HTMLElementX = vnode.type === 'text' ?
+        document.createTextNode(vnode.props.value as string)
+        : document.createElement(vnode.type as string)
 
-    if (vnode.type === 'text') {
-        return document.createTextNode(vnode.props.value)
-    }
-
-    let dom = document.createElement(vnode.type as string)
-
-    if (vnode.props.ref){
+    if (vnode.props.ref) {
         vnode.props.ref.current = dom; // 建立 ref 引用关系
     }
-    
-    updateDom(dom, vnode.props) 
-    
-    vnode.props.children.forEach((child) => dom?.appendChild(createElement(child)))
+    if (dom instanceof HTMLElement){
+        patchProps(dom as HTMLElement, vnode.props)
+    }
+
+    // vnode.props.children.forEach((child) => dom?.appendChild(createElement(child)))
 
     return dom
 }
