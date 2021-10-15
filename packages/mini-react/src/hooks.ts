@@ -1,6 +1,7 @@
 import { createLogger, isFunction } from "./util"
 import { update, addPostRenderTask } from './render'
 import { getCurrentInfo } from "./h";
+import { EffectCallback, EffectType, Hooks, VNode } from "./type";
 export {
     useState,
     useReducer,
@@ -8,7 +9,8 @@ export {
     useEffect,
     useMemo,
     useRef,
-    updateHookIndex
+    runEffect,
+    resethookIndex
 }
 
 const logger = createLogger('[hooks]')
@@ -19,21 +21,26 @@ function resethookIndex() {
     hookIndex = 0
 }
 
-function updateHookIndex(index:number){
-    hookIndex = index
-}
-
 function incHookIndex() {
     return hookIndex++
 }
 
-addPostRenderTask(resethookIndex, runEffect)
+function getHookState(hookIndex: number): [Hooks, VNode] {
+    const currentVNode = getCurrentInfo()
+    // let stateMap = new Map<number, any>()
+    let hooks = currentVNode.updateInfo.hooks || (currentVNode.updateInfo.hooks = {
+        stateMap: new Map<number, any>(),
+        effectMap: new Map<number, EffectType>(),
+        effectCleanUpSet: new Set<Function>()
+    });
+    return [hooks, currentVNode]
+}
+// addPostRenderTask(resethookIndex, runEffect)
 
 /**
  * useState
  */
 
-let stateMap = new Map<number, any>()
 // reuse useReducer
 function useState<S>(initialState: S | ((preState: S) => S)) {
 
@@ -50,16 +57,10 @@ function useState<S>(initialState: S | ((preState: S) => S)) {
 type Reducer<S, A> = (prevState: S, action: A) => S;
 function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: S) => S)): [S, (action: A) => void] {
     let curIndex = incHookIndex()
-    let currentVNode = getCurrentInfo()
-
-    if(currentVNode.updateInfo.hookIndex===-1){ // set on initial render
-        currentVNode.updateInfo.hookIndex = curIndex
-    }
-
+    let [{ stateMap }, currentVNode] = getHookState(curIndex)
     if (isFunction(initialState)) {
         initialState = (<Function>initialState)()
     }
-
 
     // make sure state will change by event
     if (!stateMap.has(curIndex)) {
@@ -79,30 +80,21 @@ function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: 
 * useEffect(f, [])   //  effect (and clean-up) only once in a component's life
 * useEffect(f, [x])  //  effect (and clean-up) when property x changes in a component's life
 */
-type EffectCallback = () => void | Function;
-type EffectType = {
-    fn: EffectCallback
-    deps?: any[]
-    active: boolean
-}
-
-let effectMap = new Map<number, EffectType>()
-let effectCleanUpSet = new Set<Function>()
-
 
 function useEffect(fn: EffectCallback, deps?: any[]) {
-    let curHookIndex = incHookIndex()
-    let active = false; // default is inactive
+    let curIndex = incHookIndex()
+    let [{ effectMap }, currentVNode] = getHookState(curIndex)
+    let active = true; // default is true
 
-    if (effectMap.has(curHookIndex)) {
-        let prevEffect = effectMap.get(curHookIndex) as EffectType;
+    if (effectMap.has(curIndex)) {
+        let prevEffect = effectMap.get(curIndex) as EffectType;
 
         if (prevEffect.deps) {
             active = depsChanged(prevEffect.deps, deps)
         }
     }
-    // if (curHookIndex>10) return
-    effectMap.set(curHookIndex, {
+    // if (curIndex>10) return
+    effectMap.set(curIndex, {
         fn,
         deps,
         active
@@ -110,7 +102,14 @@ function useEffect(fn: EffectCallback, deps?: any[]) {
 }
 
 
-function runEffect() {
+function runEffect(hooks: Hooks | undefined) {
+
+    console.log(hooks)
+    if (!hooks) {
+        return
+    }
+
+    let { effectCleanUpSet, effectMap } = hooks
     function cleanUpEffect() {
         Array.from(effectCleanUpSet).forEach(fn => {
             fn()

@@ -1,5 +1,5 @@
-import { createElement } from "./dom"
-import { updateHookIndex } from "./hooks"
+import { createElement, patchProps } from "./dom"
+import { resethookIndex, runEffect } from "./hooks"
 import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType, HTMLElementX } from "./type"
 import { createLogger, isArray, isFunction, isSimpleNode, isString } from "./util"
 
@@ -26,7 +26,7 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
             node: undefined,
             parentNode: undefined,
             functionComponent: undefined,
-            hookIndex:-1
+            hooks: undefined
         }
     }
 }
@@ -38,11 +38,11 @@ function transformSimpleNode(simpleNode: SimpleNode): VNode {
 
 let currentVNode: VNode;
 
-function traverseChildren(children:ComponentChild[],parentNode:HTMLElementX){
-    children.forEach(child=>{
-        if(isSimpleNode(child)){
+function traverseChildren(children: ComponentChild[], parentNode: HTMLElementX) {
+    children.forEach(child => {
+        if (isSimpleNode(child)) {
             parentNode.appendChild(createElement(transformSimpleNode(child as SimpleNode)))
-        }else{
+        } else {
             traverseVNode(child as VNode, parentNode)
         }
     })
@@ -50,42 +50,39 @@ function traverseChildren(children:ComponentChild[],parentNode:HTMLElementX){
 
 function traverseVNode(vnode: VNode, parentNode?: HTMLElementX): void {
     const { type, props, updateInfo } = vnode
+    resethookIndex() // before function component running
 
     if (parentNode) {
         updateInfo.parentNode = parentNode
-    }else{ // first time invoke or root invoke, should emptify parentNode
-        updateHookIndex(updateInfo.hookIndex)
-        console.log('empty parent',updateInfo.parentNode);
-        // (updateInfo.parentNode as HTMLElement).innerHTML = ''
     }
 
-    
     if (isFunction(type)) {
-        console.log(vnode, updateInfo.parentNode,type)
-
+        // console.log(vnode, updateInfo.parentNode,type)
         updateInfo.functionComponent = type as FunctionComponent // is currently running function component
         currentVNode = vnode
 
         let result = updateInfo.functionComponent(props)// where hooks will be running (eg: useState, useEffect etc)
-
         if (isSimpleNode(result)) { // simple ele, treat as text value;
-
             updateInfo.node = createElement(transformSimpleNode(result as SimpleNode));
             (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
 
         } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]
-            traverseChildren(result as ComponentChild[],updateInfo.parentNode as HTMLElement)
+            traverseChildren(result as ComponentChild[], updateInfo.parentNode as HTMLElement)
         } else {
             // Fragment result
-            if (( (result as VNode).props.children.length>0 )){ // is h(Fragment) result
-                traverseChildren((result as VNode).props.children,updateInfo.parentNode as HTMLElementX)
+            if (((result as VNode).props.children.length > 0)) { // is h(Fragment) result
+                traverseChildren((result as VNode).props.children, updateInfo.parentNode as HTMLElementX)
             }
         }
     } else if (isString(type)) {
         updateInfo.node = createElement(vnode);
-        traverseChildren(vnode.props.children,updateInfo.node as HTMLElementX);
-        
+        traverseChildren(vnode.props.children, updateInfo.node as HTMLElementX);
+
         (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
+    }
+
+    if (updateInfo.functionComponent) {
+        runEffect(updateInfo.hooks);// run Effect after functional component mounted
     }
 }
 

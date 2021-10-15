@@ -21,14 +21,6 @@ function update(vnode: VNode) {
     // recursive execute functional VNode
     traverseVNode(vnode)
     postRender()
-    // console.log('vnodeTrasformed',vnodeTrasformed)
-    // console.log('vnode',vnode,(vnode.type)())
-    /**
-     * DocumentFragment has no parent , so it could not be replaced;
-     * So fisrt empty it , then append
-     */
-    // parentNode.innerHTML = ''
-    // parentNode.appendChild(createElement(vnodeTrasformed))
 }
 
 let postRenderQueue = new Set<Function>()

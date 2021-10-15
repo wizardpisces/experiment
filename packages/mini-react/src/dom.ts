@@ -2,17 +2,21 @@ import { VNode, SimpleNode, ComponentChild, HTMLElementX } from "./type"
 import { isString, isSimpleNode, isArray } from "./util"
 
 export {
-    createElement
+    createElement,
+    patchProps
 }
 
-function patchProps(dom: HTMLElement, props: VNode['props']) {
-    for (let name in props) {
-        let value = props[name]
-        if (name[0] === "o" && name[1] === "n") { // eg: onClick
+function patchProps(dom: HTMLElement, oldProps: VNode['props'], newProps: VNode['props']) {
+    for (let name in {...oldProps,...newProps}) {
+        let oldValue = oldProps[name],
+            newValue = newProps[name];
+        if (oldValue === newValue || name === "children") {
+        }else if (name[0] === "o" && name[1] === "n") { // eg: onClick
             let eventName = name.slice(2).toLowerCase()
-            dom.addEventListener(eventName, value)
-        } else if (isString(value)) {
-            dom.setAttribute(name, value)
+            if (oldValue) dom.removeEventListener(name, oldValue)
+            dom.addEventListener(eventName, newValue)
+        } else if (isString(newValue)) {
+            dom.setAttribute(name, oldValue)
         }
     }
 
@@ -28,16 +32,6 @@ function createFragmentNode(vnodeList: VNode[]) {
 }
 
 function createElement(vnode: VNode): HTMLElementX {
-
-    // if (isArray(vnodeOrList)) {
-    //     return createFragmentNode(vnodeOrList as VNode[])
-    // }
-
-    // if (isSimpleNode(vnodeOrList)) {
-    //     return document.createTextNode(vnodeOrList as SimpleNode + '')
-    // }
-
-    // let vnode: VNode = vnodeOrList as VNode
     let dom: HTMLElementX = vnode.type === 'text' ?
         document.createTextNode(vnode.props.value as string)
         : document.createElement(vnode.type as string)
@@ -45,11 +39,10 @@ function createElement(vnode: VNode): HTMLElementX {
     if (vnode.props.ref) {
         vnode.props.ref.current = dom; // 建立 ref 引用关系
     }
+    
     if (dom instanceof HTMLElement){
-        patchProps(dom as HTMLElement, vnode.props)
+        patchProps(dom as HTMLElement, {} as VNode['props'],vnode.props)
     }
-
-    // vnode.props.children.forEach((child) => dom?.appendChild(createElement(child)))
 
     return dom
 }

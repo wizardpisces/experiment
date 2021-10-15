@@ -6,7 +6,7 @@ export default function Counter() {
     const add = () => setCount((prev) => prev + 1);
     console.log('Counter executed!!!!!')
     useEffect(() => {
-        console.log("count updated!", count);
+        console.log("Mounted count,count updated:", count);
     }, [count]);
 
     return (

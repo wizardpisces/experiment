@@ -5,7 +5,22 @@ export {
     FunctionComponent,
     FragmentType,
     UpdateInfo,
-    HTMLElementX
+    HTMLElementX,
+    Hooks,
+    EffectType,
+    EffectCallback
+}
+
+type EffectCallback = () => void | Function;
+type EffectType = {
+    fn: EffectCallback
+    deps?: any[]
+    active: boolean
+}
+type Hooks = {
+    stateMap: Map<number, any>
+    effectMap: Map<number, EffectType>
+    effectCleanUpSet: Set<Function>
 }
 
 type VNodeProps = {
@@ -24,7 +39,8 @@ interface UpdateInfo {
     node: HTMLElementX | undefined
     parentNode: HTMLElementX | undefined
     functionComponent: FunctionComponent | undefined
-    hookIndex:number
+    // hookIndex:number
+    hooks: Hooks | undefined
 }
 
 type ComponentType = FunctionComponent
