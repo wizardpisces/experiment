@@ -1,6 +1,6 @@
 import { createElement, patchProps } from "./dom"
 import { resethookIndex, runEffect } from "./hooks"
-import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType, HTMLElementX } from "./type"
+import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType, HTMLElementX, ShapeFlags } from "./type"
 import { createLogger, isArray, isFunction, isSimpleNode, isString } from "./util"
 
 export {
@@ -19,14 +19,26 @@ function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props
 }
 
 function createVNode(type: VNode['type'], props: VNode['props']): VNode {
+
+    // function isFragment(type: any) {
+    //     return isFunction(type) && type.name === 'Fragment'
+    // }
+
+    const shapeFlag: ShapeFlags = isString(type) ?
+        1 /* ELEMENT */ :
+        isFunction(type) ?
+            2 /* FUNCTIONAL_COMPONENT */ :
+            0;
     return {
         type,
         props,
+        shapeFlag,
         updateInfo: {
             node: undefined,
             parentNode: undefined,
             functionComponent: undefined,
-            hooks: undefined
+            hooks: undefined,
+            index: 0
         }
     }
 }
@@ -38,51 +50,66 @@ function transformSimpleNode(simpleNode: SimpleNode): VNode {
 
 let currentVNode: VNode;
 
-function traverseChildren(children: ComponentChild[], parentNode: HTMLElementX) {
-    children.forEach(child => {
+function traverseChildren(children: ComponentChild[], parentNode: HTMLElement) {
+    children.forEach((child, index) => {
+        let vnode: VNode
         if (isSimpleNode(child)) {
-            parentNode.appendChild(createElement(transformSimpleNode(child as SimpleNode)))
+            vnode = transformSimpleNode(child as SimpleNode);
         } else {
-            traverseVNode(child as VNode, parentNode)
+            vnode = child as VNode
         }
+
+        vnode.updateInfo.index = index
+
+        traverseVNode(vnode, parentNode)
     })
 }
 
-function traverseVNode(vnode: VNode, parentNode?: HTMLElementX): void {
-    const { type, props, updateInfo } = vnode
-    resethookIndex() // before function component running
+/**
+ */
+
+function traverseVNode(vnode: VNode, parentNode: HTMLElement): void {
+    const { type, props, updateInfo, shapeFlag } = vnode
 
     if (parentNode) {
         updateInfo.parentNode = parentNode
     }
 
-    if (isFunction(type)) {
-        // console.log(vnode, updateInfo.parentNode,type)
+    if (shapeFlag & 1) { // Element update Node
+        let oldNode = null;
+        if (updateInfo.node && parentNode.children[updateInfo.index]) {
+            oldNode = updateInfo.node
+        }
+        updateInfo.node = createElement(vnode);
+        traverseChildren(vnode.props.children, updateInfo.node as HTMLElement);
+
+        if (oldNode) {
+            (updateInfo.parentNode as HTMLElementX).replaceChild(oldNode, updateInfo.node)
+        } else {
+            (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
+        }
+    } else if (shapeFlag & 2) { // FunctionalComponent updateHook
+        // FunctionalComponent -> Fragment(遇到Fragment类型的需要解套两次) -> result
+
+        resethookIndex() // before function component running
+
         updateInfo.functionComponent = type as FunctionComponent // is currently running function component
         currentVNode = vnode
 
         let result = updateInfo.functionComponent(props)// where hooks will be running (eg: useState, useEffect etc)
         if (isSimpleNode(result)) { // simple ele, treat as text value;
-            updateInfo.node = createElement(transformSimpleNode(result as SimpleNode));
-            (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
+            let vnode = transformSimpleNode(result as SimpleNode)
 
-        } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]
+            traverseVNode(vnode, updateInfo.node as HTMLElement)
+
+        } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]; FunctionalComponent return array or Fragment result
             traverseChildren(result as ComponentChild[], updateInfo.parentNode as HTMLElement)
         } else {
-            // Fragment result
-            if (((result as VNode).props.children.length > 0)) { // is h(Fragment) result
-                traverseChildren((result as VNode).props.children, updateInfo.parentNode as HTMLElementX)
-            }
+            traverseVNode(result as VNode, updateInfo.parentNode as HTMLElement)
         }
-    } else if (isString(type)) {
-        updateInfo.node = createElement(vnode);
-        traverseChildren(vnode.props.children, updateInfo.node as HTMLElementX);
 
-        (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
-    }
+        runEffect(updateInfo.hooks);// run Effect after each functional component mounted
 
-    if (updateInfo.functionComponent) {
-        runEffect(updateInfo.hooks);// run Effect after functional component mounted
     }
 }
 

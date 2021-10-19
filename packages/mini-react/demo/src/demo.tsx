@@ -6,11 +6,11 @@ export default function Counter() {
     const add = () => setCount((prev) => prev + 1);
     console.log('Counter executed!!!!!')
     useEffect(() => {
-        console.log("Mounted count,count updated:", count);
+        console.log("Mounted count,count updated", count);
     }, [count]);
 
     return (
-        <div>
+        <div class="demo">
             <h1>React count Demo</h1>
             <span>{count}</span>
             <button onClick={add}> +1 </button>

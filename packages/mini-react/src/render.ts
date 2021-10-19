@@ -11,15 +11,16 @@ export {
 
 const logger = createLogger('[render]')
 
-function render(vnode: VNode, parentNode: HTMLElementX) {
+function render(vnode: VNode, parentNode: HTMLElement) {
 
     vnode.updateInfo.parentNode = parentNode
 
-    update(vnode)}
+    update(vnode)
+}
 
 function update(vnode: VNode) {
     // recursive execute functional VNode
-    traverseVNode(vnode)
+    traverseVNode(vnode,vnode.updateInfo.parentNode as HTMLElement)
     postRender()
 }
 

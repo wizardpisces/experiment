@@ -16,7 +16,7 @@ function patchProps(dom: HTMLElement, oldProps: VNode['props'], newProps: VNode[
             if (oldValue) dom.removeEventListener(name, oldValue)
             dom.addEventListener(eventName, newValue)
         } else if (isString(newValue)) {
-            dom.setAttribute(name, oldValue)
+            dom.setAttribute(name, newValue)
         }
     }
 
