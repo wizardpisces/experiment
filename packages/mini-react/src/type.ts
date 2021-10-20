@@ -42,14 +42,13 @@ interface VNode<T = ComponentType | string> {
     shapeFlag: ShapeFlags
     updateInfo: UpdateInfo
     parentVNode: VNode | undefined
+    // children: VNode<string>[] // string type VNode children
 }
 
 interface UpdateInfo { // used to update VNode
     node: HTMLElementX | undefined
-    // hookIndex:number
+    domIndex : number // 插入后再父节点中children的位置偏移
     hooks: Hooks | undefined
-    index: number
-    children: VNode<string>[] // string type VNode children
 }
 
 type ComponentType = FunctionComponent

@@ -12,6 +12,7 @@ export {
 const logger = createLogger('[render]')
 
 function render(vnode: VNode, parentNode: HTMLElement) {
+    parentNode.innerHTML = ''
     let rootVNode = h(parentNode.localName, {} as VNode['props']) // create rootVNode
     rootVNode.updateInfo.node = parentNode
     vnode.parentVNode = rootVNode
