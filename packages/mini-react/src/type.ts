@@ -36,20 +36,20 @@ type VNodeProps = {
     [key: string]: any
 }
 
-interface VNode<P = {}> {
-    type: ComponentType | string
+interface VNode<T = ComponentType | string> {
+    type: T
     props: VNodeProps
     shapeFlag: ShapeFlags
     updateInfo: UpdateInfo
+    parentVNode: VNode | undefined
 }
 
-interface UpdateInfo {
+interface UpdateInfo { // used to update VNode
     node: HTMLElementX | undefined
-    parentNode: HTMLElementX | undefined
-    functionComponent: FunctionComponent | undefined
     // hookIndex:number
     hooks: Hooks | undefined
     index: number
+    children: VNode<string>[] // string type VNode children
 }
 
 type ComponentType = FunctionComponent
@@ -62,7 +62,7 @@ type FragmentType = (props: VNodeProps) => ComponentChild[]; // special Function
 //     (props: VNodeProps): VNode<any> | SimpleNode | FragmentType | null;
 // }
 
-type ComponentChild = VNode<any> | SimpleNode
+type ComponentChild = VNode | SimpleNode
 
 type SimpleNode =
     | string

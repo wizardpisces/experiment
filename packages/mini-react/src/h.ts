@@ -19,11 +19,6 @@ function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props
 }
 
 function createVNode(type: VNode['type'], props: VNode['props']): VNode {
-
-    // function isFragment(type: any) {
-    //     return isFunction(type) && type.name === 'Fragment'
-    // }
-
     const shapeFlag: ShapeFlags = isString(type) ?
         1 /* ELEMENT */ :
         isFunction(type) ?
@@ -33,12 +28,12 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
         type,
         props,
         shapeFlag,
+        parentVNode: undefined,
         updateInfo: {
             node: undefined,
-            parentNode: undefined,
-            functionComponent: undefined,
             hooks: undefined,
-            index: 0
+            index: 0,
+            children: []
         }
     }
 }
@@ -48,9 +43,9 @@ function transformSimpleNode(simpleNode: SimpleNode): VNode {
     return createVNode('text', normalizedProps)
 }
 
-let currentVNode: VNode;
+let currentFunctionVNode: VNode<FunctionComponent>;
 
-function traverseChildren(children: ComponentChild[], parentNode: HTMLElement) {
+function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
     children.forEach((child, index) => {
         let vnode: VNode
         if (isSimpleNode(child)) {
@@ -60,52 +55,68 @@ function traverseChildren(children: ComponentChild[], parentNode: HTMLElement) {
         }
 
         vnode.updateInfo.index = index
-
-        traverseVNode(vnode, parentNode)
+        traverseVNode(vnode, parentVNode)
     })
 }
 
-/**
- */
+function getClosestElement(vnode: VNode): HTMLElement {
+    let parent:VNode = vnode.parentVNode as VNode // 一定存在 parent，因为rootVNode已经挂在了最外层的vnode的parentVNode上
+    let parentNode = parent?.updateInfo.node
+    while (!(parentNode) || parent.type === 'text') {
+        parent = parent?.parentVNode as VNode
+        parentNode = parent?.updateInfo.node
 
-function traverseVNode(vnode: VNode, parentNode: HTMLElement): void {
-    const { type, props, updateInfo, shapeFlag } = vnode
-
-    if (parentNode) {
-        updateInfo.parentNode = parentNode
+        if (!parent) {
+            console.log(vnode, parent)
+            throw Error('parentVNode not found!')
+        }
     }
 
-    if (shapeFlag & 1) { // Element update Node
-        let oldNode = null;
-        if (updateInfo.node && parentNode.children[updateInfo.index]) {
-            oldNode = updateInfo.node
-        }
-        updateInfo.node = createElement(vnode);
-        traverseChildren(vnode.props.children, updateInfo.node as HTMLElement);
+    return parentNode as HTMLElement
+}
 
-        if (oldNode) {
-            (updateInfo.parentNode as HTMLElementX).replaceChild(oldNode, updateInfo.node)
-        } else {
-            (updateInfo.parentNode as HTMLElementX).appendChild(updateInfo.node)
-        }
-    } else if (shapeFlag & 2) { // FunctionalComponent updateHook
-        // FunctionalComponent -> Fragment(遇到Fragment类型的需要解套两次) -> result
+function traverseVNode(vnode: VNode, parentVNode: VNode) {
+    const { type, props, updateInfo, shapeFlag } = vnode
+
+    vnode.parentVNode = parentVNode
+    // let parentNode: HTMLElement = getClosestElement(parentVNode)
+
+    if (isFragment(type)) {
+
+        let children = (type as FragmentType)(props)
+        traverseChildren(children, vnode)
+
+    } else if (shapeFlag & 1) { // Element update Node
+        // 更新策略
+
+        let parentNode: HTMLElement = getClosestElement(vnode)
+        
+        updateInfo.node = createElement(vnode);
+        
+        updateInfo.children.push(vnode as VNode<string>)
+        
+        traverseChildren(vnode.props.children, vnode as VNode<string>);
+        parentNode.appendChild(updateInfo.node)
+
+        console.log(updateInfo.node, vnode, parentNode, parentNode.children.length, parentNode.children[updateInfo.index], updateInfo.index)
+
+    } else if (shapeFlag & 2) { // FunctionComponent updateHook
+        // FunctionComponent -> Fragment(遇到Fragment类型的需要解套两次) -> result
 
         resethookIndex() // before function component running
 
-        updateInfo.functionComponent = type as FunctionComponent // is currently running function component
-        currentVNode = vnode
-
-        let result = updateInfo.functionComponent(props)// where hooks will be running (eg: useState, useEffect etc)
+        currentFunctionVNode = vnode as VNode<FunctionComponent>
+        // is currently running function component
+        let result = (type as FunctionComponent)(props)// where hooks will be running (eg: useState, useEffect etc)
         if (isSimpleNode(result)) { // simple ele, treat as text value;
-            let vnode = transformSimpleNode(result as SimpleNode)
+            let childNode = transformSimpleNode(result as SimpleNode)
 
-            traverseVNode(vnode, updateInfo.node as HTMLElement)
+            traverseVNode(childNode, vnode)
 
         } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]; FunctionalComponent return array or Fragment result
-            traverseChildren(result as ComponentChild[], updateInfo.parentNode as HTMLElement)
+            traverseChildren(result as ComponentChild[], vnode)
         } else {
-            traverseVNode(result as VNode, updateInfo.parentNode as HTMLElement)
+            traverseVNode(result as VNode, vnode)
         }
 
         runEffect(updateInfo.hooks);// run Effect after each functional component mounted
@@ -114,9 +125,13 @@ function traverseVNode(vnode: VNode, parentNode: HTMLElement): void {
 }
 
 const getCurrentInfo = () => {
-    return currentVNode
+    return currentFunctionVNode
 }
 
+
+function isFragment(type: any) {
+    return isFunction(type) && type.name === 'Fragment'
+}
 function Fragment(props: VNode['props']) {
     return props.children;
 }

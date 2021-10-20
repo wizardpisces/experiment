@@ -1,4 +1,4 @@
-import { createElement } from "./dom"
+import { h } from "."
 import { traverseVNode } from "./h"
 import { HTMLElementX, VNode } from "./type"
 import { createLogger } from "./util"
@@ -12,15 +12,28 @@ export {
 const logger = createLogger('[render]')
 
 function render(vnode: VNode, parentNode: HTMLElement) {
-
-    vnode.updateInfo.parentNode = parentNode
+    let rootVNode = h(parentNode.localName, {} as VNode['props']) // create rootVNode
+    rootVNode.updateInfo.node = parentNode
+    vnode.parentVNode = rootVNode
 
     update(vnode)
 }
 
 function update(vnode: VNode) {
-    // recursive execute functional VNode
-    traverseVNode(vnode,vnode.updateInfo.parentNode as HTMLElement)
+
+    traverseVNode(vnode,vnode.parentVNode as VNode)
+    /**
+     * snabbdom to patch
+     * recursive execute functional VNode, transform to VNode<string>
+     */
+    // let oldVNode = vnode.updateInfo.strVNode // firstTime will be null
+    // let newVNode = transformVNode()
+    // if(oldVNode){
+    //     patch(oldVNode,newVNode)
+    // }else{
+    //     patch(container,newVNode)
+    // }
+
     postRender()
 }
 

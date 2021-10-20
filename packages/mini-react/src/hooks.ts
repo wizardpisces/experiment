@@ -104,7 +104,7 @@ function useEffect(fn: EffectCallback, deps?: any[]) {
 
 function runEffect(hooks: Hooks | undefined) {
 
-    console.log(hooks)
+    // console.log(hooks)
     if (!hooks) {
         return
     }
