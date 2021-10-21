@@ -1,3 +1,5 @@
+* 解决 Fragment diff问题
+
 * ~~JSX~~
 * [X] Fragment
 * hooks
@@ -7,7 +9,8 @@
     * [X] useMemo
     * [] useLayout
     * [X] useRef
-* [] vnode diff (only rerender changed part)
+* [] partial update
+    * [] vnode diff (only rerender changed part)
 * [] Concurrent Rendering
 
 Context, Portals, Suspense, Streaming SSR, Progressive Hydration, Error Boundaries

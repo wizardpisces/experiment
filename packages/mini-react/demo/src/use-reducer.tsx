@@ -1,4 +1,4 @@
-import {  h, Fragment, useReducer} from "../../src/index"
+import { h, Fragment, useReducer, useEffect} from "../../src/index"
 
 export {
     App
@@ -15,6 +15,9 @@ function reducer(state, action) {
 
 function App() {
     const [state, dispatch] = useReducer(reducer, { count: 1 })
+    useEffect(() => {
+        console.warn('mounted useReducer child')
+    }, []);
     return (
         <>
             <h1>useReducer</h1>

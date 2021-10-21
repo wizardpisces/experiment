@@ -15,14 +15,14 @@ function render(vnode: VNode, parentNode: HTMLElement) {
     parentNode.innerHTML = ''
     let rootVNode = h(parentNode.localName, {} as VNode['props']) // create rootVNode
     rootVNode.updateInfo.node = parentNode
-    vnode.parentVNode = rootVNode
+    vnode.parentVNode = rootVNode as VNode<string>
 
     update(vnode)
 }
 
 function update(vnode: VNode) {
 
-    traverseVNode(vnode,vnode.parentVNode as VNode)
+    traverseVNode(vnode,vnode.parentVNode as VNode<string>)
     /**
      * snabbdom to patch
      * recursive execute functional VNode, transform to VNode<string>

@@ -6,7 +6,10 @@ export {
 
 function App() {
     const countRef = useRef(0);
-
+    useEffect(() => {
+        console.warn('mounted useRef child')
+    }, []);
+    
     const handle = () => {
         countRef.current++;
         console.log(`Clicked ${countRef.current} times`);

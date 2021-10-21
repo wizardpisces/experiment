@@ -9,10 +9,10 @@ import { default as Demo } from './demo'
 
 function App() {
     useEffect(() => {
-        console.log('mounted App main useEffect Root')
+        console.warn('mounted App main useEffect Root')
     }, []);
     
-    const [count, setCount] = useState(0)
+    const [count, setCount] = useState(1)
 
     function upCount(){
         setCount(count + 1)
@@ -22,9 +22,10 @@ function App() {
         {/* <UseStateApp count={count} upCount={upCount} /> */}
         {/* <UseReducerApp /> */}
         {/* <UseEffectApp count={count}/> */}
+
         {/* <UseMemoApp count={count}/> */}
         {/* <UseRefApp/> */}
-        <Demo/>
+        <Demo />
     </>
 }
 

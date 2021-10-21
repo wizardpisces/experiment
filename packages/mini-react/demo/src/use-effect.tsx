@@ -15,7 +15,7 @@ function App(props) {
 
     useEffect(() => {
         document.title = data[0].title
-        console.log('mounted useEffect child')
+        console.warn('mounted useEffect child')
     }, []);
 
     useEffect(() => {

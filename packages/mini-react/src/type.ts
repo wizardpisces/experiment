@@ -41,7 +41,6 @@ interface VNode<T = ComponentType | string> {
     shapeFlag: ShapeFlags // VNode type
     updateInfo: UpdateInfo
     parentVNode: VNode | undefined
-    // children: VNode<string>[] // string type VNode children
 }
 
 interface UpdateInfo { // used to update VNode

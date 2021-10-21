@@ -1,4 +1,4 @@
-import { render, h, useState, Fragment } from "../../src/index"
+import { render, h, useState, Fragment, useEffect} from "../../src/index"
 
 export {
   App
@@ -7,7 +7,9 @@ export {
 function App(props) {
   // console.log('父组件')
   let { count, upCount } = props
-  console.log('useState executed!!!!!')
+  useEffect(() => {
+    console.warn('mounted useState child')
+  }, []);
   return (
     <div>
       <h1>useState</h1>
@@ -15,7 +17,7 @@ function App(props) {
       <br />
       <MultipleUseState />
       <br />
-      {/* <SimpleChild i={2}/> */}
+      <SimpleChild i={2}/>
       <h9>You clicked {count} times ( click below button will trigger useEffect and useMemo view change)</h9>
       <div>
         <button onClick={upCount}>+</button>

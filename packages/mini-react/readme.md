@@ -16,10 +16,13 @@ or reference ./demo/readme.md
 **commit-log: feat:mini-react add initial virtual dom**
 
 * 第二阶段需要精细化VNode操作运营（目标：useState的触发只影响到对应的组件函数）
-    - step1: 实现 VNode 节点的遍历生成阶段 同时 生成 对应的Dom节点
-    - step2: 对VNode的 单个组件函数跟Dom之间建立更新映射关系
-    - step3: 根据 step2 的映射关系构建 update函数，存放在 useState 等的数据驱动代码里（到这里就是对应影响组件的重复渲染）
-    - step4: 实现节点的patch 操作（这里就可以避免不必要的dom重新构建以及替换操作，可能只是属性的patch）
+    - 1: 实现 VNode 节点的遍历生成阶段 同时 生成 对应的Dom节点
+    - 2: 对VNode的 单个组件函数跟Dom之间建立更新映射关系
+    - 3: 根据 step2 的映射关系构建 update函数，存放在 useState 等的数据驱动代码里（到这里就是对应影响组件的重复渲染）
+    - 4: 实现节点的patch 操作（这里就可以避免不必要的dom重新构建以及替换操作，可能只是属性的patch）
+        - 1: 实现最直接的 replaceChild 或者 appendChild
+        - 2: 考虑触发的 props 变化影响到外层其他节点的更新变化
+        - 3: 其他标准diff流程
 
 ## Reference
 
