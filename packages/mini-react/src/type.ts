@@ -12,10 +12,9 @@ export {
     ShapeFlags
 }
 
-declare const enum ShapeFlags {
+const enum ShapeFlags {
     ELEMENT = 1,
-    FUNCTIONAL_COMPONENT = 1 << 1,
-    FRAGMENT = 1 << 2
+    FUNCTIONAL_COMPONENT = 1 << 1
 }
 
 type EffectCallback = () => void | Function;
@@ -39,16 +38,16 @@ type VNodeProps = {
 interface VNode<T = ComponentType | string> {
     type: T
     props: VNodeProps
-    shapeFlag: ShapeFlags
+    shapeFlag: ShapeFlags // VNode type
     updateInfo: UpdateInfo
     parentVNode: VNode | undefined
     // children: VNode<string>[] // string type VNode children
 }
 
 interface UpdateInfo { // used to update VNode
-    node: HTMLElementX | undefined
-    domIndex : number // 插入后再父节点中children的位置偏移
-    hooks: Hooks | undefined
+    node: HTMLElementX | undefined // real dom
+    domIndex : number // offset of node in real HTMLElement Parent's children
+    hooks: Hooks | undefined // in FunctionComponent hooks
 }
 
 type ComponentType = FunctionComponent
