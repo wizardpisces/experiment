@@ -13,13 +13,13 @@ function App(props) {
   return (
     <div>
       <h1>useState</h1>
-      {/* <SimpleChild i={1} /> */}
-      {/* <br /> */}
+      <SimpleChild i={1} />
+      <br />
       <MultipleUseState />
       <div>test afterdom</div>
       <br />
-      {/* <SimpleChild i={2}/> */}
-      {/* <h9>You clicked {count} times ( click below button will trigger useEffect and useMemo view change)</h9> */}
+      <SimpleChild i={2}/>
+      <h9>You clicked {count} times ( click below button will trigger useEffect and useMemo view change)</h9>
       {/* <div>
         <button onClick={upCount}>+</button>
       </div> */}

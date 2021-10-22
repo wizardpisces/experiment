@@ -26,7 +26,7 @@ function App() {
         {/* <UseMemoApp count={count}/> */}
         {/* <UseRefApp/> */}
         <>asdf</>
-        {/* <Demo /> */}
+        <Demo />
     </>
 }
 

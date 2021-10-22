@@ -47,12 +47,8 @@ function transformSimpleNode(simpleNode: SimpleNode): VNode {
 }
 
 let currentFunctionVNode: VNode<FunctionComponent>;
-let currentActiveHTMLElementVNode: VNode;
 
 function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
-    // let elemVNode = isHTMLElementVNode(parentVNode)
-    //     ? parentVNode : getClosestElementParent(parentVNode)[0]
-
     let prevVNode: VNode
     children.forEach((child, index) => {
         let vnode: VNode
@@ -62,22 +58,26 @@ function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
         } else {
             vnode = child as VNode
         }
-        
-        traverseVNode(vnode, parentVNode)
 
         if (prevVNode) {
             prevVNode.updateInfo.after = vnode
             vnode.updateInfo.prev = prevVNode
-        }else{
-            prevVNode = vnode
+        }else{ // first visit
             parentVNode.updateInfo.firstChild = vnode
         }
 
+        prevVNode = vnode
+        
+        traverseVNode(vnode, parentVNode)
     })
 }
 
 function isHTMLElementVNode(vnode: VNode) {
     return vnode && (vnode.shapeFlag & 1) && vnode.type !== 'text'
+}
+
+function isFunctionComponent(vnode: VNode) {
+    return !isFragment(vnode.type) && (vnode.shapeFlag & 2)
 }
 
 function getClosestElementParent(vnode: VNode): [VNode<string>, HTMLElement] {
@@ -96,23 +96,19 @@ function getClosestElementParent(vnode: VNode): [VNode<string>, HTMLElement] {
     return [parent as VNode<string>, parentNode as HTMLElement]
 }
 
-// function isFunctionComponent(vnode:VNode){
-//     return !isFragment(vnode.type) && (vnode.shapeFlag & 2)
-// }
+function getFunctionParent(vnode:VNode){
+    let parent: VNode = vnode.parentVNode as VNode
+    while (!isFunctionComponent(parent)){
+        parent = parent.parentVNode as VNode
+    }
 
-// function getFunctionParent(vnode:VNode){
-//     let parent: VNode = vnode.parentVNode as VNode
-//     while (!isFunctionComponent(parent)){
-//         parent = parent.parentVNode as VNode
-//     }
+    if(!parent){
+        console.log(vnode, parent)
+        throw Error('Function parent not found!')
+    }
 
-//     if(!parent){
-//         console.log(vnode, parent)
-//         throw Error('Function parent not found!')
-//     }
-
-//     return parent
-// }
+    return parent
+}
 
 function searchDomAfter(vnode: VNode) {
     let firstChild = vnode.updateInfo.after
@@ -144,8 +140,8 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
 
     } else if (shapeFlag & 1) { // Element update Node
         let [parent, parentNode] = getClosestElementParent(vnode)
-        let [currentFunctionVNodeParent, currentFunctionVNodeParentNode] = getClosestElementParent(currentFunctionVNode)
-        let parentFunctionComponent = currentFunctionVNode // 经过functionComponent会被缓存成当前活跃的节点，所以直接获取这个就是最近的父节点
+        let parentFunctionComponent = getFunctionParent(vnode)
+        let [currentFunctionVNodeParent, currentFunctionVNodeParentNode] = getClosestElementParent(parentFunctionComponent)
 
         let newNode = createElement(vnode);
 
@@ -155,21 +151,18 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
 
         updateInfo.node = newNode
 
-        traverseChildren(vnode.props.children, vnode as VNode<string>);
-
-        // console.log(parentNode.childNodes.length, newNode, vnode, parentNode, parent === parentVNode)
         if (currentFunctionVNodeParent === parent){ //update
+            // console.log(newNode, parentNode, afterDom, parentFunctionComponent)
             if (afterDom) {
-                console.log(newNode,parentNode, afterDom, afterDom.parentElement)
                 parentNode.insertBefore(newNode, afterDom)
             }else{
-                // console.log('direct append',newNode, parentNode, afterDom)
                 parentNode.appendChild(newNode)
             }
         }else{
-            // console.log('direct append',newNode, parentNode, afterDom)
             parentNode.appendChild(newNode)
         }
+
+        traverseChildren(vnode.props.children, vnode as VNode<string>);
 
     } else if (shapeFlag & 2) { // FunctionComponent updateHook, FunctionComponent -> Fragment(遇到Fragment类型的需要解套两次) -> result
 
