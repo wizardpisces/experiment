@@ -49,7 +49,7 @@ function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
         ? parentVNode : getClosestElementParent(parentVNode)[0]
 
     children.forEach((child, index) => {
-        let startDomIndex = (elemVNode.updateInfo.node as HTMLElement).childNodes.length
+        // let startDomIndex = (elemVNode.updateInfo.node as HTMLElement).childNodes.length
         let vnode: VNode
 
         if (isSimpleNode(child)) {
@@ -57,8 +57,7 @@ function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
         } else {
             vnode = child as VNode
         }
-        // console.log(vnode, startDomIndex, elemVNode, (elemVNode.updateInfo.node as HTMLElement).childNodes, (elemVNode.updateInfo.node as HTMLElement).childNodes.length)
-        vnode.updateInfo.domIndex = startDomIndex
+        // vnode.updateInfo.domIndex = startDomIndex
         traverseVNode(vnode, parentVNode)
     })
 }
@@ -88,13 +87,7 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
 
     vnode.parentVNode = parentVNode
 
-    if (isFragment(type)) {
-
-        let children = (type as FragmentType)(props)
-
-        traverseChildren(children, vnode)
-
-    } else if (shapeFlag & 1) { // Element update Node
+    if (shapeFlag & 1) { // Element update Node
 
         let [parent, parentNode] = getClosestElementParent(vnode)
 
@@ -104,12 +97,12 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
 
         console.log(parentNode.childNodes.length, updateInfo.domIndex, updateInfo.node, vnode, parentNode)
 
-        if (parentNode.childNodes.length === updateInfo.domIndex) { 
-            parentNode.appendChild(updateInfo.node)
-        } else {
-            // update
-            parentNode.replaceChild(updateInfo.node, parentNode.childNodes[updateInfo.domIndex])
-        }
+        // if (parentNode.childNodes.length === updateInfo.domIndex) { 
+        parentNode.appendChild(updateInfo.node)
+        // } else {
+        //     // update
+        //     parentNode.replaceChild(updateInfo.node, parentNode.childNodes[updateInfo.domIndex])
+        // }
 
     } else if (shapeFlag & 2) { // FunctionComponent updateHook, FunctionComponent -> Fragment(遇到Fragment类型的需要解套两次) -> result
 
@@ -121,15 +114,23 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
         if (isSimpleNode(result)) { // simple ele, treat as text value;
             let childNode = transformSimpleNode(result as SimpleNode);
 
-            (childNode as VNode).updateInfo.domIndex = vnode.updateInfo.domIndex; // link index
+            // (childNode as VNode).updateInfo.domIndex = vnode.updateInfo.domIndex; // link index
             traverseVNode(childNode, vnode)
 
         } else if (isArray(result)) { // return an array of component eg: () => [1,2,A,B]; FunctionalComponent return array or Fragment result
             traverseChildren(result as ComponentChild[], vnode)
         } else {
-            (result as VNode).updateInfo.domIndex = vnode.updateInfo.domIndex // link index
-            
-            traverseVNode(result as VNode, vnode)
+            // (result as VNode).updateInfo.domIndex = vnode.updateInfo.domIndex // link index
+            if (isFragment((result as VNode).type)) {
+                let fragment:VNode = result as VNode
+
+                let children = (fragment.type as FragmentType)(fragment.props)
+
+                traverseChildren(children, vnode)
+
+            } else {
+                traverseVNode(result as VNode, vnode)
+            }
         }
 
         runEffect(updateInfo.hooks);// run Effect after each functional component mounted
