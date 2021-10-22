@@ -14,13 +14,18 @@ const logger = createLogger('[render]')
 function render(vnode: VNode, parentNode: HTMLElement) {
     parentNode.innerHTML = ''
     let rootVNode = h(parentNode.localName, {} as VNode['props']) // create rootVNode
+    
     rootVNode.updateInfo.node = parentNode
-    vnode.parentVNode = rootVNode as VNode<string>
+    rootVNode.updateInfo.firstChild = vnode
 
+    vnode.parentVNode = rootVNode as VNode<string>
+    
     update(vnode)
 }
 
 function update(vnode: VNode) {
+
+    vnode.updateInfo.children.forEach(dom=>dom.remove()) // Clear previous Rendered dom
 
     traverseVNode(vnode,vnode.parentVNode as VNode<string>)
     /**

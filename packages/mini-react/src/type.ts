@@ -45,8 +45,12 @@ interface VNode<T = ComponentType | string> {
 
 interface UpdateInfo { // used to update VNode
     node: HTMLElementX | undefined // real dom
-    domIndex : number // offset of node in real HTMLElement Parent's children
+    // domIndex : number // offset of node in real HTMLElement Parent's children
     hooks: Hooks | undefined // in FunctionComponent hooks
+    children:HTMLElementX[]
+    after:VNode | undefined
+    prev:VNode | undefined
+    firstChild: VNode | undefined
 }
 
 type ComponentType = FunctionComponent
