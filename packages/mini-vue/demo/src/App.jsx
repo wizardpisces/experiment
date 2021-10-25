@@ -1,12 +1,4 @@
-<template>
-  <div>
-    <h1>vue3</h1>
-    <span>{{count}}</span>
-    <button @click="add"> +1 </button>
-  </div>
-</template>
-<script>
-import { ref, effect } from 'vue'
+import { ref, effect, h } from 'vue'
 export default {
   setup() {
     const count = ref(0)
@@ -16,8 +8,13 @@ export default {
     effect(function log() {
       console.log('count changed!', count.value)
     })
-
-    return { count, add }
+    return () => (
+      <div>
+        <h1>Vue3 counter</h1>
+        <span>{count.value}</span>
+        <button onClick={add}>+1</button>
+      </div>
+    )
   }
 }
-</script>
+
