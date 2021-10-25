@@ -8,6 +8,7 @@ export {
     HTMLElementX,
     Hooks,
     EffectType,
+    MemoType,
     EffectCallback,
     ShapeFlags
 }
@@ -23,10 +24,19 @@ type EffectType = {
     deps?: any[]
     active: boolean
 }
+type MemoType = {
+    factory: Function
+    deps?: any[]
+    value: any // factory cached value
+}
+
 type Hooks = {
     stateMap: Map<number, any>
     effectMap: Map<number, EffectType>
     effectCleanUpSet: Set<Function>
+
+    memoMap: Map<number, MemoType>
+    hookIndex: number // make sure repeated exec map to the same state
 }
 
 type VNodeProps = {
@@ -46,18 +56,23 @@ interface VNode<T = ComponentType | string> {
 interface UpdateInfo { // used to update VNode
     node: HTMLElementX | undefined // real dom
     // domIndex : number // offset of node in real HTMLElement Parent's children
-    hooks: Hooks | undefined // in FunctionComponent hooks
-    children:HTMLElementX[]
-    after:VNode | undefined
-    prev:VNode | undefined
+    // hooks: Hooks | undefined // in FunctionComponent hooks
+    children: (HTMLElementX | VNode<FunctionComponent>)[]
+    after: VNode | undefined
+    prev: VNode | undefined
     firstChild: VNode | undefined
+    clear: Function
 }
 
 type ComponentType = FunctionComponent
 
 type HTMLElementX = HTMLElement | Text
 
-type FunctionComponent = ((props: VNodeProps) => ComponentChild | ComponentChild[]) | FragmentType;
+type FunctionComponent = {
+    (props: VNodeProps): ComponentChild | ComponentChild[]
+    hooks: Hooks
+};
+
 type FragmentType = (props: VNodeProps) => ComponentChild[]; // special FunctionComponent
 // export interface FunctionComponent<P = {}> {
 //     (props: VNodeProps): VNode<any> | SimpleNode | FragmentType | null;

@@ -24,6 +24,15 @@ or reference ./demo/readme.md
         - 2: 考虑触发的 props 变化影响到外层其他节点的更新变化
         - 3: 其他标准diff流程
 
+## 目前实现的节点更新原理
+
+1. 首次渲染
+    * 记录各个函数组件在真实 dom 中的位置信息
+    * 记录函数组件渲染出来 真实dom
+2. 更新
+    * 删除函数组件渲染出来的真实dom
+    * 根据函数组件在真实dom中的位置信息进行插入操作
+
 ## Reference
 
 * https://reactjs.org/docs/hooks-intro.html

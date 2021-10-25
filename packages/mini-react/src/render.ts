@@ -24,23 +24,13 @@ function render(vnode: VNode, parentNode: HTMLElement) {
 }
 
 function update(vnode: VNode) {
-    console.log(vnode.updateInfo.children,vnode.updateInfo.after)
-    vnode.updateInfo.children.forEach(dom=>dom.remove()) // Clear previous Rendered dom
+    logger(vnode.updateInfo.children,vnode.updateInfo.after)
+    // vnode.updateInfo.children.forEach(dom=>dom.remove()) // Clear previous Rendered dom
+    vnode.updateInfo.clear()
 
     traverseVNode(vnode,vnode.parentVNode as VNode<string>)
-    /**
-     * snabbdom to patch
-     * recursive execute functional VNode, transform to VNode<string>
-     */
-    // let oldVNode = vnode.updateInfo.strVNode // firstTime will be null
-    // let newVNode = transformVNode()
-    // if(oldVNode){
-    //     patch(oldVNode,newVNode)
-    // }else{
-    //     patch(container,newVNode)
-    // }
 
-    postRender()
+    // postRender()
 }
 
 let postRenderQueue = new Set<Function>()

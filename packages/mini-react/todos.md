@@ -1,4 +1,5 @@
-* 解决 Fragment diff问题
+* ~~解决 Fragment diff问题~~ 跳过diff
+* 需要处理通过改变parent状态来改变整体的更新 （useState打开触发的注释即可复现）
 
 * ~~JSX~~
 * [X] Fragment

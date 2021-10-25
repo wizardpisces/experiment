@@ -1,40 +1,35 @@
 import { createLogger, isFunction } from "./util"
-import { update, addPostRenderTask } from './render'
+import { update } from './render'
 import { getCurrentInfo } from "./h";
-import { EffectCallback, EffectType, Hooks, VNode } from "./type";
+import { EffectCallback, EffectType, MemoType, Hooks, VNode } from "./type";
 export {
     useState,
     useReducer,
-    Reducer,
     useEffect,
     useMemo,
     useRef,
     runEffect,
-    resethookIndex
+    // resethookIndex
 }
 
 const logger = createLogger('[hooks]')
 
-let hookIndex: number = 0;
-
-function resethookIndex() {
-    hookIndex = 0
-}
-
-function incHookIndex() {
-    return hookIndex++
-}
-
-function getHookState(hookIndex: number): [Hooks, VNode] {
+function getHookState(): [Hooks, VNode] {
     const currentVNode = getCurrentInfo()
-    // let stateMap = new Map<number, any>()
-    let hooks = currentVNode.updateInfo.hooks || (currentVNode.updateInfo.hooks = {
+    
+    let hooks = currentVNode.type.hooks || (currentVNode.type.hooks = {
         stateMap: new Map<number, any>(),
         effectMap: new Map<number, EffectType>(),
-        effectCleanUpSet: new Set<Function>()
+        effectCleanUpSet: new Set<Function>(),
+        memoMap: new Map<number, MemoType>(),
+        hookIndex:0
     });
+
+    hooks.hookIndex++;
+
     return [hooks, currentVNode]
 }
+
 // addPostRenderTask(resethookIndex, runEffect)
 
 /**
@@ -56,8 +51,9 @@ function useState<S>(initialState: S | ((preState: S) => S)) {
 
 type Reducer<S, A> = (prevState: S, action: A) => S;
 function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: S) => S)): [S, (action: A) => void] {
-    let curIndex = incHookIndex()
-    let [{ stateMap }, currentVNode] = getHookState(curIndex)
+    let [{ stateMap,hookIndex }, currentVNode] = getHookState()
+    let curIndex = hookIndex
+    
     if (isFunction(initialState)) {
         initialState = (<Function>initialState)()
     }
@@ -82,8 +78,8 @@ function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: 
 */
 
 function useEffect(fn: EffectCallback, deps?: any[]) {
-    let curIndex = incHookIndex()
-    let [{ effectMap }, currentVNode] = getHookState(curIndex)
+    let [{ effectMap, hookIndex }, currentVNode] = getHookState()
+    let curIndex = hookIndex
     let active = true; // default is true
 
     if (effectMap.has(curIndex)) {
@@ -135,25 +131,19 @@ function runEffect(hooks: Hooks | undefined) {
  * function useMemo<T>(factory: () => T, inputs: Inputs | undefined): T;
  */
 
-let memoMap = new Map<number, MemoType>()
-type MemoType = {
-    factory: Function
-    deps?: any[]
-    value: any // factory cached value
-}
-
 function useMemo<T>(factory: () => T, deps?: any[]) {
-    let curHookIndex = incHookIndex(),
-        value;
-    if (memoMap.has(curHookIndex)) {
-        let memo = memoMap.get(curHookIndex),
+    let [{ memoMap, hookIndex }, currentVNode] = getHookState()
+    
+    let value;
+    if (memoMap.has(hookIndex)) {
+        let memo = memoMap.get(hookIndex),
             changed = depsChanged(memo?.deps, deps)
         value = changed ? factory() : memo?.value
     } else {
         value = factory()
     }
 
-    memoMap.set(curHookIndex, { factory, deps, value })
+    memoMap.set(hookIndex, { factory, deps, value })
     return value
 }
 
