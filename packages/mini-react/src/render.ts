@@ -1,5 +1,6 @@
 import { h } from "."
 import { traverseVNode } from "./h"
+import { schedule } from "./schedule"
 import { HTMLElementX, VNode } from "./type"
 import { createLogger } from "./util"
 
@@ -19,17 +20,14 @@ function render(vnode: VNode, parentNode: HTMLElement) {
     rootVNode.updateInfo.firstChild = vnode
 
     vnode.parentVNode = rootVNode as VNode<string>
-    
+
     update(vnode)
 }
 
 function update(vnode: VNode) {
-    logger(vnode.updateInfo.children,vnode.updateInfo.after)
-    // vnode.updateInfo.children.forEach(dom=>dom.remove()) // Clear previous Rendered dom
+    console.error(vnode.type.name, vnode.updateInfo.children, vnode.updateInfo.after)
     vnode.updateInfo.clear()
-
-    traverseVNode(vnode,vnode.parentVNode as VNode<string>)
-
+    traverseVNode(vnode, vnode.parentVNode as VNode<string>)
     // postRender()
 }
 

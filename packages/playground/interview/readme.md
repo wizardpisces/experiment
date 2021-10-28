@@ -18,6 +18,7 @@
 
 2. React Hooks 跟 Vue Hooks的区别（Vue Composition-Api）?
 3. 谈一谈 Mixin、HOC、Render props、Hooks
+4. 为什么需要scheduler? 任务调度原理是什么？
 
 ### 进阶问题
 1. Vue 和 React 的核心差异，以及核心差异对后续设计产生的“不可逆”影响

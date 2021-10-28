@@ -1,10 +1,10 @@
 import { render, h, useState, Fragment, useEffect} from "../../src/index"
 
 export {
-  App
+  UseStateApp
 }
 
-function App(props) {
+function UseStateApp(props) {
   // console.log('父组件')
   let { count, upCount } = props
   useEffect(() => {

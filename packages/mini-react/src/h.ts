@@ -1,3 +1,4 @@
+import { resetHooks } from "."
 import { createElement, patchProps } from "./dom"
 import { runEffect } from "./hooks"
 import { ComponentChild, FunctionComponent, SimpleNode, VNode, FragmentType, HTMLElementX, ShapeFlags } from "./type"
@@ -14,8 +15,14 @@ const logger = createLogger('[h]')
 function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props']['children']): VNode {
     let normalizedProps: VNode['props'] = props || {}
     // logger(type, normalizedProps.props, children)
-    normalizedProps.children = children
+    normalizedProps.children = flatten(children)
     return createVNode(type, normalizedProps)
+}
+
+function flatten(arr: any[]): any[] {
+    return [].concat(...arr.map(item => {
+        return isArray(item) ? [].concat(flatten(item) as []) : item
+    }))
 }
 
 function createVNode(type: VNode['type'], props: VNode['props']): VNode {
@@ -24,7 +31,7 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
         isFunction(type) ?
             2 /* FUNCTIONAL_COMPONENT */ :
             0;
-    let vnode:VNode = {
+    let vnode: VNode = {
         type,
         props,
         shapeFlag,
@@ -36,11 +43,11 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
             prev: undefined,
             children: [],
             firstChild: undefined,
-            clear : function () {
+            clear: function () {
                 vnode.updateInfo.children.forEach((child) => {
-                    if( isFunctionComponent(child)){
+                    if (isFunctionComponent(child)) {
                         (child as VNode<FunctionComponent>).updateInfo.clear()
-                    }else{
+                    } else {
                         (child as HTMLElementX).remove()
                     }
                 })
@@ -74,12 +81,12 @@ function traverseChildren(children: ComponentChild[], parentVNode: VNode) {
         if (prevVNode) {
             prevVNode.updateInfo.after = vnode
             vnode.updateInfo.prev = prevVNode
-        }else{ // first visit
+        } else { // first visit
             parentVNode.updateInfo.firstChild = vnode
         }
 
         prevVNode = vnode
-        
+
         traverseVNode(vnode, parentVNode)
     })
 }
@@ -100,7 +107,6 @@ function getClosestElementParent(vnode: VNode): [VNode<string>, HTMLElement] {
         parentNode = parent?.updateInfo.node
 
         if (!parent) {
-            console.log(vnode, parent)
             throw Error('parentVNode not found!')
         }
     }
@@ -108,14 +114,13 @@ function getClosestElementParent(vnode: VNode): [VNode<string>, HTMLElement] {
     return [parent as VNode<string>, parentNode as HTMLElement]
 }
 
-function getFunctionParent(vnode:VNode){
+function getFunctionParent(vnode: VNode) {
     let parent: VNode = vnode.parentVNode as VNode
-    while (parent && !isFunctionComponent(parent)){
+    while (parent && !isFunctionComponent(parent)) {
         parent = parent.parentVNode as VNode
     }
 
     // if(!parent){
-    //     console.log(vnode, parent)
     //     throw Error('Function parent not found!')
     // }
 
@@ -163,14 +168,13 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
 
         updateInfo.node = newNode
 
-        if (functionParentVNode === parent){ //update
-            // console.log(newNode, parentNode, afterDom, functionParent)
+        if (functionParentVNode === parent) { //update
             if (afterDom) {
                 parentNode.insertBefore(newNode, afterDom)
-            }else{
+            } else {
                 parentNode.appendChild(newNode)
             }
-        }else{
+        } else {
             parentNode.appendChild(newNode)
         }
 
@@ -181,13 +185,24 @@ function traverseVNode(vnode: VNode, parentVNode: VNode) {
         currentFunctionVNode = vnode as VNode<FunctionComponent>
 
         let functionParent = getFunctionParent(vnode)
-        if(functionParent){ // cache for clear
-            functionParent.updateInfo.children.push(vnode as VNode<FunctionComponent>)
+        
+        if (functionParent) { // cache for clear, root has no FunctionParent
+            let originIndex = functionParent.updateInfo.children.findIndex(child=>{
+                if(isFunctionComponent(child)){
+                    return (child as VNode<FunctionComponent>).type === fn
+                }
+            })
+
+            if(originIndex!==-1){
+                functionParent.updateInfo.children.splice(originIndex,1,vnode as VNode<FunctionComponent>)
+            }else{
+                functionParent.updateInfo.children.push(vnode as VNode<FunctionComponent>)
+            }
         }
-        
+
         // is currently running function component
+        resetHooks(fn.hooks)
         
-        fn.hooks && (fn.hooks.hookIndex=0); // before function component running
         let result = fn(props)// where hooks will be running (eg: useState, useEffect etc)
         if (isSimpleNode(result)) { // simple ele, treat as text value;
             let childVNode = transformSimpleNode(result as SimpleNode);

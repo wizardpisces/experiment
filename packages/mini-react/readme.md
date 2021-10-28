@@ -33,6 +33,14 @@ or reference ./demo/readme.md
     * 删除函数组件渲染出来的真实dom
     * 根据函数组件在真实dom中的位置信息进行插入操作
 
+## 余下问题
+目前测试同步更新还未发现问题
+
+* 主要问题发生在异步更新（点解？点解？），例子：
+use-effect.tsx 的案例复现: 触发App的upcount 导致子组件 use-effect.tsx 的useEffect hook根据 App传入的 props 触发cb，同时开启定时器，在定时器开始运行导致countDown-1，并且countDown还未归零的时候再次触发App的upcount，就会触发App更新同时更新传入给use-effect.tsx 子组件 useEffect的 props，又会触发更新
+
+异步调度会出现update(VNode) 还是之前的VNode实例，导致错乱
+
 ## Reference
 
 * https://reactjs.org/docs/hooks-intro.html

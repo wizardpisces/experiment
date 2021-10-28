@@ -9,6 +9,7 @@ export {
     useMemo,
     useRef,
     runEffect,
+    resetHooks
     // resethookIndex
 }
 
@@ -97,23 +98,30 @@ function useEffect(fn: EffectCallback, deps?: any[]) {
     })
 }
 
+function resetHooks(hooks: Hooks | undefined) {
+    hooks && (hooks.hookIndex = 0); // before function component running
+    // cleanUpEffect(hooks)
+}
 
-function runEffect(hooks: Hooks | undefined) {
-
-    // console.log(hooks)
+function cleanUpEffect(hooks: Hooks | undefined) {
     if (!hooks) {
         return
     }
+    let { effectCleanUpSet, effectMap } = hooks
+
+    Array.from(effectCleanUpSet).forEach(fn => {
+        fn()
+    })
+    effectCleanUpSet.clear()
+}
+
+function runEffect(hooks: Hooks | undefined) {
+    if (!hooks) {
+        return
+    }
+    cleanUpEffect(hooks) // cleans up effects from the previous render before running the effects next time.
 
     let { effectCleanUpSet, effectMap } = hooks
-    function cleanUpEffect() {
-        Array.from(effectCleanUpSet).forEach(fn => {
-            fn()
-        })
-        effectCleanUpSet.clear()
-    }
-
-    cleanUpEffect() // cleans up effects from the previous render before running the effects next time.
 
     Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse().forEach(([id, effect]) => { // reverse to let child effect execute before parent
         let unsubscribe = effect.fn();
