@@ -105,7 +105,7 @@ export async function createPluginContainer({ plugins, root }: ResolvedConfig): 
                 try {
                     result = await plugin.transform.call(ctx as any, code, id)
                 } catch (e) {
-                    ctx.error(e)
+                    ctx.error(e as Error)
                 }
 
                 if (!result) continue

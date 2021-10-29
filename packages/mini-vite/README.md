@@ -5,7 +5,14 @@ mini implementation of [vite](https://github.com/vitejs/vite)
 ## How to develop
 
 ```
+npm install
+npm install -g ts-node
 npm install -g nodemon
+
+cd template-vue-ts
+npm install
+
+cd ..
 nodemon
 ```
 ## mini-vite

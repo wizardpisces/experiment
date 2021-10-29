@@ -28,22 +28,26 @@ function UseEffectApp(props) {
                     console.warn('setTimeout triggered', `count:${count}`, `countDown:${countDown}`,timeoutID)
                     setCountDown(--countDown)
                     if (countDown <= 0) {
-                        // setData([
-                        //     {
-                        //         id: 'id changed',
-                        //         title: 'data fetched : ' + Math.random()
-                        //     }
-                        // ]);
+                        setData([
+                            {
+                                id: 'id changed',
+                                title: 'data fetched : ' + Math.random()
+                            }
+                        ]);
                         return
                     }
                     fetchData()
+
                 }, 1000)
+            console.log('fetchData',timeoutID)
+
         };
 
         fetchData();
 
         return () => {
             clearTimeout(timeoutID)
+            console.log('clear timeout',timeoutID)
         }
     }, [count]);
 

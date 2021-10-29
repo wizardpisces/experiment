@@ -80,56 +80,55 @@ function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: 
 
 function useEffect(fn: EffectCallback, deps?: any[]) {
     let [{ effectMap, hookIndex }, currentVNode] = getHookState()
-    let curIndex = hookIndex
-    let active = true; // default is true
+    let curIndex = hookIndex,
+        _cleanup = null,
+        active = true; // default is true
 
     if (effectMap.has(curIndex)) {
         let prevEffect = effectMap.get(curIndex) as EffectType;
+        _cleanup = prevEffect._cleanup // pass on _cleanup
 
         if (prevEffect.deps) {
             active = depsChanged(prevEffect.deps, deps)
         }
     }
-    // if (curIndex>10) return
+
     effectMap.set(curIndex, {
         fn,
         deps,
-        active
+        active,
+        _cleanup
     })
 }
 
 function resetHooks(hooks: Hooks | undefined) {
     hooks && (hooks.hookIndex = 0); // before function component running
-    // cleanUpEffect(hooks)
-}
-
-function cleanUpEffect(hooks: Hooks | undefined) {
-    if (!hooks) {
-        return
-    }
-    let { effectCleanUpSet, effectMap } = hooks
-
-    Array.from(effectCleanUpSet).forEach(fn => {
-        fn()
-    })
-    effectCleanUpSet.clear()
 }
 
 function runEffect(hooks: Hooks | undefined) {
     if (!hooks) {
         return
     }
-    cleanUpEffect(hooks) // cleans up effects from the previous render before running the effects next time.
-
     let { effectCleanUpSet, effectMap } = hooks
 
-    Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse().forEach(([id, effect]) => { // reverse to let child effect execute before parent
-        let unsubscribe = effect.fn();
+    let _pendingEffect = Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse()
 
-        if (isFunction(unsubscribe)) {
-            effectCleanUpSet.add(unsubscribe as Function)
+    // cleans up effects from the previous render before running the effects next time.
+    _pendingEffect.forEach(([id,effect])=>{
+        if (isFunction(effect._cleanup)) {
+            (effect._cleanup as Function)();
         }
+    })
 
+    _pendingEffect.forEach(([id, effect]) => { // register unsubscribe
+        console.log(effect === (effectMap.get(id) as EffectType))
+        // effect._cleanup = effect.fn()
+        // (effectMap.get(id) as EffectType)._cleanup = effect.fn();
+
+        effectMap.set(id, {
+            ...(effectMap.get(id) as EffectType),
+            _cleanup: effect.fn()
+        })
     })
 }
 

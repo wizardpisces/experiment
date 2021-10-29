@@ -18,11 +18,12 @@ const enum ShapeFlags {
     FUNCTIONAL_COMPONENT = 1 << 1
 }
 
-type EffectCallback = () => void | Function;
+type EffectCallback = () => any;
 type EffectType = {
     fn: EffectCallback
     deps?: any[]
     active: boolean
+    _cleanup: Function | null
 }
 type MemoType = {
     factory: Function

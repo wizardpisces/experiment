@@ -25,7 +25,7 @@ function render(vnode: VNode, parentNode: HTMLElement) {
 }
 
 function update(vnode: VNode) {
-    console.error(vnode.type.name, vnode.updateInfo.children, vnode.updateInfo.after)
+    // console.error(vnode.type.name, vnode.updateInfo.children, vnode.updateInfo.after)
     vnode.updateInfo.clear()
     traverseVNode(vnode, vnode.parentVNode as VNode<string>)
     // postRender()

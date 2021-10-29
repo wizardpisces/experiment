@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 function start() {
-    require('../dist/index').createServer()
+    let createServer = require('../dist/index').default
+    createServer()
 }
 
 start()

@@ -20,12 +20,12 @@ function App() {
 
     return <>
         <UseStateApp count={count} upCount={upCount} />
-        {/* <UseReducerApp /> */}
+        <UseReducerApp />
         <UseEffectApp count={count}/>
 
-        {/* <UseMemoApp count={count}/> */}
-        {/* <UseRefApp/>
-        <Demo /> */}
+        <UseMemoApp count={count}/>
+        <UseRefApp/>
+        <Demo />
     </>
 }
 
