@@ -34,8 +34,7 @@ type MemoType = {
 type Hooks = {
     stateMap: Map<number, any>
     effectMap: Map<number, EffectType>
-    effectCleanUpSet: Set<Function>
-
+    
     memoMap: Map<number, MemoType>
     hookIndex: number // make sure repeated exec map to the same state
 }

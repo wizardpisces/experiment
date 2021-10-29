@@ -21,7 +21,6 @@ function getHookState(): [Hooks, VNode] {
     let hooks = currentVNode.type.hooks || (currentVNode.type.hooks = {
         stateMap: new Map<number, any>(),
         effectMap: new Map<number, EffectType>(),
-        effectCleanUpSet: new Set<Function>(),
         memoMap: new Map<number, MemoType>(),
         hookIndex:0
     });
@@ -78,27 +77,33 @@ function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S | ((preState: 
 * useEffect(f, [x])  //  effect (and clean-up) when property x changes in a component's life
 */
 
+// 改成immutable模式的更改？目前用mutable方式更改还比较方便。。
 function useEffect(fn: EffectCallback, deps?: any[]) {
     let [{ effectMap, hookIndex }, currentVNode] = getHookState()
-    let curIndex = hookIndex,
-        _cleanup = null,
+    let _cleanup = null,// default is null
         active = true; // default is true
 
-    if (effectMap.has(curIndex)) {
-        let prevEffect = effectMap.get(curIndex) as EffectType;
-        _cleanup = prevEffect._cleanup // pass on _cleanup
+    if (effectMap.has(hookIndex)) { // update effect
+        let prevEffect = effectMap.get(hookIndex) as EffectType;
+        // _cleanup = prevEffect._cleanup // pass on _cleanup
 
         if (prevEffect.deps) {
             active = depsChanged(prevEffect.deps, deps)
         }
+
+        prevEffect.fn = fn;
+        prevEffect.deps = deps;
+        prevEffect.active = active;
+        // prevEffect._cleanup = _cleanup;
+    }else{// add effect
+        effectMap.set(hookIndex, {
+            fn,
+            deps,
+            active,
+            _cleanup
+        })
     }
 
-    effectMap.set(curIndex, {
-        fn,
-        deps,
-        active,
-        _cleanup
-    })
 }
 
 function resetHooks(hooks: Hooks | undefined) {
@@ -109,11 +114,11 @@ function runEffect(hooks: Hooks | undefined) {
     if (!hooks) {
         return
     }
-    let { effectCleanUpSet, effectMap } = hooks
+    let {effectMap } = hooks
 
     let _pendingEffect = Array.from(effectMap.entries()).filter(([id, effect]) => effect.active).reverse()
 
-    // cleans up effects from the previous render before running the effects next time.
+    // cleans up effects on activated effect before collecting new _cleanup
     _pendingEffect.forEach(([id,effect])=>{
         if (isFunction(effect._cleanup)) {
             (effect._cleanup as Function)();
@@ -121,14 +126,7 @@ function runEffect(hooks: Hooks | undefined) {
     })
 
     _pendingEffect.forEach(([id, effect]) => { // register unsubscribe
-        console.log(effect === (effectMap.get(id) as EffectType))
-        // effect._cleanup = effect.fn()
-        // (effectMap.get(id) as EffectType)._cleanup = effect.fn();
-
-        effectMap.set(id, {
-            ...(effectMap.get(id) as EffectType),
-            _cleanup: effect.fn()
-        })
+        effect._cleanup = effect.fn()
     })
 }
 
