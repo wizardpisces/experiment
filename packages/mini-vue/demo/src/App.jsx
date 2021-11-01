@@ -1,4 +1,4 @@
-import { ref, effect, h } from 'vue'
+import { ref, effect, h } from '../../src'
 export default {
   setup() {
     const count = ref(0)
