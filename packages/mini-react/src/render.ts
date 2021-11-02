@@ -1,6 +1,5 @@
 import { h } from "."
 import { traverseVNode } from "./h"
-import { schedule } from "./schedule"
 import { HTMLElementX, VNode } from "./type"
 import { createLogger } from "./util"
 
