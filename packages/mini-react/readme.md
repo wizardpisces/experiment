@@ -28,7 +28,7 @@ or reference ./demo/readme.md
 
 * **commit: 47d59daa08386d957184bcddc0e2428ed6ec289d**
 
-#### 目前实现的节点更新原理
+#### 节点更新原理
 
 1. 首次渲染
     * 记录各个函数组件在真实 dom 中的位置信息
