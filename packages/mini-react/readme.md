@@ -41,4 +41,3 @@ or reference ./demo/readme.md
 * https://reactjs.org/docs/hooks-intro.html
 * https://github.com/preactjs/preact
 * https://github.com/yisar/fre
-* 
