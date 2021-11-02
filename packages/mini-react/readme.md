@@ -9,29 +9,26 @@ npm run demo
 or reference ./demo/readme.md
 
 
-## 目标
-
-### 第一阶段
-实现了全量的 VNode节点保存生成然后生成全量的Dom节点（导致所有的useState触发的数据都是全量的驱动，而不是精细化的只影响到涉及到的组件函数）
+## Target
+无依赖，无VNode diff 的React Hooks的简单实现（纯Dom的增删操作）
+### 第一阶段 （done）
+全量节点更新（所有的useState触发的数据都是全量的驱动，而不是精细化的只影响到涉及到的组件函数）
 
 * **commit:f866a76abfdbddc9860e3a16d8bca2799576ebb6**
-* **commit-log: feat:mini-react add initial virtual dom**
 
-### 第二阶段
-* 精细化VNode操作运营（目标：useState的触发只影响到对应的组件函数）
+### 第二阶段（done）
+* dom局部更新（useState的触发只影响到对应的组件函数）
     - 1: 实现 VNode 节点的遍历生成阶段 同时 生成 对应的Dom节点
     - 2: 对VNode的 单个组件函数跟Dom之间建立更新映射关系
     - 3: 根据 step2 的映射关系构建 update函数，存放在 useState 等的数据驱动代码里（到这里就是对应影响组件的重复渲染）
-    - 4: 实现节点的patch 操作（这里就可以避免不必要的dom重新构建以及替换操作，可能只是属性的patch）
-        - 1: 实现最直接的 replaceChild 或者 appendChild
-        - 2: 考虑触发的 props 变化影响到外层其他节点的更新变化
-        - 3: effect正对性触发
+    - 4: 实现节点的局部刷新
+        - 1: 考虑触发的 props 变化影响到外层其他节点的更新变化
+        - 2: effect副作用清理
 
 
 * **commit: 47d59daa08386d957184bcddc0e2428ed6ec289d**
-* **commit-log:feat: mini-react stable online; mini-vite: change readme**
 
-## 目前实现的节点更新原理
+#### 目前实现的节点更新原理
 
 1. 首次渲染
     * 记录各个函数组件在真实 dom 中的位置信息

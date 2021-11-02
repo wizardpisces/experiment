@@ -1,6 +1,6 @@
 import {
     createApp
-} from 'vue'
+} from '../../src'
 import App from './App'
 
 createApp(App)
