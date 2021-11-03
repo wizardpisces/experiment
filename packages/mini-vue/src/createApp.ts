@@ -1,5 +1,4 @@
 import { VNode } from "./type";
-import { createElement } from "./dom";
 import { Component } from "./type";
 import { isString } from "./util";
 import { traverseVNode } from "./h";
@@ -13,14 +12,13 @@ function createApp(app:Component){
     return {
         mount:(rootContainer:string | Element)=>{
             if(isString(rootContainer)){
-                rootContainer = document.querySelector(rootContainer as string) as Element
+                rootContainer = document.querySelector(rootContainer) as Element
             }
 
-            let rootNode = rootContainer as Element
             let vnode:VNode = render();
 
-            rootNode.innerHTML = ''
-            traverseVNode(vnode,rootNode)
+            rootContainer.innerHTML = ''
+            traverseVNode(vnode,rootContainer)
         }
     }
 }

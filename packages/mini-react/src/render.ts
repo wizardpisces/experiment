@@ -18,13 +18,12 @@ function render(vnode: VNode, parentNode: HTMLElement) {
     rootVNode.updateInfo.node = parentNode
     rootVNode.updateInfo.firstChild = vnode
 
-    vnode.parentVNode = rootVNode as VNode<string>
+    vnode.parentVNode = rootVNode
 
     update(vnode)
 }
 
 function update(vnode: VNode) {
-    // console.error(vnode.type.name, vnode.updateInfo.children, vnode.updateInfo.after)
     vnode.updateInfo.clear()
     traverseVNode(vnode, vnode.parentVNode as VNode<string>)
     // postRender()

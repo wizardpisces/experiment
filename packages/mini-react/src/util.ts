@@ -1,3 +1,5 @@
+import { SimpleNode } from "./type"
+
 export {
     createLogger,
     isString,
@@ -7,22 +9,12 @@ export {
 }
 const createLogger = (prefix = "[Mini React]") => (...args: any[]) => console.log(`${prefix}`, ...args)
 
-function isString(t:any){
-    return typeof t === 'string'
-}
+const isString = (t: unknown): t is string => typeof t === 'string'
 
-function isNumber(t:any){
-    return typeof t === 'number'
-}
+const isNumber = (t: any): t is number => typeof t === 'number'
 
-function isFunction(t: any) {
-    return typeof t === 'function'
-}
+const isFunction = (t: any): t is Function => typeof t === 'function'
 
-function isSimpleNode(vnode:any){
-    return isNumber(vnode) || isString(vnode);
-}
+const isSimpleNode = (t: any):t is SimpleNode => isNumber(t) || isString(t)
 
-function isArray(t:any){
-    return Array.isArray(t);
-}
+const isArray = Array.isArray

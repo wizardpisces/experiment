@@ -3,26 +3,23 @@ export {
     isString,
     isFunction,
     isSimpleNode,
-    isArray
+    isArray,
+    isObject,
+    hasChanged
 }
 const createLogger = (prefix = "[Mini Vue]") => (...args: any[]) => console.log(`${prefix}`, ...args)
 
-function isString(t:any){
-    return typeof t === 'string'
-}
+const isString=(t:unknown): t is string => typeof t === 'string'
 
-function isNumber(t:any){
-    return typeof t === 'number'
-}
+const isNumber = (t:any):t is number => typeof t === 'number'
 
-function isFunction(t: any) {
-    return typeof t === 'function'
-}
+const isFunction = (t: any):t is Function => typeof t === 'function'
 
-function isSimpleNode(vnode:any){
-    return isNumber(vnode) || isString(vnode);
-}
+const isSimpleNode = (vnode:any) => isNumber(vnode) || isString(vnode)
 
-function isArray(t:any){
-    return Array.isArray(t);
-}
+const isArray = Array.isArray
+
+const isObject = (val: unknown): val is Record<any, any> => val !== null && typeof val === 'object'
+
+const hasChanged = (value: any, oldValue: any): boolean =>
+    !Object.is(value, oldValue)

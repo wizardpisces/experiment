@@ -41,7 +41,7 @@ function useState<S>(initialState: S | ((preState: S) => S)) {
 
     const reducer = (state: S, action: S | ((preState: S) => S)) => {
         if (isFunction(action)) {
-            return (action as Function)(state)
+            return action(state)
         }
         return action
     }
@@ -121,7 +121,7 @@ function runEffect(hooks: Hooks | undefined) {
     // cleans up effects on activated effect before collecting new _cleanup
     _pendingEffect.forEach(([id,effect])=>{
         if (isFunction(effect._cleanup)) {
-            (effect._cleanup as Function)();
+            effect._cleanup();
         }
     })
 

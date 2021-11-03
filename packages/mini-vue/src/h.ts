@@ -39,8 +39,6 @@ function transformSimpleNode(simpleNode: SimpleNode): VNode {
 }
 
 function traverseChildren(children: ComponentChild[], parentVNode: Element) {
-    let prevVNode: VNode
-
     children.forEach((child, index) => {
         let vnode
         if (isSimpleNode(child)) {
