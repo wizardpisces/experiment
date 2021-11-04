@@ -1,15 +1,18 @@
+import { Effect } from "./effect"
+
 export {
     Dep,
     createDep
 }
+
 class Dep {
-    private effects: Function[] = []
+    private effects: Set<Effect> = new Set()
     constructor(){
 
     }
-    addEffect(effect:Function){
+    addEffect(effect: Effect){
         console.warn(effect)
-        this.effects.push(effect)
+        this.effects.add(effect)
     }
     runEffect(){
         console.log('dep triggered')

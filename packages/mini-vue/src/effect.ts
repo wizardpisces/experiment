@@ -5,19 +5,20 @@ export {
     effect,
     trackEffect,
     triggerEffect,
-    getCurrentEffect
+    getCurrentEffect,
+    Effect
 }
+type Effect = () => void
+let currentEffect: Effect | null = null
 
-let currentEffect: Function | null = null
-
-function effect(fn: Function) {
+function effect(fn: Effect) {
     currentEffect = fn
     fn()
     currentEffect = null
 }
 
-type Target = Record<any, any>
 function trackEffect(dep: Dep) {
+    console.warn('trackEffect',dep,currentEffect)
     if(isFunction(currentEffect)){
         dep.addEffect(currentEffect)
     }
