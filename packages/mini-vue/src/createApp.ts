@@ -1,5 +1,4 @@
-import { VNode } from "./type";
-import { Component } from "./type";
+import { Component, VNode } from "./type";
 import { isString } from "./util";
 import { traverseVNode } from "./h";
 import { effect } from ".";
