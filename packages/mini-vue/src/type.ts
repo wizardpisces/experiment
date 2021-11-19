@@ -1,18 +1,26 @@
 export {
+    TEXT,
     VNode,
+    VNodeProps,
     ShapeFlags,
     HTMLElementX,
     Component,
     ComponentChild,
     SimpleNode
 }
+
+const TEXT = Symbol('TEXT')
+
 const enum ShapeFlags {
     ELEMENT = 1,
-    FUNCTIONAL_COMPONENT = 1 << 1
+    FUNCTIONAL_COMPONENT = 1 << 1,
+    STATEFUL_COMPONENT = 1 << 2,
 }
 
 type Component = {
     setup: (props?: any) => any
+    update?: null | (() => void)
+    vnode?:VNode | null
 }
 
 type VNodeProps = {
@@ -23,13 +31,14 @@ type VNodeProps = {
 
 type HTMLElementX = HTMLElement | Text
 
-interface VNode<T = Component | string> {
+interface VNode<T = Component | string | typeof TEXT> {
     type: T
     props: VNodeProps
+    el: Node | null
     shapeFlag: ShapeFlags // VNode type
 }
 
-type ComponentChild = VNode | SimpleNode
+type ComponentChild = VNode
 
 type SimpleNode =
     | string

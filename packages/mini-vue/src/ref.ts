@@ -1,7 +1,6 @@
-import { hasChanged } from "@vue/shared"
 import { createDep, Dep } from "./dep"
 import { trackEffect, triggerEffect } from "./effect"
-import { isObject } from "./util"
+import { isObject,hasChanged } from "./util"
 
 export {
     ref

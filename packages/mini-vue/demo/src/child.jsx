@@ -4,7 +4,7 @@ export default {
         const childCount = ref(0)
 
         const add = () => childCount.value++
-        console.log('setup running')
+        console.log('child setup running')
         effect(function log() {
             console.log('childCount changed!', childCount.value)
         })
