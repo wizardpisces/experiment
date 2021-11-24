@@ -18,7 +18,7 @@ function effect(fn: Effect) {
 }
 
 function trackEffect(dep: Dep) {
-    console.warn('trackEffect',dep,currentEffect)
+    // console.warn('trackEffect',dep,currentEffect)
     if(isFunction(currentEffect)){
         dep.addEffect(currentEffect)
     }

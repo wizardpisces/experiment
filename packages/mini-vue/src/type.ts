@@ -20,7 +20,7 @@ const enum ShapeFlags {
 type Component = {
     setup: (props?: any) => any
     update?: null | (() => void)
-    vnode?:VNode | null
+    vnode:VNode | null
 }
 
 type VNodeProps = {
@@ -34,7 +34,7 @@ type HTMLElementX = HTMLElement | Text
 interface VNode<T = Component | string | typeof TEXT> {
     type: T
     props: VNodeProps
-    el: Node | null
+    el: HTMLElementX | null
     shapeFlag: ShapeFlags // VNode type
 }
 

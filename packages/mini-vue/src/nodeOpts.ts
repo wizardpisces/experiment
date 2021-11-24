@@ -17,7 +17,7 @@ type RendererOptions<HostNode, HostElement> = {
     ): HostElement
 }
 
-const nodeOps: RendererOptions<Node, Element> = {
+const nodeOps: RendererOptions<HTMLElementX, Element> = {
     insert: (child, parent, anchor) => {
         parent.insertBefore(child, anchor || null)
     },

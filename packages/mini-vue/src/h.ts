@@ -26,6 +26,11 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
             ShapeFlags.FUNCTIONAL_COMPONENT :
             isObject(type) ? ShapeFlags.STATEFUL_COMPONENT :
                 0;
+
+    if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT){
+        (type as Component).vnode = null
+    }
+
     let vnode: VNode = {
         type,
         props,
@@ -47,7 +52,7 @@ function createTextVNode(simpleNode: SimpleNode): VNode {
     return createVNode(TEXT, normalizedProps)
 }
 
-function isStatefulComponent(vnode: VNode) {
+function isStatefulComponent(vnode: VNode){
     return vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
 }
 
@@ -92,10 +97,10 @@ function mountChildren(children: ComponentChild[], container: Element, anchor: N
     })
 }
 
-function mountElement(vnode: VNode, container: Element, anchor: Node | null) {
+function mountElement(vnode: VNode, container: Element, anchor: HTMLElementX | null) {
     const { type, props, shapeFlag } = vnode;
 
-    let el = vnode.el = nodeOps.createElement(vnode.type as string)
+    let el = vnode.el = nodeOps.createElement(vnode.type as string) as HTMLElement
 
     mountChildren(vnode.props.children, el, anchor)
 
@@ -116,20 +121,20 @@ function patch(n1: VNode | null, n2: VNode, container: Element, anchor = null) {
     //     unmount(n1, parentComponent, parentSuspense, true)
     //     n1 = null
     // }
-    console.log('type',type)
+    // console.log('type', type)
     switch (type) {
         case TEXT: processText(n1, n2, container, anchor);
         default:
             if (isElement(n2)) {
                 processElement(n1, n2, container, anchor)
-            }else if(isStatefulComponent(n2)){
-                processComponent(n1,n2,container,anchor)
+            } else if (isStatefulComponent(n2)) {
+                processComponent(n1, n2, container, anchor)
             }
     }
 }
 
 
-function processText(n1: VNode | null, n2: VNode, container: Element, anchor: Node | null) {
+function processText(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     if (n1 == null) {
         nodeOps.insert(
             (n2.el = nodeOps.createText(n2.props.value as string)),
@@ -145,36 +150,62 @@ function processText(n1: VNode | null, n2: VNode, container: Element, anchor: No
     }
 }
 
-function processElement(n1: VNode | null, n2: VNode, container: Element, anchor: Node | null) {
+function processElement(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     if (n1 == null) {
         mountElement(
             n2,
             container,
             anchor
         )
+    }else{
+        patchElement(n1,n2,container)
     }
 }
 
-function processComponent(n1: VNode | null, n2: VNode, container: Element, anchor: Node | null) {
+function processComponent(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     if (n1 == null) {
         mountComponent(
             n2,
             container,
             anchor
         )
-    }else{
-        updateComponent(n1,n2)
+    } else {
+        updateComponent(n1, n2)
     }
 }
 
-function mountComponent(n: VNode, container: Element, anchor: Node | null) {
+function mountComponent(n: VNode, container: Element, anchor: HTMLElementX | null) {
     let component = n.type as Component
     let { setup } = component
     let render = setup(n.props)
-    let newVNode = render()
-    patch(null, newVNode, container)
+    effect(() => {
+        let newVNode = render()
+        patch(component.vnode, newVNode, container)
+        component.vnode = newVNode
+    })
 }
 
-function updateComponent(n1: VNode | null, n2: VNode) {
+function updateComponent(n1: VNode, n2: VNode) {
+    console.log('update component',n1,n2)
+}
 
+function patchElement(n1: VNode, n2: VNode, container:Element){
+    let el = n2.el = n1.el
+    patchProps(el as HTMLElement,n1.props,n2.props)
+    patchChildren(n1,n2,container)
+    console.log('update Elemenet', n1,n2)
+}
+
+function patchChildren(n1:VNode,n2:VNode,container:Element){
+    let c1 = n1.props.children,
+        c2 = n2.props.children
+    
+    const oldLength = c1.length
+    const newLength = c2.length
+    const commonLength = Math.min(oldLength, newLength)
+    // console.log(commonLength)
+    for(let i=0;i<commonLength;i++){
+        const nextChild = c2[i]
+        patch(c1[i],nextChild,container)
+    }
 }
