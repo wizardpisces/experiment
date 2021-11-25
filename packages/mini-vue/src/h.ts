@@ -27,10 +27,6 @@ function createVNode(type: VNode['type'], props: VNode['props'], children: VNode
             isObject(type) ? ShapeFlags.STATEFUL_COMPONENT :
                 0;
 
-    // if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT){
-    //     (type as ConcreteComponent).vnode = null
-    // }
-
     let vnode: VNode = {
         type,
         children,
@@ -154,6 +150,7 @@ function mountComponent(n: VNode, container: Element, anchor: HTMLElementX | nul
 
 function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: Element, anchor: HTMLElementX | null) {
     const componentUpdateFn = () => {
+        console.log('componentUpdateFn',instance)
         if (!instance.isMounted) {
             let subTree = instance.subTree = instance.render()
             patch(null, subTree, container, anchor)
@@ -184,16 +181,9 @@ function patchElement(n1: VNode, n2: VNode, container: Element, anchor: HTMLElem
     let el = n2.el = n1.el
     patchProps(el as HTMLElement, n1.props, n2.props)
     patchChildren(n1, n2, container, anchor)
-    console.log('update Elemenet', n1, n2)
+    // console.log('update Elemenet', n1, n2)
 }
 
-/**
- * @param n1 
- * @param n2 
- * @param container 
- * 
- * TODOS: 更完善的更新，目前只是 Demo 基本的元素更新
- */
 function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     let c1 = n1.children,
         c2 = n2.children
@@ -201,7 +191,7 @@ function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLEle
     const oldLength = c1.length
     const newLength = c2.length
     const commonLength = Math.min(oldLength, newLength)
-    console.log(commonLength)
+    // console.log(commonLength)
     for (let i = 0; i < commonLength; i++) {
         const nextChild = c2[i]
         patch(c1[i], nextChild, container, anchor)

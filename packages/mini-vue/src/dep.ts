@@ -16,7 +16,10 @@ class Dep {
     }
     runEffect(){
         console.log('dep triggered')
-        this.effects.forEach(fn=>fn())
+        this.effects.forEach(fn=>{
+            console.log(fn)
+            fn()
+        })
     }
 }
 

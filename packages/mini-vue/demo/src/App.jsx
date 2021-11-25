@@ -6,7 +6,7 @@ export default {
 
     const add = () => {
       count.value++
-      console.log('add clicked:',count)
+      console.log('Event [add] clicked:',count)
     }
     console.log('setup running')
     effect(function log() {
