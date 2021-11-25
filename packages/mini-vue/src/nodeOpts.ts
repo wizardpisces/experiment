@@ -3,7 +3,7 @@ import { isString } from "./util"
 
 export {
     nodeOps,
-    createElement,
+    // createElement,
     patchProps
 }
 
@@ -48,14 +48,14 @@ function patchProps(dom: HTMLElement, oldProps: VNode['props'], newProps: VNode[
     return dom
 }
 
-function createElement(vnode: VNode): HTMLElementX {
-    let dom: HTMLElementX = vnode.type === 'text' ?
-        document.createTextNode(vnode.props.value as string)
-        : document.createElement(vnode.type as string)
+// function createElement(vnode: VNode): HTMLElementX {
+//     let dom: HTMLElementX = vnode.type === 'text' ?
+//         document.createTextNode(vnode.props.value as string)
+//         : document.createElement(vnode.type as string)
 
-    if (dom instanceof HTMLElement) {
-        patchProps(dom as HTMLElement, {} as VNode['props'], vnode.props)
-    }
+//     if (dom instanceof HTMLElement) {
+//         patchProps(dom as HTMLElement, {} as VNode['props'], vnode.props)
+//     }
 
-    return dom
-}
+//     return dom
+// }

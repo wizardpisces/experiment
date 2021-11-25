@@ -1,10 +1,11 @@
+import { ComponentInternalInstance, ConcreteComponent } from "./component"
+
 export {
     TEXT,
     VNode,
     VNodeProps,
     ShapeFlags,
     HTMLElementX,
-    Component,
     ComponentChild,
     SimpleNode
 }
@@ -15,25 +16,21 @@ const enum ShapeFlags {
     ELEMENT = 1,
     FUNCTIONAL_COMPONENT = 1 << 1,
     STATEFUL_COMPONENT = 1 << 2,
-}
-
-type Component = {
-    setup: (props?: any) => any
-    update?: null | (() => void)
-    vnode:VNode | null
+    COMPONENT = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.FUNCTIONAL_COMPONENT
 }
 
 type VNodeProps = {
-    children: ComponentChild[];
     value?: SimpleNode // only if VNode type is SimpleNode
     [key: string]: any
 }
 
 type HTMLElementX = HTMLElement | Text
 
-interface VNode<T = Component | string | typeof TEXT> {
+interface VNode<T = ConcreteComponent | string | typeof TEXT> {
     type: T
+    children: ComponentChild[];
     props: VNodeProps
+    component?:ComponentInternalInstance
     el: HTMLElementX | null
     shapeFlag: ShapeFlags // VNode type
 }

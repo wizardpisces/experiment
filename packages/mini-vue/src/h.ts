@@ -1,25 +1,25 @@
+import { ComponentInternalInstance, ConcreteComponent, createComponentInstance, isStatefulComponent, setupComponent, shouldUpdateComponent } from './component';
 import { effect } from './effect';
-import { nodeOps, createElement, patchProps } from './nodeOpts';
-import { Component, ComponentChild, HTMLElementX, ShapeFlags, SimpleNode, VNode, TEXT } from './type'
+import { nodeOps, patchProps } from './nodeOpts';
+import { ComponentChild, HTMLElementX, ShapeFlags, SimpleNode, VNode, TEXT } from './type'
 import { isArray, isFunction, isObject, isSimpleNode, isString } from './util';
 export {
     h,
-    traverseVNode,
     render
 }
 
 function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props']['children']): VNode {
     let normalizedProps: VNode['props'] = props || {}
-    normalizedProps.children = flatten(children).map(child => {
+    let normalizedChildren = flatten(children).map(child => {
         if (isSimpleNode(child)) {
             child = createTextVNode(child)
         }
         return child
     })
-    return createVNode(type, normalizedProps)
+    return createVNode(type, normalizedProps, normalizedChildren)
 }
 
-function createVNode(type: VNode['type'], props: VNode['props']): VNode {
+function createVNode(type: VNode['type'], props: VNode['props'], children: VNode['children']): VNode {
     const shapeFlag: ShapeFlags = isString(type) ?
         ShapeFlags.ELEMENT :
         isFunction(type) ?
@@ -27,12 +27,13 @@ function createVNode(type: VNode['type'], props: VNode['props']): VNode {
             isObject(type) ? ShapeFlags.STATEFUL_COMPONENT :
                 0;
 
-    if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT){
-        (type as Component).vnode = null
-    }
+    // if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT){
+    //     (type as ConcreteComponent).vnode = null
+    // }
 
     let vnode: VNode = {
         type,
+        children,
         props,
         shapeFlag,
         el: null
@@ -48,63 +49,32 @@ function flatten(arr: any[]): any[] {
 }
 
 function createTextVNode(simpleNode: SimpleNode): VNode {
-    let normalizedProps: VNode['props'] = { value: simpleNode, children: [] }
-    return createVNode(TEXT, normalizedProps)
-}
-
-function isStatefulComponent(vnode: VNode){
-    return vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
+    let normalizedProps: VNode['props'] = { value: simpleNode }
+    return createVNode(TEXT, normalizedProps, [])
 }
 
 function isElement(vnode: VNode) {
     return vnode.shapeFlag & ShapeFlags.ELEMENT
 }
 
-function traverseVNode(vnode: VNode, parentNode: Element) {
-    const { type, props, shapeFlag } = vnode
-    if (isElement(vnode)) { // Element update Node
-
-        let newNode = createElement(vnode);
-        vnode.el = newNode
-        parentNode.appendChild(newNode)
-        // traverseChildren(vnode.props.children, newNode as Element);
-    } else if (isStatefulComponent(vnode)) {
-        let component = vnode.type as Component
-        let { setup } = component
-        let render = setup(vnode.props)
-
-
-        component.update = () => {
-            let newVNode = render()
-            let oldVNode = component.vnode as VNode
-            component.vnode = render()
-            patch(oldVNode, newVNode, parentNode)
-            // component.update()
-        }
-        // traverseVNode(newVNode, parentNode)
-
-        effect(component.update)
-    }
-}
-
 function render(vnode: VNode, container: Element) {
-    patch(null, vnode, container)
+    patch(null, vnode, container, null)
 }
 
-function mountChildren(children: ComponentChild[], container: Element, anchor: Node | null) {
+function mountChildren(children: ComponentChild[], container: Element, anchor: HTMLElementX | null) {
     children.forEach((child, index) => {
-        patch(null, child, container)
+        patch(null, child, container, anchor)
     })
 }
 
 function mountElement(vnode: VNode, container: Element, anchor: HTMLElementX | null) {
-    const { type, props, shapeFlag } = vnode;
+    const { type, props, children } = vnode;
 
-    let el = vnode.el = nodeOps.createElement(vnode.type as string) as HTMLElement
+    let el = vnode.el = nodeOps.createElement(type as string) as HTMLElement
 
-    mountChildren(vnode.props.children, el, anchor)
+    mountChildren(children, el, anchor)
 
-    patchProps(el as HTMLElement, {} as VNode['props'], vnode.props)
+    patchProps(el as HTMLElement, {} as VNode['props'], props)
 
     nodeOps.insert(el, container, anchor)
 }
@@ -113,8 +83,8 @@ function isSameVNodeType(n1: VNode, n2: VNode): boolean {
     return n1.type === n2.type
 }
 
-function patch(n1: VNode | null, n2: VNode, container: Element, anchor = null) {
-    const { type, props, shapeFlag } = n2
+function patch(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
+    const { type, shapeFlag } = n2
     // patching & not same type, unmount old tree
     // if (n1 && !isSameVNodeType(n1, n2)) {
     //     anchor = getNextHostNode(n1)
@@ -127,7 +97,7 @@ function patch(n1: VNode | null, n2: VNode, container: Element, anchor = null) {
         default:
             if (isElement(n2)) {
                 processElement(n1, n2, container, anchor)
-            } else if (isStatefulComponent(n2)) {
+            } else if (shapeFlag & ShapeFlags.COMPONENT) {
                 processComponent(n1, n2, container, anchor)
             }
     }
@@ -136,13 +106,14 @@ function patch(n1: VNode | null, n2: VNode, container: Element, anchor = null) {
 
 function processText(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     if (n1 == null) {
+        // mountText
         nodeOps.insert(
             (n2.el = nodeOps.createText(n2.props.value as string)),
             container,
             anchor
         )
-    }
-    else {
+    } else {
+        // patchText
         const el = (n2.el = n1.el!)
         if (n2.props.value !== n1.props.value) {
             nodeOps.setText(el, n2.props.value as string)
@@ -157,8 +128,8 @@ function processElement(n1: VNode | null, n2: VNode, container: Element, anchor:
             container,
             anchor
         )
-    }else{
-        patchElement(n1,n2,container)
+    } else {
+        patchElement(n1, n2, container, anchor)
     }
 }
 
@@ -175,37 +146,64 @@ function processComponent(n1: VNode | null, n2: VNode, container: Element, ancho
 }
 
 function mountComponent(n: VNode, container: Element, anchor: HTMLElementX | null) {
-    let component = n.type as Component
-    let { setup } = component
-    let render = setup(n.props)
-    effect(() => {
-        let newVNode = render()
-        patch(component.vnode, newVNode, container)
-        component.vnode = newVNode
-    })
+    let instance = n.component = createComponentInstance(n)
+    setupComponent(instance)
+    setupRenderEffect(instance, n, container, anchor)
+
+}
+
+function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: Element, anchor: HTMLElementX | null) {
+    const componentUpdateFn = () => {
+        if (!instance.isMounted) {
+            let subTree = instance.subTree = instance.render()
+            patch(null, subTree, container, anchor)
+            initialVNode.el = subTree.el
+            instance.isMounted = true
+        } else {
+            let nextTree = instance.render()
+            patch(instance.subTree, nextTree, container, anchor)
+        }
+    }
+    effect(componentUpdateFn)
 }
 
 function updateComponent(n1: VNode, n2: VNode) {
-    console.log('update component',n1,n2)
+    let instance = n2.component = n1.component!
+    if (shouldUpdateComponent(n1, n2)) {
+
+    } else {
+        // no update needed. just copy over properties
+        n2.component = n1.component
+        n2.el = n1.el
+        instance.vnode = n2
+    }
+    console.log('update component', n1, n2)
 }
 
-function patchElement(n1: VNode, n2: VNode, container:Element){
+function patchElement(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     let el = n2.el = n1.el
-    patchProps(el as HTMLElement,n1.props,n2.props)
-    patchChildren(n1,n2,container)
-    console.log('update Elemenet', n1,n2)
+    patchProps(el as HTMLElement, n1.props, n2.props)
+    patchChildren(n1, n2, container, anchor)
+    console.log('update Elemenet', n1, n2)
 }
 
-function patchChildren(n1:VNode,n2:VNode,container:Element){
-    let c1 = n1.props.children,
-        c2 = n2.props.children
-    
+/**
+ * @param n1 
+ * @param n2 
+ * @param container 
+ * 
+ * TODOS: 更完善的更新，目前只是 Demo 基本的元素更新
+ */
+function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
+    let c1 = n1.children,
+        c2 = n2.children
+
     const oldLength = c1.length
     const newLength = c2.length
     const commonLength = Math.min(oldLength, newLength)
-    // console.log(commonLength)
-    for(let i=0;i<commonLength;i++){
+    console.log(commonLength)
+    for (let i = 0; i < commonLength; i++) {
         const nextChild = c2[i]
-        patch(c1[i],nextChild,container)
+        patch(c1[i], nextChild, container, anchor)
     }
 }
