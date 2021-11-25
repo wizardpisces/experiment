@@ -1,13 +1,14 @@
-import { Component, VNode } from "./type";
+import { VNode } from "./type";
 import { isString } from "./util";
-import { traverseVNode, render } from "./h";
+import { render } from "./h";
 import { effect, h } from ".";
+import { ConcreteComponent } from "./component";
 
 export {
     createApp
 }
 
-function createApp(app: Component, props: VNode['props']={children:[]}) {
+function createApp(app: ConcreteComponent, props: VNode['props']={children:[]}) {
     return {
         mount: (rootContainer: string | Element) => {
             let vnode = h(app, props);
