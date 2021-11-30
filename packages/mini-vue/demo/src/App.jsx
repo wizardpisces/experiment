@@ -17,7 +17,7 @@ export default {
         <h1>mini-vue counter {Math.random()}</h1>
         <span>{count.value}</span>
         <button onClick={add}>+1</button>
-        <Child></Child>
+        <Child count={count.value}></Child>
       </div>
     )
   }

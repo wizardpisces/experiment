@@ -1,6 +1,9 @@
 import { ref, effect, h } from '../../src'
 export default {
-    setup() {
+    props:{
+        count:Number
+    },
+    setup(props) {
         const childCount = ref(0)
 
         const add = () => childCount.value++
@@ -8,11 +11,12 @@ export default {
         effect(function log() {
             console.log('childCount changed!', childCount.value)
         })
+        effect(() => console.log('child props change:', props,props.count))
         return () => (
             <div class="child-count">
                 <h1>Child {Math.random()}</h1>
-                <span>{childCount.value}</span>
-                <button onClick={add}>+1</button>
+                <p>child count:{childCount.value}<button onClick={add}>+1</button></p>
+                <p>props count: {props.count}</p>
             </div>
         )
     }

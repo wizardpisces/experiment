@@ -6,27 +6,6 @@ export {
     ref
 }
 
-// function reactive(value: any) {
-//     return value
-// }
-// const handler: ProxyHandler<any> = {
-//     get(target, property) {
-//         console.log('intercepted!')
-//         trackEffect(target, property)
-//         const value = Reflect.get(target, property)
-//         if (isObject(value)) {
-//             // Wrap the nested object in its own reactive proxy
-//             // return reactive(value)
-//         } else {
-//             return value
-//         }
-//     },
-//     set(target, property, value) {
-//         triggerEffect(target, property)
-//         return Reflect.set(target, property, value)
-//     }
-// }
-
 class RefItem<T> {
     private _value: T
     private _rawValue: T

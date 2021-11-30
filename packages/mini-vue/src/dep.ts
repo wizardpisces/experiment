@@ -11,13 +11,13 @@ class Dep {
 
     }
     addEffect(effect: Effect){
-        console.warn(effect)
+        // console.warn(effect)
         this.effects.add(effect)
     }
     runEffect(){
         console.log('dep triggered')
         this.effects.forEach(fn=>{
-            console.log(fn)
+            // console.log(fn)
             fn()
         })
     }

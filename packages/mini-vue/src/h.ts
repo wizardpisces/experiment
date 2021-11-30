@@ -137,7 +137,7 @@ function processComponent(n1: VNode | null, n2: VNode, container: Element, ancho
             anchor
         )
     } else {
-        updateComponent(n1, n2)
+        updateComponent(n1, n2,container,anchor)
     }
 }
 
@@ -150,7 +150,6 @@ function mountComponent(n: VNode, container: Element, anchor: HTMLElementX | nul
 
 function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: Element, anchor: HTMLElementX | null) {
     const componentUpdateFn = () => {
-        console.log('componentUpdateFn',instance)
         if (!instance.isMounted) {
             let subTree = instance.subTree = instance.render()
             patch(null, subTree, container, anchor)
@@ -159,22 +158,30 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
         } else {
             let nextTree = instance.render()
             patch(instance.subTree, nextTree, container, anchor)
+            // instance.subTree = nextTree
         }
     }
     effect(componentUpdateFn)
 }
 
-function updateComponent(n1: VNode, n2: VNode) {
+function updateComponent(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     let instance = n2.component = n1.component!
     if (shouldUpdateComponent(n1, n2)) {
+        for(let key in n2.props){
+            if (instance.props[key] !== n2.props[key]) {
+                instance.props[key] = n2.props[key] // update proxy props for later render get latest value
+            }
+        }
 
+        let nextTree = instance.render()
+        patch(instance.subTree,nextTree,container,anchor)
+        // instance.subTree = nextTree
     } else {
         // no update needed. just copy over properties
         n2.component = n1.component
         n2.el = n1.el
         instance.vnode = n2
     }
-    console.log('update component', n1, n2)
 }
 
 function patchElement(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
