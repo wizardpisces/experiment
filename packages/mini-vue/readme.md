@@ -13,6 +13,7 @@ commitId: 0e48a8abfa29708aeb15228b351267bd84901150
 ### 现阶段
 * [x] 父传props给子组件，更新父组件同时props变化也会影响到子组件刷新；
     * 原理：初始阶段对props进行reactivity，在component update阶段对instance props刷新，然后重新触发instance上的render
+    * commitId: 311f680e2e903556bba1ff13a1be17493e0fcc8c
 * [] toRefs
 * [] unmount
 * [] ref/effect track data change

@@ -1,4 +1,4 @@
-import { Dep } from "./dep"
+import { createDep, Dep } from "./dep"
 import { isFunction } from "./util"
 
 export {
@@ -6,6 +6,8 @@ export {
     trackEffect,
     triggerEffect,
     getCurrentEffect,
+    track,
+    trigger,
     Effect
 }
 type Effect = () => void
@@ -15,6 +17,24 @@ function effect(fn: Effect) {
     currentEffect = fn
     fn()
     currentEffect = null
+}
+
+// cache track
+type KeyToDepMap = Map<any, Dep>
+const targetMap = new WeakMap<any, KeyToDepMap>()
+function track(target:Object,key:unknown){
+    let depMap = targetMap.get(target)
+    if (!depMap){
+        targetMap.set(target, depMap=new Map())
+        depMap.set(key,createDep())
+    }
+
+    trackEffect(depMap.get(key) as Dep)
+}
+
+function trigger(target: Object, key: unknown){
+    let dep = targetMap.get(target)?.get(key)!
+    triggerEffect(dep)
 }
 
 function trackEffect(dep: Dep) {

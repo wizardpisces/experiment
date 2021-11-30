@@ -1,3 +1,4 @@
+import { track, trackEffect, trigger } from "./effect";
 import { isObject } from "./util"
 
 export {
@@ -9,14 +10,16 @@ const shallowSet = createSetter(true)
 
 function createSetter(isShallow: boolean) {
     return function set(target: any, p: string | symbol, value: any, receiver: any): boolean {
-        return Reflect.set(target, p, value)
+        let result = Reflect.set(target, p, value)
+        trigger(target, p)
+        return result;
     }
 }
 
 function createGetter(isShallow: boolean) {
     return function get(target: Object, p: string | symbol, receiver: any) {
-        const value = Reflect.get(target, p)
-
+        const value = Reflect.get(target, p, receiver)
+        track(target, p)
         if (isShallow) {
             return value
         }

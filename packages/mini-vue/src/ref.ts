@@ -34,11 +34,6 @@ function ref(input: any) {
    return new RefItem(input)
 }
 
-// type RefBase<T> = {
-//     dep?: Dep
-//     value: T
-// }
-
 function trackRef(ref:RefItem<any>){
     if (!ref.dep) {
         ref.dep = createDep()
