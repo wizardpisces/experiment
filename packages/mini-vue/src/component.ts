@@ -74,7 +74,27 @@ function shouldUpdateComponent(
     if (prevVNode.props === nextVNode.props) {
         return false
     }
-    return true
+    return hasPropsChanged(prevVNode.props,nextVNode.props)
+}
+
+// props每次渲染都是重新创建，需要遍历对比；里层数据是闭包引用，无需遍历直接对比
+function hasPropsChanged(
+    prevProps: Data,
+    nextProps: Data
+): boolean {
+    const nextKeys = Object.keys(nextProps)
+    if (nextKeys.length !== Object.keys(prevProps).length) {
+        return true
+    }
+    for (let i = 0; i < nextKeys.length; i++) {
+        const key = nextKeys[i]
+        if (
+            nextProps[key] !== prevProps[key]
+        ) {
+            return true
+        }
+    }
+    return false
 }
 
 function initProps(instance: ComponentInternalInstance, props: VNode['props'], isStateful: number) {

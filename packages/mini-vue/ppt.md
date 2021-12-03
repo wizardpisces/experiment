@@ -24,7 +24,7 @@ eg:
     * 主要方向是 template 的静态优化
 * react jsx/Virtual-DOM，编译成render函数
     * 主要方向是 JSX + 运行时调度优化，提升用户**感知性能**，例如：时间切片（调度也耗时）
-* angular 基于template的，它们将模板编译成相对较低级别的指令来进行内容渲染，基于Incremental DOM更新
+* angular 基于template的，它们将模板编译成相对较低级别的指令来进行内容渲染，基于Incremental DOM更新（相对Virtual-DOM diff节省内存，同时更费CPU，所以是一个CPU跟内存的取舍）
     * 主要方向是：待补充
 * svelte（一种编译器框架） 编译生成指令更新，基本无runtime调度
     * 缺点：包大小会随着工程增长而成比较陡峭线性增长；受限于模板语法，所以有很多心智负担？级别越低的编译输出，很难将你的自定义操作与它进行挂钩，就好比你无法使用 C 语言去调试你的汇编代码
@@ -46,3 +46,4 @@ eg:
 * https://github.com/vuejs/vue-next
 * https://zhuanlan.zhihu.com/p/35046696
 * https://zhuanlan.zhihu.com/p/76622839
+* https://github.com/google/incremental-dom

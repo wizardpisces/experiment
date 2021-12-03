@@ -167,6 +167,7 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
 function updateComponent(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     let instance = n2.component = n1.component!
     if (shouldUpdateComponent(n1, n2)) {
+        console.log('update component',n1,n2)
         for(let key in n2.props){
             if (instance.props[key] !== n2.props[key]) {
                 instance.props[key] = n2.props[key] // update proxy props for later render get latest value
