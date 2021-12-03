@@ -1,10 +1,8 @@
 # React Hooks vs Vue Composition-Api 简单对比
 
-之前组内已经有分享过 React Hooks的使用的，也有分享 Vue Composition-Api的使用的
+**现象：** React + Mobx = 更繁琐的 Vue Composition-API
 
-这里主要是简介 React Hooks 以及 Vue Hooks的原理部分以及区别
-
-回答几个问题：
+**几个问题：**
 
 * Why Hooks 简单回顾？
 * React Hooks vs Vue Hooks (Composition-Api)？
