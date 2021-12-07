@@ -76,19 +76,9 @@ function mountElement(vnode: VNode, container: Element, anchor: HTMLElementX | n
     nodeOps.insert(el, container, anchor)
 }
 
-function isSameVNodeType(n1: VNode, n2: VNode): boolean {
-    return n1.type === n2.type
-}
-
 function patch(n1: VNode | null, n2: VNode, container: Element, anchor: HTMLElementX | null) {
     const { type, shapeFlag } = n2
-    // patching & not same type, unmount old tree
-    // if (n1 && !isSameVNodeType(n1, n2)) {
-    //     anchor = getNextHostNode(n1)
-    //     unmount(n1, parentComponent, parentSuspense, true)
-    //     n1 = null
-    // }
-    // console.log('type', type)
+
     switch (type) {
         case TEXT: processText(n1, n2, container, anchor);
         default:
@@ -163,8 +153,7 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
         }
     }
 
-    // 搜集变化，避免一次事件循环中触发多次更新
-    // effect( componentUpdateFn )
+    // register schedule for batch update when multiple changes triggered
     let effect = new ReactiveEffect(componentUpdateFn, () => queueJob(componentUpdateFn))
 
     // track effect
@@ -174,18 +163,17 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
 }
 
 function updateComponent(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
-    console.log('update component', n1, n2)
     let instance = n2.component = n1.component!
     if (shouldUpdateComponent(n1, n2)) {
+        console.log('update component', n1, n2)
         for (let key in n2.props) {
             if (instance.props[key] !== n2.props[key]) {
-                instance.props[key] = n2.props[key] // update proxy props for later render get latest value
+                instance.props[key] = n2.props[key] // trigger reactive props effect
             }
         }
 
         let nextTree = instance.render()
         patch(instance.subTree, nextTree, container, anchor)
-        // instance.subTree = nextTree
     } else {
         // no update needed. just copy over properties
         n2.component = n1.component
@@ -198,7 +186,6 @@ function patchElement(n1: VNode, n2: VNode, container: Element, anchor: HTMLElem
     let el = n2.el = n1.el
     patchProps(el as HTMLElement, n1.props, n2.props)
     patchChildren(n1, n2, container, anchor)
-    // console.log('update Elemenet', n1, n2)
 }
 
 function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
@@ -208,7 +195,7 @@ function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLEle
     const oldLength = c1.length
     const newLength = c2.length
     const commonLength = Math.min(oldLength, newLength)
-    // console.log(commonLength)
+    
     for (let i = 0; i < commonLength; i++) {
         const nextChild = c2[i]
         patch(c1[i], nextChild, container, anchor)

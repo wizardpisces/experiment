@@ -1,5 +1,5 @@
 ## Introdution
-Vue@3 in mini version
+Vue@3 Composition-API in mini version
 ## Progress
 通过run Demo的需要逐步实现功能
 ### 第一阶段
@@ -10,13 +10,15 @@ Vue@3 in mini version
 * [x] ref/effect track primary data change
 commitId: 0e48a8abfa29708aeb15228b351267bd84901150
 
-### 现阶段
+### 第二阶段
 * [x] 父传props给子组件，更新父组件同时props变化也会影响到子组件刷新；
     * 原理：初始阶段对props进行reactivity，在component update阶段对instance props刷新，然后重新触发instance上的render
     * commitId: 311f680e2e903556bba1ff13a1be17493e0fcc8c
 * [x] reactive track Object change
 * [x] nextTick
-* [x] 一次事件循环中的多次数据更新只触发一次组件update（update操作同步 -> 异步）
+* [x] component batch update（update操作同步 -> 异步）
+commitId: 3041af4ee7fdbca42d41f0ba737e281bcef08a05
+### 第三阶段
 * [] toRefs
 * [] unmount
 * [] Fragment？

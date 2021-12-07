@@ -1,5 +1,3 @@
-import { ReactiveEffect } from "./effect";
-
 export {
     queueJob,
     nextTick
@@ -19,8 +17,9 @@ function flushJobs() {
     queue = [] // empty queue to avoid Component Scope Trigger
 }
 
+// mainly for batch update schedule
 function queueJob(job: SchedulerJob) {
-    console.log('queueJob', job)
+    // console.log('queueJob', job)
     if (!queue.includes(job)){
         queue.push(job)
     }

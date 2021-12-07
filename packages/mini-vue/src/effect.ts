@@ -14,7 +14,10 @@ type EffectFn = () => void
 let activeEffect: ReactiveEffect | null = null
 
 class ReactiveEffect<T = any>{
-    constructor(public fn: () => T, public scheduler: (() => void) | null = null) {
+    constructor(
+        public fn: () => T,
+        public scheduler: (() => void) | null = null // mainly for schedule batch component update (triggered by multiple data changes)
+    ) {
     }
     run() {
         activeEffect = this
