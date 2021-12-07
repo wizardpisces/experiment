@@ -12,12 +12,13 @@ export {
     reactive
 }
 
-// import { ref, effect, h, createApp,Fragment } from 'vue'
+// import { ref, effect, h, createApp, Fragment, reactive } from 'vue'
 
 // export {
 //     ref,
 //     effect,
 //     h,
 //     createApp,
-//     Fragment
+//     Fragment,
+//     reactive
 // }

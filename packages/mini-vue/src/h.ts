@@ -1,6 +1,7 @@
 import { ComponentInternalInstance, ConcreteComponent, createComponentInstance, isStatefulComponent, setupComponent, shouldUpdateComponent } from './component';
-import { effect } from './effect';
+import { effect, ReactiveEffect } from './effect';
 import { nodeOps, patchProps } from './nodeOpts';
+import { queueJob } from './scheduler';
 import { ComponentChild, HTMLElementX, ShapeFlags, SimpleNode, VNode, TEXT } from './type'
 import { isArray, isFunction, isObject, isSimpleNode, isString } from './util';
 export {
@@ -137,7 +138,7 @@ function processComponent(n1: VNode | null, n2: VNode, container: Element, ancho
             anchor
         )
     } else {
-        updateComponent(n1, n2,container,anchor)
+        updateComponent(n1, n2, container, anchor)
     }
 }
 
@@ -149,7 +150,7 @@ function mountComponent(n: VNode, container: Element, anchor: HTMLElementX | nul
 }
 
 function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: Element, anchor: HTMLElementX | null) {
-    const componentUpdateFn = () => {
+    const componentUpdateFn = instance.update = () => {
         if (!instance.isMounted) {
             let subTree = instance.subTree = instance.render()
             patch(null, subTree, container, anchor)
@@ -161,21 +162,29 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
             // instance.subTree = nextTree
         }
     }
-    effect(componentUpdateFn)
+
+    // 搜集变化，避免一次事件循环中触发多次更新
+    // effect( componentUpdateFn )
+    let effect = new ReactiveEffect(componentUpdateFn, () => queueJob(componentUpdateFn))
+
+    // track effect
+    let update = effect.run.bind(effect)
+
+    update()
 }
 
 function updateComponent(n1: VNode, n2: VNode, container: Element, anchor: HTMLElementX | null) {
+    console.log('update component', n1, n2)
     let instance = n2.component = n1.component!
     if (shouldUpdateComponent(n1, n2)) {
-        console.log('update component',n1,n2)
-        for(let key in n2.props){
+        for (let key in n2.props) {
             if (instance.props[key] !== n2.props[key]) {
                 instance.props[key] = n2.props[key] // update proxy props for later render get latest value
             }
         }
 
         let nextTree = instance.render()
-        patch(instance.subTree,nextTree,container,anchor)
+        patch(instance.subTree, nextTree, container, anchor)
         // instance.subTree = nextTree
     } else {
         // no update needed. just copy over properties

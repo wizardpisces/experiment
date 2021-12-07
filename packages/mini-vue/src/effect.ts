@@ -5,49 +5,53 @@ export {
     effect,
     trackEffect,
     triggerEffect,
-    getCurrentEffect,
     track,
     trigger,
-    Effect
+    ReactiveEffect
 }
-type Effect = () => void
-let currentEffect: Effect | null = null
 
-function effect(fn: Effect) {
-    currentEffect = fn
-    fn()
-    currentEffect = null
+type EffectFn = () => void
+let activeEffect: ReactiveEffect | null = null
+
+class ReactiveEffect<T = any>{
+    constructor(public fn: () => T, public scheduler: (() => void) | null = null) {
+    }
+    run() {
+        activeEffect = this
+        this.fn()
+        activeEffect = null
+    }
+}
+
+function effect<T = any>(fn: () => T) {
+    let effect = new ReactiveEffect(fn)
+    effect.run()
 }
 
 // cache track
 type KeyToDepMap = Map<any, Dep>
 const targetMap = new WeakMap<any, KeyToDepMap>()
-function track(target:Object,key:unknown){
+function track(target: Object, key: unknown) {
     let depMap = targetMap.get(target)
-    if (!depMap){
-        targetMap.set(target, depMap=new Map())
-        depMap.set(key,createDep())
+    if (!depMap) {
+        targetMap.set(target, depMap = new Map())
+        depMap.set(key, createDep())
     }
 
     trackEffect(depMap.get(key) as Dep)
 }
 
-function trigger(target: Object, key: unknown){
+function trigger(target: Object, key: unknown) {
     let dep = targetMap.get(target)?.get(key)!
     triggerEffect(dep)
 }
 
 function trackEffect(dep: Dep) {
-    // console.warn('trackEffect',dep,currentEffect)
-    if(isFunction(currentEffect)){
-        dep.addEffect(currentEffect)
-    }
+    // console.warn('trackEffect',dep,activeEffect)
+    activeEffect && dep.addEffect(activeEffect)
 }
 
 function triggerEffect(dep: Dep) {
     // console.log('triggerEffect', dep)
-
     dep.runEffect()
 }
-
-const getCurrentEffect = () => currentEffect

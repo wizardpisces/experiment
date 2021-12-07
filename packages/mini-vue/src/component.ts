@@ -31,6 +31,7 @@ type ComponentInternalInstance = {
      */
     subTree: VNode
     props: Data
+    update:any
 }
 
 let uid = 0
@@ -43,7 +44,8 @@ function createComponentInstance(initialVNode: VNode) {
         render: null!,
         isMounted: false,
         subTree: null!,
-        props: {}
+        props: {},
+        update:null!
     }
     return instance
 }

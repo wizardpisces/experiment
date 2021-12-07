@@ -15,6 +15,8 @@ commitId: 0e48a8abfa29708aeb15228b351267bd84901150
     * 原理：初始阶段对props进行reactivity，在component update阶段对instance props刷新，然后重新触发instance上的render
     * commitId: 311f680e2e903556bba1ff13a1be17493e0fcc8c
 * [x] reactive track Object change
+* [x] nextTick
+* [x] 一次事件循环中的多次数据更新只触发一次组件update（update操作同步 -> 异步）
 * [] toRefs
 * [] unmount
 * [] Fragment？

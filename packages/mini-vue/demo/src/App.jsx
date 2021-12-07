@@ -7,7 +7,8 @@ export default {
 
     const add = () => {
       count.value++
-      obj.age++
+      count.value--
+      count.value++
       console.log('Event [add] clicked:', count)
     }
     const addAge = () => {

@@ -1,4 +1,4 @@
-import { Effect } from "./effect"
+import { ReactiveEffect } from "./effect"
 
 export {
     Dep,
@@ -6,23 +6,24 @@ export {
 }
 
 class Dep {
-    private effects: Set<Effect> = new Set()
-    constructor(){
-
-    }
-    addEffect(effect: Effect){
-        // console.warn(effect)
+    private effects: Set<ReactiveEffect> = new Set()
+    addEffect(effect: ReactiveEffect) {
+        console.warn(effect)
         this.effects.add(effect)
     }
-    runEffect(){
-        console.log('dep triggered')
-        this.effects.forEach(fn=>{
+    runEffect() {
+        // console.log('dep triggered', this.effects.size)
+        this.effects.forEach(effect => {
             // console.log(fn)
-            fn()
+            if (effect.scheduler) {
+                effect.scheduler()
+            } else {
+                effect.run()
+            }
         })
     }
 }
 
-function createDep(){
+function createDep() {
     return new Dep()
 }
