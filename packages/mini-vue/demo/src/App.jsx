@@ -1,4 +1,5 @@
 import { ref, effect, h, reactive } from '../../src'
+import { nextTick } from '../../src/scheduler'
 import Child from './child'
 export default {
   setup() {
@@ -9,10 +10,12 @@ export default {
       count.value++
       count.value--
       count.value++
+      obj.age++
       console.log('Event [add] clicked:', count)
     }
     const addAge = () => {
       obj.age++
+      nextTick(() => obj.age++)
       console.log('Event [addAge] clicked:', count)
     }
     console.log('setup running')

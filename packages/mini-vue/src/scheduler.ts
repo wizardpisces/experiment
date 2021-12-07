@@ -13,13 +13,13 @@ let currentFlushPromise: Promise<void> | null = null
 
 function flushJobs() {
     isFlushing = true
+    console.log('flushJobs',queue.length)
     queue.forEach(job => job())
     queue = [] // empty queue to avoid Component Scope Trigger
 }
 
 // mainly for batch update schedule
 function queueJob(job: SchedulerJob) {
-    // console.log('queueJob', job)
     if (!queue.includes(job)){
         queue.push(job)
     }
