@@ -20,6 +20,9 @@
 3. 谈一谈 Mixin、HOC、Render props、Hooks
 4. 为什么需要scheduler? 任务调度原理是什么？
 
+## 描述下JXS跟Template的优势跟劣势
+## 描述下React跟Vue分别的演化方向
+
 ### 进阶问题
 1. Vue 和 React 的核心差异，以及核心差异对后续设计产生的“不可逆”影响
 2. Vue 和 React 在 API 设计风格和哲学理念（甚至作者个人魅力）上的不同
