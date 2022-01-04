@@ -1,8 +1,7 @@
 export {
     Options,
     MessageType,
-    Structure,
-    OuterOptions
+    Structure
 }
 type Structure = {
     /**
@@ -16,10 +15,7 @@ type Options = {
     workerPath:string
     structure: Structure
 }
-type OuterOptions = {
-    workerPath?: string
-    structure: Structure
-}
+
 const enum MessageType {
     init = 'init',
     update = 'update',

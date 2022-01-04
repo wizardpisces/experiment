@@ -27,5 +27,4 @@ let structure: Options['structure'] = {
 init({
   structure,
   workerPath: './src/main.ts'
-  // workerPath: './dist/assets/index.706f727b.js'
 })
