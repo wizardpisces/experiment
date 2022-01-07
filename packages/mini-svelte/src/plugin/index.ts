@@ -10,50 +10,55 @@ function miniSveltePlugin(): Plugin {
 
     return {
         name: 'vite:mini-svelte',
-        // configureServer(context: ServerDevContext) {
-        //     serverDevContext = context
-        // },
-        // handleHotUpdate(ctx: HmrContext) {
-        //     if (!filter(ctx.file)) {
-        //         return
-        //     }
-        //     return handleHotUpdate(ctx)
-        // },
-
-        // resolveId(id) {
-        //     if (parseSvelteRequest(id).query.vue) {
-        //         return id
-        //     }
-        //     return null
-        // },
-
-        // load(id) {
-        //     const { filename, query } = parseSvelteRequest(id)
-        //     if (query.vue) {
-        //         const descriptor = getDescriptor(filename)!
-        //         let block;
-        //         if (query.type === 'style') {
-        //             block = descriptor.styles[query.index!]
-        //             return {
-        //                 code: block.content
-        //             }
-        //         }
-        //     }
-        //     return null
-        // },
 
         async transform(code, id) {
             const { filename } = parseSvelteRequest(id)
             if (!filter(filename)) {
                 return null
+            }else{
+                return transformMain(code, id)
             }
 
-            return transformMain(code, id)
         }
 
     }
 }
 
 function transformMain(code: string, id: string) {
-    return null;
+    const output: string[] = []
+    output.push(genUtil())
+    output.push(genApp())
+    output.push(genFragment())
+    return output.join('\n');
+}
+
+function genUtil() {
+    return `
+function element(tagName) {
+    return document.createElement(tagName)
+}
+`
+}
+function genApp() {
+    let ctx: string[] = ['world']
+    return `
+export default class AppSvelte {
+    constructor(options) {
+        let block = create_fragment(${JSON.stringify(ctx)});
+        options.target.appendChild(block.c())
+    }
+}`
+}
+function genFragment() {
+    return `function create_fragment(ctx) {
+        let h1
+        let block = {
+            c: function create() {
+                h1 = element('h1');
+                h1.textContent = \`Hello \${ctx[0]}!\`;
+                return h1
+            }
+        }
+        return block
+    }`
 }
