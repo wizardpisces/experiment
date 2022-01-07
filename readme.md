@@ -1,5 +1,7 @@
 ## Introduction
 
+对框架及其概念的拆解研究，同时实现一个便于理解的概念版本
+
 Frameworks in mini version
 
 (koa, express, vite, webpack, inversify, rpc, react, vue etc)
