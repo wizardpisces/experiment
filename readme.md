@@ -1,9 +1,5 @@
 ## Introduction
 
-主要内容：编程概念的简单实现
-
-对象：想要了解编程原理的开发
-
 Frameworks in mini version
 
 (koa, express, vite, webpack, inversify, rpc, react, vue etc)
