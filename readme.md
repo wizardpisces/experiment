@@ -1,6 +1,7 @@
 ## Introduction
 
-对框架及其概念的拆解研究，同时实现一个便于理解的概念版本
+主要内容：编程概念的简单实现
+对象：想要了解编程原理的开发
 
 Frameworks in mini version
 
