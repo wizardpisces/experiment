@@ -4,7 +4,7 @@
     "esModuleInterop": true,
     "target": "esnext",
     "useDefineForClassFields": true,
-    "module": "CommonJS",
+    "module": "esnext",
     "resolveJsonModule": true,
     "baseUrl": ".",
     /**
