@@ -9,23 +9,12 @@ const tplRegex = /<([\w|\d]+)>([^<>]+)<\/[\w\d]+>/g
 const varRegex = /{([\w\d]+)}/g
 
 function compileTemplate(context: ParseContext) {
-    let { rawTemplate, ctx, ctxRecord } = context,
-        regResult,
-        output: string[] = [];
+
+    let output: string[] = [];
 
     output.push(genUtil())
     output.push(genApp(context))
-
-    while ((regResult = tplRegex.exec(rawTemplate)) !== null) {
-        let tagName = regResult[1]
-        let innerContent = regResult[2]
-        innerContent = innerContent.replace(varRegex, function (_, name) {
-            let index = ctxRecord[name]
-            return `\${ctx[${index}]}`
-        })
-
-        output.push(genFragment(tagName, innerContent))
-    }
+    output.push(genFragment(context))
 
     context.templateCode = output.join('\n')
 }
@@ -43,20 +32,49 @@ function genApp(context: ParseContext) {
 export default class AppSvelte {
     constructor(options) {
         let block = create_fragment(${JSON.stringify(ctx)});
-        options.target.appendChild(block.c())
+        block.c().forEach(tag=>options.target.appendChild(tag))
     }
 }`
 }
-function genFragment(tagName: string, innerContent: string) {
-    return `function create_fragment(ctx) {
-        let tag
-        let block = {
-            c: function create() {
-                tag = element(\`${tagName}\`);
-                tag.textContent = \`${innerContent}\`
-                return tag
-            }
+function genFragment(context: ParseContext) {
+    let { rawTemplate, ctx, ctxRecord } = context,
+        regResult,
+        tagList = [];
+
+    while ((regResult = tplRegex.exec(rawTemplate)) !== null) {
+        let tagName = regResult[1]
+        let innerContent = regResult[2]
+        innerContent = innerContent.replace(varRegex, function (_, name) {
+            let index = ctxRecord[name]
+            return `\${ctx[${index}]}`
+        })
+        tagList.push({ tagName, innerContent })
+    }
+
+    let declaration: string = tagList.map(tag => {
+        return `
+            let ${tag.tagName}
+        `
+    }).join('\n')
+
+    let cContent: string = tagList.map(tag => {
+        let { tagName, innerContent} = tag
+        return `${tagName} = element(\`${tagName}\`);
+                ${tagName}.textContent = \`${innerContent}\`
+                `
+    }).join('\n')
+
+    let output = `function create_fragment(ctx) {
+        ${declaration}
+         let block = {
+              c: function create() {
+                  ${cContent}
+                  return [${ tagList.map(tag=>tag.tagName) }]
+              }
+           
         }
         return block
-    }`
+    }
+        `
+    return output
 }
