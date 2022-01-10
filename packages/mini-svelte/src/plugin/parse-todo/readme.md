@@ -1,4 +1,5 @@
-# Full parse
-TODOS
+# Parser
 
-use parseMain.ts for simple demo
+template and script parser
+
+TODO

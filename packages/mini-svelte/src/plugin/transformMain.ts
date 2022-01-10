@@ -1,74 +1,29 @@
-import { Descriptor, ParseContext, parseMain } from "./parse/parseMain"
+import { Descriptor, parseMain } from "./parse"
 
 export { transformMain }
 
 function transformMain(code: string, id: string) {
     const output: string[] = []
-    let parseContext: ParseContext = {
-        code,
-        ctx: [],
-        ctxRecord:{},
-        tag: '',
-        templateCode:'',
-        scriptCode:'',
-        styleCode:''
-    }
-    
-    let descriptor: Descriptor = parseMain(parseContext)
-    let script = genScript(descriptor)
-    let template = genTemplate(descriptor)
-    let style = genStyle(descriptor)
 
-    output.push(genUtil())
-    output.push(genApp())
-    output.push(genFragment())
+    let descriptor: Descriptor = parseMain(code)
+
+    output.push(genStyle(descriptor))
+    output.push(genTemplate(descriptor))
+
     return output.join('\n');
 }
 
-function genScript(descriptor) {
-    return descriptor.script
-}
-function genTemplate(descriptor) {
+function genTemplate(descriptor: Descriptor) {
     return descriptor.template
 }
-function genStyle(descriptor) {
-    return descriptor.style
-}
 
-
-
-function genUtil() {
-    return `
-function element(tagName) {
-    return document.createElement(tagName)
-}
-`
-}
-function genApp() {
-    let ctx: string[] = ['world']
-    return `
-export default class AppSvelte {
-    constructor(options) {
-        let block = create_fragment(${JSON.stringify(ctx)});
-        options.target.appendChild(block.c())
-    }
-}`
-}
-function genFragment() {
-    return `function create_fragment(ctx) {
-        let h1
-        let block = {
-            c: function create() {
-                h1 = element('h1');
-                h1.textContent = \`Hello \${ctx[0]}!\`;
-                return h1
-            }
-        }
-        return block
-    }`
-}
-
-function parse(context: ParseContext) {
-    let { code } = context
-
+// for vite hot and injection
+function genStyle(descriptor: Descriptor) {
+    let styleCode = `
+        import { updateStyle, removeStyle } from "/@vite/client";
+        const id = 0;     // TODOS 目前只解析一块 css
+        const css = \`${descriptor.style}\`;
+        updateStyle(id, css);
+    `
+    return styleCode
 }

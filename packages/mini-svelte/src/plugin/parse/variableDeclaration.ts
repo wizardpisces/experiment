@@ -1,7 +1,6 @@
 import ESTree from 'estree'
-import { ParseContext } from './parseMain';
 import { Tree } from './Tree';
-import { NodeTypes } from './type';
+import { NodeTypes, ParseContext } from './type';
 export{
     VariableDeclarator,
     VariableDeclaration

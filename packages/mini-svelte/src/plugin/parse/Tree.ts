@@ -1,4 +1,4 @@
-import { ParseContext } from "./parseMain"
+import { ParseContext } from "./type"
 
 export class Tree {
     // todo : should be more specific

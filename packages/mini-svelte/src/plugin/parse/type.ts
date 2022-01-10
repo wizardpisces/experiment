@@ -1,4 +1,9 @@
-export const enum NodeTypes {
+export {
+    NodeTypes,
+    Descriptor,
+    ParseContext
+}
+const enum NodeTypes {
     //ExpressionStatement
     MemberExpression = 'MemberExpression',
     AssignmentExpression = 'AssignmentExpression',
@@ -22,3 +27,24 @@ export const enum NodeTypes {
     WhileStatement = 'WhileStatement',
     IfStatement = 'IfStatement',
 }
+
+type Descriptor = {
+    script: string
+    style: string
+    template: string
+}
+
+type ParseContext = {
+    code: string
+    ctx: any[]
+    ctxRecord: Record<string, number>
+    tag: string
+    scriptCode: string
+    styleCode: string
+    templateCode: string
+
+    rawScript: string
+    rawStyle: string
+    rawTemplate: string
+}
+

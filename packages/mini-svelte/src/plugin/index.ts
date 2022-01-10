@@ -1,4 +1,3 @@
-import { parseSvelteRequest } from "./query"
 import { Plugin } from 'vite'
 import { transformMain } from "./transformMain"
 export {
@@ -13,7 +12,7 @@ function miniSveltePlugin(): Plugin {
         name: 'vite:mini-svelte',
 
         async transform(code, id) {
-            const { filename } = parseSvelteRequest(id)
+            const { filename } = parseRequest(id)
             if (!filter(filename)) {
                 return null
             }else{
@@ -22,5 +21,14 @@ function miniSveltePlugin(): Plugin {
 
         }
 
+    }
+}
+
+function parseRequest(id: string): {
+    filename: string
+} {
+    const [filename, rawQuery] = id.split(`?`, 2)
+    return {
+        filename
     }
 }
