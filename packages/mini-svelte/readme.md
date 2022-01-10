@@ -1,4 +1,7 @@
 ## Introdution
 Svelte in mini version
 
-TODO
+## Reference
+
+* https://github.com/wizardpisces/tiny-sass-compiler
+* https://github.com/sveltejs/svelte
