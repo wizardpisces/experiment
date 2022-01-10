@@ -2,6 +2,8 @@
 
 Frameworks in mini version
 
+eg: [ React-Hooks, Vite, Vue, Svelte, Webpack,  Koa,  Inversify,  RPC, Express, etc
+
 More info: packages/* readme.md
 
 ## Philosophy
