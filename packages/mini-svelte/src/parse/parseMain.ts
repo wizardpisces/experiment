@@ -56,9 +56,10 @@ function parseMain(rawCode: string):Descriptor {
         rawStyle,
         rawTemplate
     }
-    compileScript(context)
-    compileStyle(context)
+
+    //先编译template，根据template对变量引用以及事件绑定关系再去编译相应的 script
     compileTemplate(context)
+    compileStyle(context)
 
     return {
         style:context.styleCode,

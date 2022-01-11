@@ -15,16 +15,18 @@ class VariableDeclarator extends Tree {
     evaluate(context: ParseContext) {
         if (this.ast.id.type === NodeTypes.Identifier) {
             if (this.ast.init!.type === NodeTypes.Literal) {
-                context.ctx.push((<ESTree.Literal>this.ast.init).value)
-                context.ctxRecord[this.ast.id.name] = context.ctx.length-1
+                context.env.def(this.ast.id.name, (<ESTree.Literal>this.ast.init).value)
+                // context.ctx.push((<ESTree.Literal>this.ast.init).value)
+                // context.ctxRecord[this.ast.id.name] = context.ctx.length-1
             } else if (this.ast.init!.type === NodeTypes.Identifier) {
                 // update ctxRecord
-                let idName = (<ESTree.Identifier>this.ast.init).name
-                let valueIndex = context.ctxRecord[idName ]
-                if(typeof valueIndex === undefined){
-                    throw Error(`[VariableDeclaration]: ${idName} is undefined`)
-                }
-                context.ctxRecord[this.ast.id.name] = valueIndex
+                // let idName = (<ESTree.Identifier>this.ast.init).name
+                // let valueIndex = context.ctxRecord[idName ]
+                // if(typeof valueIndex === undefined){
+                //     throw Error(`[VariableDeclaration]: ${idName} is undefined`)
+                // }
+                // context.ctxRecord[this.ast.id.name] = valueIndex
+                context.env.def(this.ast.id.name, context.env.get((<ESTree.Identifier>this.ast.init).name))
             }
         }
     }
