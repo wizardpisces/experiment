@@ -24,15 +24,22 @@ function genUtil() {
 function element(tagName) {
     return document.createElement(tagName)
 }
+function insert_dev(parent,child,anchor){
+    parent.insertBefore(child, anchor || null)
+}
 `
 }
 function genApp(context: ParseContext) {
     let { ctx } = context
     return `
+function init(AppClass,options,create_fragment){
+    let block = create_fragment(${JSON.stringify(ctx)});
+    block.c()
+    block.m(options.target,null)
+}
 export default class AppSvelte {
     constructor(options) {
-        let block = create_fragment(${JSON.stringify(ctx)});
-        block.c().forEach(tag=>options.target.appendChild(tag))
+        init(this, options, create_fragment);
     }
 }`
 }
@@ -52,9 +59,7 @@ function genFragment(context: ParseContext) {
     }
 
     let declaration: string = tagList.map(tag => {
-        return `
-            let ${tag.tagName}
-        `
+        return `let ${tag.tagName}`
     }).join('\n')
 
     let cContent: string = tagList.map(tag => {
@@ -64,17 +69,24 @@ function genFragment(context: ParseContext) {
                 `
     }).join('\n')
 
+    let mContent:string = tagList.map(tag=>{
+        let { tagName, innerContent } = tag
+        return `insert_dev(target,${tagName},anchor);`;
+    }).join('\n')
+
     let output = `function create_fragment(ctx) {
         ${declaration}
          let block = {
               c: function create() {
                   ${cContent}
-                  return [${ tagList.map(tag=>tag.tagName) }]
+                //   return [${ tagList.map(tag=>tag.tagName) }]
+              },
+              m: function mount(target,anchor){
+                  ${mContent}
               }
-           
         }
         return block
-    }
-        `
+    }`
+    console.log(output)
     return output
 }

@@ -1,3 +1,5 @@
+import { Environment } from "./environment/Environment"
+
 export {
     NodeTypes,
     Descriptor,
@@ -36,6 +38,7 @@ type Descriptor = {
 
 type ParseContext = {
     code: string
+    env: Environment
     ctx: any[]
     ctxRecord: Record<string, number>
     tag: string

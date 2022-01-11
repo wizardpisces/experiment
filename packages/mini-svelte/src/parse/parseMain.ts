@@ -3,6 +3,7 @@ import { compileScript } from "./compileScript"
 import { ParseContext } from "./type"
 import { compileTemplate } from "./compileTemplate"
 import { Descriptor } from "."
+import { Environment } from "./environment/Environment"
 
 export {
     parseMain
@@ -13,6 +14,7 @@ function createParseContext(code: string): ParseContext {
         code,
         ctx: [],
         ctxRecord: {},
+        env: new Environment(null),
         tag: '',
         templateCode: '',
         scriptCode: '',
