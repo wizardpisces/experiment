@@ -49,5 +49,8 @@ type ParseContext = {
     rawScript: string
     rawStyle: string
     rawTemplate: string
+
+    addName:(name:string)=>number
+    getIndexByName:(name:string)=>number
 }
 

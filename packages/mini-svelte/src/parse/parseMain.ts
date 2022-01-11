@@ -4,16 +4,20 @@ import { ParseContext } from "./type"
 import { compileTemplate } from "./compileTemplate"
 import { Descriptor } from "."
 import { Environment } from "./environment/Environment"
+import { emitError } from "./util"
 
 export {
     parseMain
 }
 
 function createParseContext(code: string): ParseContext {
-    return {
+    let ctx: ParseContext['ctx'] = [],
+        ctxRecord: ParseContext['ctxRecord'] = {}
+
+     let context = {
         code,
-        ctx: [],
-        ctxRecord: {},
+        ctx: ctx,
+        ctxRecord,
         env: new Environment(null),
         tag: '',
         templateCode: '',
@@ -21,8 +25,26 @@ function createParseContext(code: string): ParseContext {
         styleCode: '',
         rawScript: '',
         rawTemplate: '',
-        rawStyle: ''
+        rawStyle: '',
+
+        addName:(name: string) =>{
+            let index = ctxRecord[name]
+            if (!index) {
+                context.ctx.push(name);
+                index = ctx.length - 1
+                ctxRecord[name] = index
+            }
+            return index
+        },
+        getIndexByName(name:string){
+            let index = ctxRecord[name]
+            if(!index){
+                emitError(`[parseMain]:${name} is not defined`)
+            }
+            return index
+        }
     }
+    return context;
 }
 
 function parseMain(rawCode: string):Descriptor {

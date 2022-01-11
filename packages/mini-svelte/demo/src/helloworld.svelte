@@ -9,10 +9,10 @@
 </script>
 
 <h1>Hello {name} {name2}!</h1>
-<h2>Hello  {name2}!</h2>
-<!-- <button on:click={handleClick}>
-	Clicked {count} {count === 1 ? 'time' : 'times'}
-</button> -->
+<h2>Hello  {name2} {count}!</h2>
+<button on:click={handleClick}>
+	Clicked {count}
+</button>
 
 <style>
 	h1{
