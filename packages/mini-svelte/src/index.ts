@@ -1,1 +1,2 @@
-export * from './plugin/index'
+export * from './vite-plugin/index'
+export * from './parse'

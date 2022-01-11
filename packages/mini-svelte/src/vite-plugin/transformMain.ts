@@ -1,4 +1,4 @@
-import { Descriptor, parseMain } from "./parse"
+import { Descriptor, parseMain } from "../parse"
 
 export { transformMain }
 
