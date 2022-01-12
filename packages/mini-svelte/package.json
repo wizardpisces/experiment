@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "demo": "npm run tsc && cd demo && npm run dev",
+    "rmjs": "find ./src -name '*.js'  | xargs rm -f",
     "tsc": "tsc -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

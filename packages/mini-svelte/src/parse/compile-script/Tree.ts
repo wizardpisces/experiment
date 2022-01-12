@@ -1,4 +1,4 @@
-import { ParseContext } from "./type"
+import { ParseContext } from "../"
 
 export class Tree {
     // todo : should be more specific
@@ -6,7 +6,7 @@ export class Tree {
     constructor(ast: any) {
         this.ast = ast
     }
-    toCode(): string {
+    toCode(context?:ParseContext): string {
         return ''
     }
 

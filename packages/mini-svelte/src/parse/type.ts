@@ -1,5 +1,5 @@
-import { Environment } from "./environment/Environment"
-
+import { Environment, Kind } from "./compile-script/environment/Environment"
+export * from "./compile-script/environment/Environment"
 export {
     NodeTypes,
     Descriptor,
@@ -36,12 +36,12 @@ type Descriptor = {
     template: string
 }
 
+type RuntimeDeclarationMap = Map<string, Kind>
+
 type ParseContext = {
     code: string
     env: Environment
-    ctx: any[]
-    ctxRecord: Record<string, number>
-    tag: string
+
     scriptCode: string
     styleCode: string
     templateCode: string
@@ -50,7 +50,13 @@ type ParseContext = {
     rawStyle: string
     rawTemplate: string
 
-    addName:(name:string)=>number
-    getIndexByName:(name:string)=>number
+    turnOnRuntimeCodeGeneration:()=>void
+    isInRuntimeCodeGeneration:()=>boolean
+    addRuntimeCode:(code:string)=>void
+    flushRuntimeBlockCode:()=>string
+
+    addRuntimeName: (name: string, type?: Kind)=>number
+    getRuntimeIndexByName:(name:string)=>number
+    getRuntimeDeclarationMap: () => RuntimeDeclarationMap
 }
 

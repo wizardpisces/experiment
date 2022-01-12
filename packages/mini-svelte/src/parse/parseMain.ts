@@ -3,7 +3,7 @@ import { compileScript } from "./compileScript"
 import { ParseContext } from "./type"
 import { compileTemplate } from "./compileTemplate"
 import { Descriptor } from "."
-import { Environment } from "./environment/Environment"
+import { Environment, Kind } from "./compile-script/environment/Environment"
 import { emitError } from "./util"
 
 export {
@@ -11,15 +11,24 @@ export {
 }
 
 function createParseContext(code: string): ParseContext {
-    let ctx: ParseContext['ctx'] = [],
-        ctxRecord: ParseContext['ctxRecord'] = {}
 
-     let context = {
+    /**
+     * map的遍历是有序的，可以很好模拟声明的顺序
+     * value被修改后也不会改变key的顺序
+     */
+    let runtimeDeclarationMap: Map<string, Kind> = new Map(),
+        runttimeIndexRecord: Record<string, number> = {}
+
+    let runtimeBlockCode: string[] = [],
+        inRuntimeCodeGeneration = false;
+
+    function turnOffRuntimeCodeGeneration(){
+        inRuntimeCodeGeneration = false
+    }
+
+    let context = {
         code,
-        ctx: ctx,
-        ctxRecord,
         env: new Environment(null),
-        tag: '',
         templateCode: '',
         scriptCode: '',
         styleCode: '',
@@ -27,32 +36,47 @@ function createParseContext(code: string): ParseContext {
         rawTemplate: '',
         rawStyle: '',
 
-        addName:(name: string) =>{
-            let index = ctxRecord[name]
-            if (!index) {
-                context.ctx.push(name);
-                index = ctx.length - 1
-                ctxRecord[name] = index
-            }
-            return index
+        turnOnRuntimeCodeGeneration(){
+            inRuntimeCodeGeneration = true
         },
-        getIndexByName(name:string){
-            let index = ctxRecord[name]
-            if(!index){
+        addRuntimeCode(str:string){
+            if (!inRuntimeCodeGeneration) return
+            runtimeBlockCode.push(str)
+        },
+        isInRuntimeCodeGeneration(){
+            return inRuntimeCodeGeneration
+        },
+        flushRuntimeBlockCode(){
+            turnOffRuntimeCodeGeneration()
+            let code = runtimeBlockCode.join('\n')
+            runtimeBlockCode = []
+            return code
+        },
+
+        addRuntimeName: (name: string, type: Kind = Kind.VariableDeclarator) => {
+            runtimeDeclarationMap.set(name, type)
+            runttimeIndexRecord[name] = runtimeDeclarationMap.size
+            return runtimeDeclarationMap.size
+        },
+        getRuntimeIndexByName(name: string) {
+            let index = runttimeIndexRecord[name]
+            if (!index) {
                 emitError(`[parseMain]:${name} is not defined`)
             }
             return index
+        },
+        getRuntimeDeclarationMap(){
+            return runtimeDeclarationMap
         }
     }
     return context;
 }
 
-function parseMain(rawCode: string):Descriptor {
+function parseMain(rawCode: string): Descriptor {
     let context: ParseContext = createParseContext(rawCode)
 
     let {
-        code,
-        ctx
+        code
     } = context
 
     let scriptStart = '<script>',
@@ -84,8 +108,8 @@ function parseMain(rawCode: string):Descriptor {
     compileStyle(context)
 
     return {
-        style:context.styleCode,
-        script:context.scriptCode,
-        template:context.templateCode
+        style: context.styleCode,
+        script: context.scriptCode,
+        template: context.templateCode
     }
 }

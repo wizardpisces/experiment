@@ -1,5 +1,5 @@
 import { compileScript } from "./compileScript";
-import { ParseContext } from "./type";
+import { ParseContext, Kind } from "./type";
 
 export {
     compileTemplate
@@ -36,7 +36,7 @@ function genInternal() {
 }
 
 function genFragment(context: ParseContext) {
-    let { rawTemplate, ctx, ctxRecord, env, addName,getIndexByName } = context,
+    let { rawTemplate, addRuntimeName, getRuntimeIndexByName } = context,
         regResult,
         tagList = [];
 
@@ -46,21 +46,20 @@ function genFragment(context: ParseContext) {
         let innerContent = regResult[3]
         let eventList = []
 
-        if(prop){
+        if (prop) {
             let event = prop.match(eventRegex)
-            if(event){
+            if (event) {
                 let eventName = event[1],
                     handlerName = event[2];
-                
-                addName(handlerName)
-                eventList.push({ eventName,handlerName})
+
+                addRuntimeName(handlerName, Kind.FunctionDeclaration)
+                eventList.push({ eventName, handlerName })
             }
         }
 
-        if(innerContent){
+        if (innerContent) {
             innerContent = innerContent.replace(varRegex, function (_, name) {
-                return `\${ctx[${addName(name)}]}`
-                // return `\${env.get(${name})}`
+                return `\${ctx[${addRuntimeName(name)}]}`
             })
             tagList.push({ tagName, innerContent, eventList })
         }
@@ -79,15 +78,15 @@ function genFragment(context: ParseContext) {
     }).join('\n')
 
     let mContent: string = tagList.map(tag => {
-        let { tagName, innerContent,eventList } = tag
+        let { tagName, innerContent, eventList } = tag
         let code = `insert_dev(target,${tagName},anchor);`
-        if(eventList.length){
-            code += eventList.map(e=>{
-                return `listen(${tagName},"${e.eventName}",\`\${ctx[${getIndexByName(e.handlerName)}]}\`);/*${e.eventName}|${e.handlerName}*/`;
+        if (eventList.length) {
+            code += eventList.map(e => {
+                return `listen(${tagName},"${e.eventName}",\`\${ctx[${getRuntimeIndexByName(e.handlerName)}]}\`);/*${e.eventName}|${e.handlerName}*/`;
             })
         }
         return code
-        ;
+            ;
     }).join('\n')
 
     let output = `function create_fragment(ctx) {
@@ -99,6 +98,9 @@ function genFragment(context: ParseContext) {
               },
               m: function mount(target,anchor){
                   ${mContent}
+              },
+              p: function patch(ctx,[dirty]){
+                console.log('dirty')
               }
         }
         return block
@@ -109,28 +111,35 @@ function genFragment(context: ParseContext) {
 
 function genInstance(context: ParseContext) {
     let {
-        ctx,
-        ctxRecord,
+        getRuntimeDeclarationMap,
         env
     } = context
     compileScript(context)
-    let vars = ctx.map(name => {
-        return `let ${name} = ${JSON.stringify(env.get(name))}`
+    let runtimeNameKindList = Array.from(getRuntimeDeclarationMap());
+    let declarations = runtimeNameKindList.map(([name, kind]) => {
+        if (kind === Kind.VariableDeclarator) {
+            return `let ${name} = ${JSON.stringify(env.get(name).value)}`
+        } else if (kind === Kind.FunctionDeclaration) {
+            return `${env.getCode(name)}`
+        }
     }).join('\n')
     return `
-    function instance(){
-        ${vars}
-        return [${ctx.map(name => name)}]
+    function instance($$invalidate){
+        ${declarations}
+
+        return [${runtimeNameKindList.map(([name, kind]) => name)}]
     }`
 }
 
 function genApp(context: ParseContext) {
-    let { ctx } = context
     return `
     function init(AppClass,options,instance,create_fragment){
-        let block = create_fragment(instance());
+        let block = create_fragment(instance($$invalidate));
         block.c()
         block.m(options.target,null)
+        function $$invalidate(){
+            block.p()
+        }
     }
     export default class AppSvelte {
         constructor(options) {

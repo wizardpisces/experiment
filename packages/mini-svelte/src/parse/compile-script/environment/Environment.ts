@@ -1,4 +1,4 @@
-import { NodeTypes } from '../type';
+import { NodeTypes } from '../../type';
 
 export enum Kind {
     FunctionDeclaration = NodeTypes['FunctionDeclaration'],
@@ -43,17 +43,14 @@ export class Environment extends BaseEnvironment {
         }
     }
     parent!: Environment | null
+    codeMap: Map<string, string> = new Map() // cover shallow code definition which could be accessed by template
     constructor(parent: Environment | null) {
         super()
         this.vars = Object.create(parent ? parent.vars : null);
         this.parent = parent;
     }
 
-    public extend() {
-        return new Environment(this);
-    }
-
-    lookup(name: string, kind: Kind): Environment | undefined {
+    private lookup(name: string, kind: Kind): Environment | undefined {
         let scope: Environment | null = this;
         while (scope) {
             if (scope.vars[kind] && scope.vars[kind][name])
@@ -62,14 +59,27 @@ export class Environment extends BaseEnvironment {
         }
     }
 
-    public get(name: string, kind: Kind = Kind.VariableDeclarator) {
+    public isInitialEnv(){
+        return this.parent === null
+    }
+
+    public extend() {
+        return new Environment(this);
+    }
+
+    public get(name: string, kind: Kind = Kind.VariableDeclarator) { // for update coresponding env
         let result = this.lookup(name, kind);
 
         if (result) {
-            return result.vars[kind][name].value
+            let res = {
+                name,
+                value: result.vars[kind][name].value,
+                env: result
+            }
+            return res
+        } else {
+            throw Error(`[Environment]:${name} is not defined yet!`)
         }
-
-        return null;
     }
 
     public def(name: string, value: any = '', kind: Kind = Kind.VariableDeclarator) {
@@ -77,5 +87,12 @@ export class Environment extends BaseEnvironment {
             this.vars[kind] = {}
         }
         return this.vars[kind][name] = new Variable(kind, value);
+    }
+
+    public defCode(name: string, code: string) {
+        this.codeMap.set(name, code)
+    }
+    public getCode(name: string) {
+        this.codeMap.get(name)
     }
 }
