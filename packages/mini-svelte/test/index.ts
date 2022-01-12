@@ -7,7 +7,7 @@ let code = `
 	let count = 0;
 
 	function handleClick() {
-		count += 1;
+		count++;
 	}
 </script>
 

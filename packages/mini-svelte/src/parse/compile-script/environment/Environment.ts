@@ -93,6 +93,6 @@ export class Environment extends BaseEnvironment {
         this.codeMap.set(name, code)
     }
     public getCode(name: string) {
-        this.codeMap.get(name)
+        return this.codeMap.get(name)
     }
 }

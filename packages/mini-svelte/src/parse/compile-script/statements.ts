@@ -65,7 +65,7 @@ class FunctionDeclaration extends Tree {
             }).join(',')
 
             code = `function ${funcName}(${paramStr}){
-                    ${context.flushRuntimeBlockCode()
+                    ${context.flushRuntimeBlockCode()}
                 }`
         }
         return code

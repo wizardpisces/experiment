@@ -82,7 +82,7 @@ function genFragment(context: ParseContext) {
         let code = `insert_dev(target,${tagName},anchor);`
         if (eventList.length) {
             code += eventList.map(e => {
-                return `listen(${tagName},"${e.eventName}",\`\${ctx[${getRuntimeIndexByName(e.handlerName)}]}\`);/*${e.eventName}|${e.handlerName}*/`;
+                return `listen(${tagName},"${e.eventName}",ctx[${getRuntimeIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
             })
         }
         return code
@@ -120,7 +120,8 @@ function genInstance(context: ParseContext) {
         if (kind === Kind.VariableDeclarator) {
             return `let ${name} = ${JSON.stringify(env.get(name).value)}`
         } else if (kind === Kind.FunctionDeclaration) {
-            return `${env.getCode(name)}`
+            let funcCode = `${env.getCode(name)}`
+            return funcCode
         }
     }).join('\n')
     return `

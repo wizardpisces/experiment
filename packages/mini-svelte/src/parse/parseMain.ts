@@ -10,7 +10,7 @@ export {
     parseMain
 }
 
-function createParseContext(code: string): ParseContext {
+function createParseContext(rawCode: string): ParseContext {
 
     /**
      * map的遍历是有序的，可以很好模拟声明的顺序
@@ -27,7 +27,7 @@ function createParseContext(code: string): ParseContext {
     }
 
     let context = {
-        code,
+        code: rawCode,
         env: new Environment(null),
         templateCode: '',
         scriptCode: '',
@@ -40,7 +40,7 @@ function createParseContext(code: string): ParseContext {
             inRuntimeCodeGeneration = true
         },
         addRuntimeCode(str:string){
-            if (!inRuntimeCodeGeneration) return
+            if (!context.isInRuntimeCodeGeneration()) return
             runtimeBlockCode.push(str)
         },
         isInRuntimeCodeGeneration(){
@@ -54,9 +54,14 @@ function createParseContext(code: string): ParseContext {
         },
 
         addRuntimeName: (name: string, type: Kind = Kind.VariableDeclarator) => {
-            runtimeDeclarationMap.set(name, type)
-            runttimeIndexRecord[name] = runtimeDeclarationMap.size
-            return runtimeDeclarationMap.size
+            let index
+            if(runtimeDeclarationMap.has(name)){
+                index = context.getRuntimeIndexByName(name)
+            }else{
+                runtimeDeclarationMap.set(name, type)
+                index = runttimeIndexRecord[name] = runtimeDeclarationMap.size-1
+            }
+            return index
         },
         getRuntimeIndexByName(name: string) {
             let index = runttimeIndexRecord[name]
