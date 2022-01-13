@@ -14,7 +14,7 @@ npm run rmjs #then click vscode-debug -> mini-svelte (reference experiment/.vsco
 
 ### Feature
 
-#### 第一阶段（ commitID 53983ad）
+#### 第一阶段（demo stable commitID f10ecd8)
 * [x] 基础 .svelte 单文件编译
 * [x] 基础 template 编译时 依赖收集
 * [x] 基础 script 编译时 生成runtime（create mount instance 事件绑定等）
