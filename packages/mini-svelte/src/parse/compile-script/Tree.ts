@@ -6,7 +6,7 @@ export class Tree {
     constructor(ast: any) {
         this.ast = ast
     }
-    toCode(context?:ParseContext): string {
+    toCode(context:ParseContext,kind?:string): string {
         return ''
     }
 

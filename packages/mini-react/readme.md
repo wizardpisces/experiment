@@ -38,6 +38,7 @@ or reference ./demo/readme.md
     * 根据函数组件在真实dom中的位置信息进行插入操作
 ## Reference
 
+* [前端框架思考](https://wizardpisces.github.io/blog/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E6%80%9D%E8%80%83)
 * https://reactjs.org/docs/hooks-intro.html
 * https://github.com/preactjs/preact
 * https://github.com/yisar/fre

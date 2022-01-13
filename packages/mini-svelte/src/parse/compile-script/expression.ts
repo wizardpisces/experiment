@@ -3,6 +3,7 @@ import { Tree } from './Tree'
 import { Kind } from './environment/Environment'
 import { emitError, opAcMap } from '../util'
 import { ParseContext as Context, NodeTypes } from '..'
+import { dispatchStatementToCode } from './statements'
 
 const nullFn = () => { console.log('Null function called!!!') }
 
@@ -15,7 +16,7 @@ export class Literal extends Tree {
     constructor(ast: ESTree.Literal) {
         super(ast)
     }
-    toCode(): string {
+    toCode(context:Context): string {
         if (this.ast.value) {
             return this.ast.value.toString();
         }
@@ -32,7 +33,7 @@ export class Identifier extends Tree {
         super(ast)
     }
 
-    toCode(): string {
+    toCode(context: Context): string {
         return this.ast.name
     }
 
@@ -58,7 +59,7 @@ export class AssignmentExpression extends Tree {
         super(ast)
     }
 
-    toCode(): string {
+    toCode(context: Context): string {
         return 'assignment expression code!'
     }
 
@@ -75,10 +76,29 @@ export class UpdateExpression extends Tree {
         super(ast)
     }
 
-    toCode(): string {
+    toCode(context: Context): string {
         let code = ''
-        if (this.ast.argument.type === NodeTypes.Identifier) {
-            code = this.ast.argument.name + this.ast.operator
+        if (this.ast.operator === '++') {
+            if (this.ast.argument.type === NodeTypes.Identifier) {
+                let res = context.env.get(this.ast.argument.name)
+                if (res) {
+                    res.env.def(res.name, res.value + 1)
+                    if (context.isInRuntimeCodeGeneration()) {
+                        let index = context.getRuntimeIndexByName(res.name),
+                            rawCode = `${res.name}++`
+                        /**
+                         * 这里是变量的更新
+                         * 需要根据变量所处scope层级以及在template上位置信息来 ，生成变量更新运行时代码；
+                         * has been referenced by template, then wrap by $$invalidate
+                         */
+                        if (res.env.isTopEnv() && index) {
+                            context.addRuntimeCode(`$$invalidate(${index},${rawCode})`)
+                        } else {
+                            context.addRuntimeCode(rawCode)
+                        }
+                    }
+                }
+            }
         }
         return code
     }
@@ -90,14 +110,6 @@ export class UpdateExpression extends Tree {
                 let res = context.env.get(this.ast.argument.name)
                 if (res) {
                     res.env.def(res.name, res.value + 1)
-                    if (context.isInRuntimeCodeGeneration()) {
-                        let index = context.getRuntimeIndexByName(res.name)
-                        if (res.env.isInitialEnv() && index) { // has been referenced by template, then wrap by $$invalidate
-                            context.addRuntimeCode(`$$invalidate(${index},${this.toCode()})`)
-                        } else {
-                            context.addRuntimeCode(this.toCode())
-                        }
-                    }
                 }
             }
         }
@@ -109,21 +121,21 @@ export class MemberExpression extends Tree {
     constructor(ast: ESTree.MemberExpression) {
         super(ast)
     }
-    toCode(): string {
+    toCode(context: Context): string {
         let code: string = ''
         switch (this.ast.object.type) {
-            case NodeTypes.Identifier: code += new Identifier(this.ast.object).toCode()
+            case NodeTypes.Identifier: code += new Identifier(this.ast.object).toCode(context)
         }
         if (this.ast.property) {
             code += '.';
             switch (this.ast.property.type) {
-                case NodeTypes.Identifier: code += new Identifier(this.ast.property).toCode()
+                case NodeTypes.Identifier: code += new Identifier(this.ast.property).toCode(context)
             }
         }
 
         return code;
     }
-    evaluate(): Function {
+    evaluate(context: Context): Function {
         if (this.ast.object.type === NodeTypes.Identifier) {
             if (this.ast.property.type === NodeTypes.Identifier) {
                 return internal[this.ast.object.name][this.ast.property.name]
@@ -138,16 +150,16 @@ export class CallExpression extends Tree {
     constructor(ast: ESTree.CallExpression) {
         super(ast)
     }
-    toCode() {
+    toCode(context: Context) {
         let code = ''
         switch (this.ast.callee.type) {
-            case NodeTypes.MemberExpression: code += new MemberExpression(this.ast.callee).toCode(); break;
+            case NodeTypes.MemberExpression: code += new MemberExpression(this.ast.callee).toCode(context); break;
             default: throw Error('[toCode] unsupported callee type: ' + this.ast.callee.type)
         }
         code += '('
         this.ast.arguments.forEach((arg) => {
             switch (arg.type) {
-                case NodeTypes.Literal: code += new Literal(arg).toCode()
+                case NodeTypes.Literal: code += new Literal(arg).toCode(context)
             }
         });
         code += ')'
@@ -165,7 +177,7 @@ export class CallExpression extends Tree {
             { callee } = this.ast
 
         switch (callee.type) {
-            case NodeTypes.MemberExpression: fn = new MemberExpression(callee).evaluate();
+            case NodeTypes.MemberExpression: fn = new MemberExpression(callee).evaluate(context);
                 break;
             case NodeTypes.Identifier: fn = context.env.get(callee.name, Kind.FunctionDeclaration)?.value;
                 break;
@@ -181,13 +193,8 @@ export class ExpressionStatement extends Tree {
     constructor(ast: ESTree.ExpressionStatement) {
         super(ast)
     }
-    toCode(): string {
-        let code = ''
-        switch (this.ast.expression.type) {
-            case 'CallExpression': code += new CallExpression(this.ast.expression).toCode();
-                break;
-        }
-        return code;
+    toCode(context:Context): string {
+        return dispatchExpressionToCode(this.ast.expression,context)
     }
     evaluate(context: Context) {
         return dispatchExpressionEvaluation(this.ast.expression, context)
@@ -202,6 +209,17 @@ export function dispatchExpressionEvaluation(expression: ESTree.Expression, cont
         case NodeTypes.CallExpression: return new CallExpression(expression).evaluate(context)
         case NodeTypes.AssignmentExpression: return new AssignmentExpression(expression).evaluate(context)
         case NodeTypes.UpdateExpression: return new UpdateExpression(expression).evaluate(context)
+        default: throw Error('Unsupported expression ' + expression)
+    }
+}
+export function dispatchExpressionToCode(expression: ESTree.Expression, context: Context): any {
+    switch (expression.type) {
+        case NodeTypes.Identifier: return new Identifier(expression).toCode(context)
+        case NodeTypes.Literal: return new Literal(expression).toCode(context)
+        case NodeTypes.BinaryExpression: return new BinaryExpression(expression).toCode(context)
+        case NodeTypes.CallExpression: return new CallExpression(expression).toCode(context)
+        case NodeTypes.AssignmentExpression: return new AssignmentExpression(expression).toCode(context)
+        case NodeTypes.UpdateExpression: return new UpdateExpression(expression).toCode(context)
         default: throw Error('Unsupported expression ' + expression)
     }
 }

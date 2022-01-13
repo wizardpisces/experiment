@@ -66,7 +66,7 @@ function genFragment(context: ParseContext) {
 
     }
 
-    let declaration: string = tagList.map(tag => {
+    let declarations: string = tagList.map(tag => {
         return `let ${tag.tagName}`
     }).join('\n')
 
@@ -90,17 +90,16 @@ function genFragment(context: ParseContext) {
     }).join('\n')
 
     let output = `function create_fragment(ctx) {
-        ${declaration}
+        ${declarations}
          let block = {
               c: function create() {
                   ${cContent}
-                //   return [${tagList.map(tag => tag.tagName)}]
               },
               m: function mount(target,anchor){
                   ${mContent}
               },
               p: function patch(ctx,[dirty]){
-                console.log('dirty')
+                console.log('dirty checked',ctx,dirty)
               }
         }
         return block
@@ -118,10 +117,14 @@ function genInstance(context: ParseContext) {
     let runtimeNameKindList = Array.from(getRuntimeDeclarationMap());
     let declarations = runtimeNameKindList.map(([name, kind]) => {
         if (kind === Kind.VariableDeclarator) {
-            return `let ${name} = ${JSON.stringify(env.get(name).value)}`
+            let varCode = `${env.getCode(name)}`
+            return varCode
+            // return `let ${name} = ${JSON.stringify(env.get(name).value)}`
         } else if (kind === Kind.FunctionDeclaration) {
             let funcCode = `${env.getCode(name)}`
             return funcCode
+        }else{
+            return env.getCode(name)
         }
     }).join('\n')
     return `
@@ -135,11 +138,14 @@ function genInstance(context: ParseContext) {
 function genApp(context: ParseContext) {
     return `
     function init(AppClass,options,instance,create_fragment){
-        let block = create_fragment(instance($$invalidate));
+        let ctx = instance($$invalidate)
+        let block = create_fragment(ctx);
         block.c()
         block.m(options.target,null)
-        function $$invalidate(){
-            block.p()
+        function $$invalidate(position,newVal){
+            ctx[position] = newVal
+            let block = create_fragment(ctx);
+            block.p(ctx,[position])
         }
     }
     export default class AppSvelte {

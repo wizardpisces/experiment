@@ -44,9 +44,10 @@ export class Environment extends BaseEnvironment {
     }
     parent!: Environment | null
     codeMap: Map<string, string> = new Map() // cover shallow code definition which could be accessed by template
-    constructor(parent: Environment | null) {
+    constructor(parent: Environment | null = null) {
         super()
-        this.vars = Object.create(parent ? parent.vars : null);
+        // this.vars = Object.create(parent ? parent.vars : null); //block prototype chain for lookup to find right top scope
+        this.vars = {}
         this.parent = parent;
     }
 
@@ -59,7 +60,7 @@ export class Environment extends BaseEnvironment {
         }
     }
 
-    public isInitialEnv(){
+    public isTopEnv() {
         return this.parent === null
     }
 
@@ -68,13 +69,13 @@ export class Environment extends BaseEnvironment {
     }
 
     public get(name: string, kind: Kind = Kind.VariableDeclarator) { // for update coresponding env
-        let result = this.lookup(name, kind);
+        let scope = this.lookup(name, kind);
 
-        if (result) {
+        if (scope) {
             let res = {
                 name,
-                value: result.vars[kind][name].value,
-                env: result
+                value: scope.vars[kind][name].value,
+                env: scope
             }
             return res
         } else {
@@ -89,7 +90,7 @@ export class Environment extends BaseEnvironment {
         return this.vars[kind][name] = new Variable(kind, value);
     }
 
-    public defCode(name: string, code: string) {
+    public defCode(name: string, code: any) {
         this.codeMap.set(name, code)
     }
     public getCode(name: string) {

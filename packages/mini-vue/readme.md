@@ -25,4 +25,5 @@ commitId: 3041af4ee7fdbca42d41f0ba737e281bcef08a05
 * [] SSR？
 ## Reference
 
+* [前端框架思考](https://wizardpisces.github.io/blog/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E6%80%9D%E8%80%83)
 * https://github.com/vuejs/vue-next
