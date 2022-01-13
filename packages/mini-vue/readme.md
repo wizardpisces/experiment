@@ -8,7 +8,7 @@ Vue@3 Composition-API in mini version
     *   对ref data进行 dep track，其中就包含了component update function，data变化触发相应dep执行（包含component update方法的运行）
 * [x] stateful component
 * [x] ref/effect track primary data change
-commitId: 0e48a8abfa29708aeb15228b351267bd84901150
+commitId: 0e48a8a
 
 ### 第二阶段
 * [x] 父传props给子组件，更新父组件同时props变化也会影响到子组件刷新；
@@ -17,7 +17,7 @@ commitId: 0e48a8abfa29708aeb15228b351267bd84901150
 * [x] reactive track Object change
 * [x] nextTick
 * [x] component batch update（update操作同步 -> 异步）
-commitId: 3041af4ee7fdbca42d41f0ba737e281bcef08a05
+commitId: 3041af
 ### 第三阶段
 * [] toRefs
 * [] unmount

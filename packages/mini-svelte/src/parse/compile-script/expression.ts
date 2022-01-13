@@ -78,14 +78,15 @@ export class UpdateExpression extends Tree {
 
     toCode(context: Context): string {
         let code = ''
-        if (this.ast.operator === '++') {
-            if (this.ast.argument.type === NodeTypes.Identifier) {
-                let res = context.env.get(this.ast.argument.name)
+        let {operator,prefix,argument,type} = this.ast
+        if (operator === '++') {
+            if (argument.type === NodeTypes.Identifier) {
+                let res = context.env.get(argument.name)
                 if (res) {
                     res.env.def(res.name, res.value + 1)
                     if (context.isInRuntimeCodeGeneration()) {
                         let index = context.getRuntimeIndexByName(res.name),
-                            rawCode = `${res.name}++`
+                            rawCode = prefix ? `++${res.name}` : `${res.name}++`
                         /**
                          * 这里是变量的更新
                          * 需要根据变量所处scope层级以及在template上位置信息来 ，生成变量更新运行时代码；

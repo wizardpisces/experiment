@@ -1,14 +1,20 @@
 import { compileScript } from "./compileScript";
 import { ParseContext, Kind } from "./type";
+import { emitError } from "./util";
 
 export {
-    compileTemplate
+    compileTemplate,
+    TemplateNodeTypes
 }
 // 目前只考虑一个 tagName的场景
 // TODO 只考虑最简单的情况，后面切换成字符串的词法语法分析
 const tplRegex = /<([\w\d]+)\s*([^<>]+)?>([^<>]+)<\/[\w\d]+>/g
 const eventRegex = /on:(\w+)={([\w\d]+)}/
 const varRegex = /{([^{}]+)}/g
+
+enum TemplateNodeTypes {
+    text = "text"
+}
 
 function compileTemplate(context: ParseContext) {
 
@@ -26,11 +32,20 @@ function genInternal() {
     function element(tagName) {
         return document.createElement(tagName)
     }
+    function text(txt){
+        return document.createTextNode(txt)
+    }
     function listen(dom,eventName,eHandler){
         dom.addEventListener(eventName, eHandler)
     }
-    function insert_dev(parent,child,anchor){
+    function insert(parent,child,anchor){
         parent.insertBefore(child, anchor || null)
+    }
+    function append(parent,child){
+        parent.appendChild(child)
+    }
+    function set_data(dom,txt){
+        dom.textContent = txt
     }
 `
 }
@@ -38,7 +53,27 @@ function genInternal() {
 function genFragment(context: ParseContext) {
     let { rawTemplate, addRuntimeName, getRuntimeIndexByName } = context,
         regResult,
-        tagList = [];
+        declarationNumber = 0,
+        tagList = [],
+        runtimeCtxPositionDeclarationMap: Map<number, string[]> = new Map()
+
+    function genRuntimeDeclarationName(type: string, ctxPosition?: number) {
+        let name = ''
+        if (type === TemplateNodeTypes.text) {
+            name = 't' + declarationNumber++
+        } else {
+            emitError(`[compileTemplate] Unsupported declaration type: ${type}`)
+        }
+
+        // register runtime relation for update
+        if (ctxPosition) {
+            let declarationList = runtimeCtxPositionDeclarationMap.get(ctxPosition) || []
+            declarationList.push(name)
+            runtimeCtxPositionDeclarationMap.set(ctxPosition,declarationList)
+        }
+
+        return name
+    }
 
     while ((regResult = tplRegex.exec(rawTemplate)) !== null) {
         let tagName = regResult[1]
@@ -58,35 +93,91 @@ function genFragment(context: ParseContext) {
         }
 
         if (innerContent) {
-            innerContent = innerContent.replace(varRegex, function (_, name) {
-                return `\${ctx[${addRuntimeName(name)}]}`
+            // let restContent = innerContent
+            let startOffset = 0
+            let tagChildren: {
+                type: string,
+                content: string,
+                runtimeDeclarationName: string
+            }[] = []
+
+            innerContent.replace(varRegex, function (match, varName, offset) {
+                let content = innerContent.slice(startOffset, offset)
+                startOffset = offset + match.length
+
+                content.length && tagChildren.push({
+                    type: TemplateNodeTypes.text,
+                    content: JSON.stringify(content),
+                    runtimeDeclarationName: genRuntimeDeclarationName(TemplateNodeTypes.text)
+                })
+
+                let ctxPosition = addRuntimeName(varName)
+                let replaceStr = `ctx[${ctxPosition}]`
+                tagChildren.push({
+                    type: TemplateNodeTypes.text,
+                    content: replaceStr,
+                    runtimeDeclarationName: genRuntimeDeclarationName(TemplateNodeTypes.text, ctxPosition)
+                })
+
+                return replaceStr
             })
-            tagList.push({ tagName, innerContent, eventList })
+
+            tagList.push({ tagName, tagChildren, eventList })
         }
 
     }
 
     let declarations: string = tagList.map(tag => {
-        return `let ${tag.tagName}`
+        let children = tag.tagChildren.map(t => {
+            return `let ${t.runtimeDeclarationName};`
+        }).join('\n');
+
+        return `let ${tag.tagName};
+                ${children}`
     }).join('\n')
 
+    // create method content
     let cContent: string = tagList.map(tag => {
-        let { tagName, innerContent } = tag
-        return `${tagName} = element(\`${tagName}\`);
-                ${tagName}.textContent = \`${innerContent}\`;
+        let { tagName, tagChildren } = tag
+        let children = tagChildren.map(t => {
+
+            return `${t.runtimeDeclarationName} = text(${t.content});`
+        }).join('\n')
+
+        return `${tagName} = element("${tagName}");
+                ${children}
                 `
     }).join('\n')
 
+    // mount method content
     let mContent: string = tagList.map(tag => {
-        let { tagName, innerContent, eventList } = tag
-        let code = `insert_dev(target,${tagName},anchor);`
+        let { tagName, tagChildren, eventList } = tag
+        let insertCode = `insert(target,${tagName},anchor);`
+        let appendCode = '',
+            eventCode = ''
+
+        appendCode = tagChildren.map(t => {
+            if (t.type === TemplateNodeTypes.text) {
+                return `append(${tagName},${t.runtimeDeclarationName})`
+            }
+        }).join('\n')
         if (eventList.length) {
-            code += eventList.map(e => {
+            eventCode = eventList.map(e => {
                 return `listen(${tagName},"${e.eventName}",ctx[${getRuntimeIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
-            })
+            }).join('\n')
         }
-        return code
-            ;
+        let code = `
+            ${insertCode}
+            ${appendCode}
+            ${eventCode}
+        `
+        return code;
+    }).join('\n')
+
+    let pContent: string = Array.from(runtimeCtxPositionDeclarationMap).map(([ctxPosition, declarationList]) => {
+        return declarationList.map(name=>{
+            return `if(dirty & ${ctxPosition}) set_data(${name},ctx[dirty]);`
+        }).join('\n')
     }).join('\n')
 
     let output = `function create_fragment(ctx) {
@@ -99,12 +190,12 @@ function genFragment(context: ParseContext) {
                   ${mContent}
               },
               p: function patch(ctx,[dirty]){
+               ${pContent}
                 console.log('dirty checked',ctx,dirty)
               }
         }
         return block
     }`
-    console.log(output)
     return output
 }
 
@@ -123,7 +214,7 @@ function genInstance(context: ParseContext) {
         } else if (kind === Kind.FunctionDeclaration) {
             let funcCode = `${env.getCode(name)}`
             return funcCode
-        }else{
+        } else {
             return env.getCode(name)
         }
     }).join('\n')
@@ -144,7 +235,6 @@ function genApp(context: ParseContext) {
         block.m(options.target,null)
         function $$invalidate(position,newVal){
             ctx[position] = newVal
-            let block = create_fragment(ctx);
             block.p(ctx,[position])
         }
     }

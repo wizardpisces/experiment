@@ -14,7 +14,7 @@ or reference ./demo/readme.md
 ### 第一阶段 （done）
 全量节点更新（所有的useState触发的数据都是全量的驱动，而不是精细化的只影响到涉及到的组件函数）
 
-* **commit:f866a76abfdbddc9860e3a16d8bca2799576ebb6**
+* **commit:f866a76**
 
 ### 第二阶段（done）
 * dom局部更新（useState的触发只影响到对应的组件函数）
@@ -26,7 +26,7 @@ or reference ./demo/readme.md
         - 2: effect副作用清理
 
 
-* **commit: 47d59daa08386d957184bcddc0e2428ed6ec289d**
+* **commit: 47d59da**
 
 #### 节点更新原理
 
