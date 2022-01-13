@@ -8,8 +8,13 @@ implement by demo needs
 npm run demo
 ```
 ### How to run test
+#### Terminal
 ```bash
-npm run rmjs #then click vscode-debug -> mini-svelte (reference experiment/.vscode/launch.json)
+npm run test
+```
+#### Use vscode debug and run
+```bash
+npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (reference experiment/.vscode/launch.json)
 ```
 
 ### Feature

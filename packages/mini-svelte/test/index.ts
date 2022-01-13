@@ -7,7 +7,7 @@ let code = `
 	let count = 0;
 
 	function handleClick() {
-		count++;
+		++count;
 	}
 </script>
 
@@ -22,5 +22,11 @@ let code = `
 		color:red;
 	}
 </style>`
-console.log('test mini-svelte')
-parseMain(code)
+
+let descriptor = parseMain(code)
+
+console.log(descriptor.script)
+console.log(descriptor.style)
+console.log(descriptor.template)
+
+console.log('\ncompile success.....')
