@@ -1,7 +1,7 @@
 ## Introdution
 [Svelte](https://svelte.dev/) in mini version
 
-implement by demo needs
+implement in simple ways + demo needs
 
 ### How to run demo
 ```bash
@@ -22,12 +22,13 @@ npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (r
 #### First Step（demo stable commitID f10ecd8)
 * [x] .svelte single file component compile
 * [x] collect dep by template compile
-* [x] runtime code generation（create mount instance event-binding） by script compile 
-* [x] dep and dirty check
+* [x] runtime code generation
+* [x] dirty check
 * [x] svelte vite plugin
 
 #### Next Step
-* [] parent-child component
+* [x] scheduler (commitId: 7b4405a)
+* [] nested component
 * [] nested dom
 * [] if-block
 * ...
