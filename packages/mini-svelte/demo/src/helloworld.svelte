@@ -5,6 +5,7 @@
 
 	function handleClick() {
 		++count;
+		++count;
 	}
 </script>
 

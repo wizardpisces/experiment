@@ -1,3 +1,5 @@
+import fs from 'fs'
+import { transformWithEsbuild } from 'vite';
 import { compileScript } from "./compileScript";
 import { ParseContext, Kind } from "./type";
 import { emitError } from "./util";
@@ -28,7 +30,10 @@ function compileTemplate(context: ParseContext) {
 }
 
 function genInternal() {
+    let schedulerCode = fs.readFileSync(__dirname+'/scheduler.js','utf-8')
+    // let schedulerCode = await transformWithEsbuild(rawCode,'scheduler.ts')
     return `
+    ${schedulerCode}
     function element(tagName) {
         return document.createElement(tagName)
     }
@@ -69,7 +74,7 @@ function genFragment(context: ParseContext) {
         if (ctxPosition) {
             let declarationList = runtimeCtxPositionDeclarationMap.get(ctxPosition) || []
             declarationList.push(name)
-            runtimeCtxPositionDeclarationMap.set(ctxPosition,declarationList)
+            runtimeCtxPositionDeclarationMap.set(ctxPosition, declarationList)
         }
 
         return name
@@ -175,7 +180,7 @@ function genFragment(context: ParseContext) {
     }).join('\n')
 
     let pContent: string = Array.from(runtimeCtxPositionDeclarationMap).map(([ctxPosition, declarationList]) => {
-        return declarationList.map(name=>{
+        return declarationList.map(name => {
             return `if(dirty & ${ctxPosition}) set_data(${name},ctx[dirty]);`
         }).join('\n')
     }).join('\n')
@@ -233,9 +238,21 @@ function genApp(context: ParseContext) {
         let block = create_fragment(ctx);
         block.c()
         block.m(options.target,null)
+
+        // bind job with block
+
+        block.updateJobMap = {
+
+        }
+
         function $$invalidate(position,newVal){
             ctx[position] = newVal
-            block.p(ctx,[position])
+            let job=block.updateJobMap[position];
+            if(!job){
+                job = ()=>block.p(ctx,[position])
+                block.updateJobMap[position] = job
+            }
+            queueJob(job)
         }
     }
     export default class AppSvelte {
