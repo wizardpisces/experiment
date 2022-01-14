@@ -1,34 +1,21 @@
 <script>
-  let count = 0
-  const increment = () => {
-    count += 1
-  }
+	let name = 'child';
+	let count = 0;
+
+	function handleClick() {
+		++count;
+		++count;
+	}
 </script>
 
-<button on:click={increment}>
-  Clicks: {count}
+<h1>Hello {name}!</h1>
+<h2>Hello {count}!</h2>
+<button on:click={handleClick}>
+	Clicked {count}
 </button>
 
 <style>
-  button {
-    font-family: inherit;
-    font-size: inherit;
-    padding: 1em 2em;
-    color: #ff3e00;
-    background-color: rgba(255, 62, 0, 0.1);
-    border-radius: 2em;
-    border: 2px solid rgba(255, 62, 0, 0);
-    outline: none;
-    width: 200px;
-    font-variant-numeric: tabular-nums;
-    cursor: pointer;
-  }
-
-  button:focus {
-    border: 2px solid #ff3e00;
-  }
-
-  button:active {
-    background-color: rgba(255, 62, 0, 0.2);
-  }
+	h1{
+		color:red;
+	}
 </style>

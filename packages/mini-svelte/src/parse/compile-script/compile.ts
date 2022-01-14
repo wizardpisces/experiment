@@ -12,9 +12,9 @@ function compile(context: ParseContext) {
     } = context
 
     // @ts-ignore
-    let ast: ESTree.Program = parse(code, { ecmaVersion: 2020 });
-
+    let ast: ESTree.Program = parse(code, { ecmaVersion: 'latest', sourceType:'module' });
+    
     ast.body.forEach(node => {
-        dispatchStatementToCode(node as ESTree.Statement, context)
+        dispatchStatementToCode(node, context)
     })
 }

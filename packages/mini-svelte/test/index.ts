@@ -2,26 +2,47 @@ import { Descriptor, parseMain } from "../src/parse/index"
 
 let code = `
 <script>
-	let name = 'world';
-	let name2 = 'world2';
-	let count = 0;
-
-	function handleClick() {
-		++count;
-	}
+  import Counter from "./lib/Counter.svelte";
+  let name = "parent";
+  let count = 0;
+  function inc() {
+    ++count
+  }
 </script>
 
-<h1>Hello {name} {name2}!</h1>
-<h2>Hello  {name2} {count}!</h2>
-<button on:click={handleClick}>
-	Clicked {count}
-</button>
+<main>
+  <h1>Hello {name} Typescript!</h1>
+  <button on:click={inc}>
+    {name} Clicked {count}
+  </button>
+  <br/>
+  <Counter />
+</main>
 
 <style>
-	h1{
-		color:red;
-	}
-</style>`
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+
+  main {
+    text-align: center;
+    padding: 1em;
+    margin: 0 auto;
+  }
+
+  img {
+    height: 16rem;
+    width: 16rem;
+  }
+
+  p {
+    max-width: 14rem;
+    margin: 1rem auto;
+    line-height: 1.35;
+  }
+</style>
+`
 
 let descriptor = parseMain(code)
 

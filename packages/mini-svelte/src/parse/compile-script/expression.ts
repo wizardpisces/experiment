@@ -22,10 +22,6 @@ export class Literal extends Tree {
         }
         return ''
     }
-
-    evaluate() {
-        return this.ast.value
-    }
 }
 
 export class Identifier extends Tree {

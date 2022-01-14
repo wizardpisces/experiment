@@ -4,42 +4,25 @@ import { NodeTypes, ParseContext as Context } from '../type'
 import { VariableDeclaration } from './variableDeclaration'
 import { Tree } from "./Tree";
 import { Environment, Kind } from './environment/Environment';
-import { ExpressionStatement } from './expression';
+import { ExpressionStatement, Literal } from './expression';
+import { ProgramBodyItem } from '..';
 
 export {
     dispatchStatementToCode
 }
 
-function dispatchStatementToCode(statement: ESTree.Statement, context: Context): boolean {
+function dispatchStatementToCode(statement: ProgramBodyItem, context: Context): boolean {
 
     switch (statement.type) {
         case NodeTypes.ExpressionStatement: new ExpressionStatement(statement).toCode(context); break;
         case NodeTypes.VariableDeclaration: new VariableDeclaration(statement).toCode(context); break;
-        // case NodeTypes.FunctionDeclaration: new FunctionDeclaration(statement).toCode(context); break;
-
         /**
          * 函数可能被用于事件，会涉及到脏检测
          * 根据编译模板的信息编译一个新函数出来
          */
         case NodeTypes.FunctionDeclaration: new FunctionDeclaration(statement).toCode(context); break;
-        default: throw Error('Unknown statement ' + statement.type)
-    }
-
-    return true;
-}
-
-function dispatchStatementEvaluation(statement: ESTree.Statement, context: Context): boolean {
-
-    switch (statement.type) {
-        case NodeTypes.ExpressionStatement: new ExpressionStatement(statement).evaluate(context); break;
-        case NodeTypes.VariableDeclaration: new VariableDeclaration(statement).evaluate(context); break;
-        // case NodeTypes.FunctionDeclaration: new FunctionDeclaration(statement).evaluate(context); break;
-
-        /**
-         * 函数可能被用于事件，会涉及到脏检测
-         * 根据编译模板的信息编译一个新函数出来
-         */
-        case NodeTypes.FunctionDeclaration: new FunctionDeclaration(statement).evaluate(context); break;
+        case NodeTypes.ImportDeclaration : new ImportDeclaration(statement).toCode(context); break;
+        
         default: throw Error('Unknown statement ' + statement.type)
     }
 
@@ -55,9 +38,27 @@ export class BlockStatement extends Tree {
         this.ast.body.every((statement: ESTree.Statement) => dispatchStatementToCode(statement, context))
         return ''
     }
+}
 
-    evaluate(context: Context): boolean {
-        return this.ast.body.every((statement: ESTree.Statement) => dispatchStatementEvaluation(statement, context))
+class ImportDeclaration extends Tree{
+    declare ast:ESTree.ImportDeclaration
+    constructor(ast:ESTree.ImportDeclaration){
+        super(ast)
+    }
+    toCode(context: Context): string {
+        let {specifiers,source} = this.ast
+        let specifierCode:string = specifiers.map(specifier=>{
+            if (specifier.type === 'ImportDefaultSpecifier'){
+                if(specifier.local.type === 'Identifier'){
+                    return specifier.local.name
+                }
+            }
+        }).join(',')
+
+        let sourceCode:string = new Literal(source).toCode(context)
+
+        let code = `import ${specifierCode} from ${sourceCode};`
+        return code
     }
 }
 
@@ -114,28 +115,6 @@ class FunctionDeclaration extends Tree {
             }
         }
         return code
-    }
-
-    evaluate(context: Context) {
-        let { body, id, params } = this.ast
-
-        if (id) {
-            let makeFunction = function () {
-                let env: Environment = context.env.extend()
-
-                params.forEach((param, i) => {
-                    if (param.type === NodeTypes.Identifier && arguments[i]) {
-                        env.def(param.name, arguments[i])
-                    }
-                })
-
-                if (body.type === NodeTypes.BlockStatement) {
-                    new BlockStatement(body).evaluate({ ...context, env })
-                }
-            }
-
-            context.env.def(id.name, makeFunction, Kind.FunctionDeclaration)
-        }
     }
 }
 

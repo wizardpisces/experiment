@@ -29,6 +29,7 @@ npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (r
 #### Next Step
 * [x] scheduler (commitId: 7b4405a)
 * [] nested component
+* [] property injection
 * [] nested dom
 * [] if-block
 * ...

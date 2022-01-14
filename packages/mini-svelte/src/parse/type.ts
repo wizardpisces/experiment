@@ -1,10 +1,13 @@
+import EStree from 'estree'
 import { Environment, Kind } from "./compile-script/environment/Environment"
 export * from "./compile-script/environment/Environment"
 export {
     NodeTypes,
     Descriptor,
-    ParseContext
+    ParseContext,
+    ProgramBodyItem
 }
+type ProgramBodyItem = (EStree.Program['body'])[number];
 const enum NodeTypes {
     //ExpressionStatement
     MemberExpression = 'MemberExpression',
@@ -20,6 +23,7 @@ const enum NodeTypes {
     VariableDeclarator = 'VariableDeclarator',
 
     FunctionDeclaration = 'FunctionDeclaration',
+    ImportDeclaration = 'ImportDeclaration',
 
     BlockStatement = 'BlockStatement',
 

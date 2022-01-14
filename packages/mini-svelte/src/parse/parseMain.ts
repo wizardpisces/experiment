@@ -65,7 +65,7 @@ function createParseContext(rawCode: string): ParseContext {
         },
         getRuntimeIndexByName(name: string) {
             let index = runttimeIndexRecord[name]
-            if (!index) {
+            if (typeof index === undefined) {
                 emitError(`[parseMain]:${name} is not defined`)
             }
             return index

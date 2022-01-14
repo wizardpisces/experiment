@@ -30,29 +30,10 @@ function compileTemplate(context: ParseContext) {
 }
 
 function genInternal() {
-    let schedulerCode = fs.readFileSync(__dirname+'/scheduler.js','utf-8')
+    // let schedulerCode = fs.readFileSync(__dirname+'/scheduler.js','utf-8')
     // let schedulerCode = await transformWithEsbuild(rawCode,'scheduler.ts')
-    return `
-    ${schedulerCode}
-    function element(tagName) {
-        return document.createElement(tagName)
-    }
-    function text(txt){
-        return document.createTextNode(txt)
-    }
-    function listen(dom,eventName,eHandler){
-        dom.addEventListener(eventName, eHandler)
-    }
-    function insert(parent,child,anchor){
-        parent.insertBefore(child, anchor || null)
-    }
-    function append(parent,child){
-        parent.appendChild(child)
-    }
-    function set_data(dom,txt){
-        dom.textContent = txt
-    }
-`
+    let internalCode = `import {element, text, listen, insert, append, set_data, queueJob} from "../../src/internal/index.ts";`
+    return internalCode
 }
 
 function genFragment(context: ParseContext) {
