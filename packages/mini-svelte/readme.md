@@ -1,5 +1,5 @@
 ## Introdution
-Svelte in mini version
+[Svelte](https://svelte.dev/) in mini version
 
 implement by demo needs
 
@@ -19,18 +19,18 @@ npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (r
 
 ### Feature
 
-#### 第一阶段（demo stable commitID f10ecd8)
-* [x] 基础 .svelte 单文件编译
-* [x] 基础 template 编译时 依赖收集
-* [x] 基础 script 编译时 生成runtime（create mount instance 事件绑定等）
-* [x] 编译时基本的脏检测关系绑定
+#### First Step（demo stable commitID f10ecd8)
+* [x] .svelte single file component compile
+* [x] collect dep by template compile
+* [x] runtime code generation（create mount instance event-binding） by script compile 
+* [x] dep and dirty check
 * [x] svelte vite plugin
 
-#### 第二阶段
-* [] 父子组件
-* [] 嵌套dom
+#### Next Step
+* [] parent-child component
+* [] nested dom
 * [] if-block
-* 
+* ...
 ## Reference
 
 * [前端框架思考](https://wizardpisces.github.io/blog/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E6%80%9D%E8%80%83)
