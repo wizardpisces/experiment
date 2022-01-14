@@ -1,4 +1,5 @@
 import ESTree from 'estree'
+import path from 'path'
 // acorn: The return value will be an abstract syntax tree object as specified by the ESTree spec
 import { NodeTypes, ParseContext as Context } from '../type'
 import { VariableDeclaration } from './variableDeclaration'
@@ -56,7 +57,9 @@ class ImportDeclaration extends Tree{
         }).join(',')
 
         let sourceCode:string = new Literal(source).toCode(context)
-
+        if(sourceCode.endsWith('.svelte')){
+            context.componentNameSet.add( path.basename(sourceCode,'.svelte'))
+        }
         let code = `import ${specifierCode} from ${sourceCode};`
         return code
     }

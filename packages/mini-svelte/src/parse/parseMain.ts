@@ -26,6 +26,8 @@ function createParseContext(rawCode: string): ParseContext {
         inRuntimeCodeGeneration = false
     }
 
+    let importStr = ''
+
     let context = {
         code: rawCode,
         env: new Environment(null),
@@ -35,6 +37,15 @@ function createParseContext(rawCode: string): ParseContext {
         rawScript: '',
         rawTemplate: '',
         rawStyle: '',
+        componentNameSet: new Set<string>(),
+
+        addScriptImport(newImport:string){
+            importStr += newImport;
+        },
+
+        getScriptImport():string{
+            return importStr
+        },
 
         turnOnRuntimeCodeGeneration(){
             inRuntimeCodeGeneration = true

@@ -1,7 +1,5 @@
-import fs from 'fs'
-import { transformWithEsbuild } from 'vite';
 import { compileScript } from "./compileScript";
-import { ParseContext, Kind } from "./type";
+import { ParseContext as Context, Kind } from "./type";
 import { emitError } from "./util";
 
 export {
@@ -18,11 +16,13 @@ enum TemplateNodeTypes {
     text = "text"
 }
 
-function compileTemplate(context: ParseContext) {
+function compileTemplate(context: Context) {
 
     let output: string[] = [];
 
     output.push(genInternal())
+    output.push(genImport(context))
+
     output.push(genFragment(context)) // gen variable dep map
     output.push(genInstance(context)) // use dep map to gen instance
     output.push(genApp(context))
@@ -30,13 +30,15 @@ function compileTemplate(context: ParseContext) {
 }
 
 function genInternal() {
-    // let schedulerCode = fs.readFileSync(__dirname+'/scheduler.js','utf-8')
-    // let schedulerCode = await transformWithEsbuild(rawCode,'scheduler.ts')
-    let internalCode = `import {element, text, listen, insert, append, set_data, queueJob} from "../../src/internal/index.ts";`
+    let internalCode = `import {element, text, listen, insert, append, set_data, mount_component, init, MiniSvelteComponent} from "../../src/internal/index.ts";`
     return internalCode
 }
 
-function genFragment(context: ParseContext) {
+function genImport(context:Context){
+    return context.getScriptImport()
+}
+
+function genFragment(context: Context) {
     let { rawTemplate, addRuntimeName, getRuntimeIndexByName } = context,
         regResult,
         declarationNumber = 0,
@@ -130,7 +132,14 @@ function genFragment(context: ParseContext) {
             return `${t.runtimeDeclarationName} = text(${t.content});`
         }).join('\n')
 
-        return `${tagName} = element("${tagName}");
+        let tagAssign
+        if (context.componentNameSet.has(tagName)){
+            tagAssign = `${tagName} = new ${tagName}()` 
+        }else{
+            tagAssign = `${tagName} = element("${tagName}");`
+        }
+        return `
+                ${tagAssign}
                 ${children}
                 `
     }).join('\n')
@@ -140,7 +149,8 @@ function genFragment(context: ParseContext) {
         let { tagName, tagChildren, eventList } = tag
         let insertCode = `insert(target,${tagName},anchor);`
         let appendCode = '',
-            eventCode = ''
+            eventCode = '',
+            mountChildComponentCode = ''
 
         appendCode = tagChildren.map(t => {
             if (t.type === TemplateNodeTypes.text) {
@@ -152,10 +162,16 @@ function genFragment(context: ParseContext) {
                 return `listen(${tagName},"${e.eventName}",ctx[${getRuntimeIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
             }).join('\n')
         }
+
+        mountChildComponentCode = Array.from(context.componentNameSet).map(name=>{
+            return `mount_component(${name},target,anchor)`
+        }).join('\n')
+
         let code = `
             ${insertCode}
             ${appendCode}
             ${eventCode}
+            ${mountChildComponentCode}
         `
         return code;
     }).join('\n')
@@ -185,7 +201,7 @@ function genFragment(context: ParseContext) {
     return output
 }
 
-function genInstance(context: ParseContext) {
+function genInstance(context: Context) {
     let {
         getRuntimeDeclarationMap,
         env
@@ -207,37 +223,15 @@ function genInstance(context: ParseContext) {
     return `
     function instance($$invalidate){
         ${declarations}
-
         return [${runtimeNameKindList.map(([name, kind]) => name)}]
     }`
 }
 
-function genApp(context: ParseContext) {
+function genApp(context: Context) {
     return `
-    function init(AppClass,options,instance,create_fragment){
-        let ctx = instance($$invalidate)
-        let block = create_fragment(ctx);
-        block.c()
-        block.m(options.target,null)
-
-        // bind job with block
-
-        block.updateJobMap = {
-
-        }
-
-        function $$invalidate(position,newVal){
-            ctx[position] = newVal
-            let job=block.updateJobMap[position];
-            if(!job){
-                job = ()=>block.p(ctx,[position])
-                block.updateJobMap[position] = job
-            }
-            queueJob(job)
-        }
-    }
-    export default class AppSvelte {
+    export default class AppMiniSvelte extends MiniSvelteComponent{
         constructor(options) {
+            super()
             init(this, options,instance, create_fragment);
         }
     }`

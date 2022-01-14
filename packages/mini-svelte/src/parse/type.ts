@@ -54,6 +54,11 @@ type ParseContext = {
     rawStyle: string
     rawTemplate: string
 
+    componentNameSet:Set<string>
+
+    addScriptImport:(i:string)=>void
+    getScriptImport:()=>string
+
     turnOnRuntimeCodeGeneration:()=>void
     isInRuntimeCodeGeneration:()=>boolean
     addRuntimeCode:(code:string)=>void
