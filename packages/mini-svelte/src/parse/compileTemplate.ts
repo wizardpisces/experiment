@@ -1,7 +1,6 @@
 import { codeGen, parseTemplate } from "./compile-template";
 import { compileScript } from "./compileScript";
-import { ParseContext as Context, Kind } from "./type";
-import { emitError } from "./util";
+import { ParseContext as Context } from "./type";
 
 export {
     compileTemplate

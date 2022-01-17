@@ -26,8 +26,8 @@ function genImport(context: Context) {
 
 function genFragment(context: Context) {
     let {getRuntimeIndexByName} = context
-    let { tagList, runtimeCtxPositionDeclarationMap} = context.templateCompileCtx
-    let declarations: string = tagList.map(tag => {
+    let { tagList, templateReferencedPositionAndDeclarationListMap} = context.templateCompileCtx
+    let createFragmentDeclarations: string = tagList.map(tag => {
         let children = tag.tagChildren.map(t => {
             return `let ${t.runtimeDeclarationName};`
         }).join('\n');
@@ -88,14 +88,14 @@ function genFragment(context: Context) {
         return code;
     }).join('\n')
 
-    let pContent: string = Array.from(runtimeCtxPositionDeclarationMap).map(([ctxPosition, declarationList]) => {
+    let pContent: string = Array.from(templateReferencedPositionAndDeclarationListMap).map(([ctxPosition, declarationList]) => {
         return declarationList.map(name => {
             return `if(dirty & ${ctxPosition}) set_data(${name},ctx[dirty]);`
         }).join('\n')
     }).join('\n')
 
     let output = `function create_fragment(ctx) {
-        ${declarations}
+        ${createFragmentDeclarations}
          let block = {
               c: function create() {
                   ${cContent}
@@ -117,8 +117,8 @@ function genInstance(context: Context) {
     let {
         env
     } = context
-    let { getRuntimeDeclarationMap} = context.templateCompileCtx
-    let runtimeNameKindList = Array.from(getRuntimeDeclarationMap());
+    let { getTemplateReferencedNameTypeMap} = context.templateCompileCtx
+    let runtimeNameKindList = Array.from(getTemplateReferencedNameTypeMap());
     let declarations = runtimeNameKindList.map(([name, kind]) => {
         if (kind === Kind.VariableDeclarator) {
             let varCode = `${env.getCode(name)}`

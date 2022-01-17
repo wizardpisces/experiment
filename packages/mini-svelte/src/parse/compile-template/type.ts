@@ -18,8 +18,8 @@ type eventListItem = {
 }
 
 type TemplateCompileCtx = {
-    runtimeCtxPositionDeclarationMap: Map<number, string[]>
+    templateReferencedPositionAndDeclarationListMap: Map<number, string[]> // mainly for code generation of dirty check and update eg: $$invalidate
     tagList: { tagName: string, tagChildren: tagChildrenItem[], eventList: eventListItem[] }[]
-    addRuntimeName: (name: string, type?: Kind) => number
-    getRuntimeDeclarationMap: () => RuntimeDeclarationMap
+    addTemplateReferencedName: (name: string, type?: Kind) => number
+    getTemplateReferencedNameTypeMap: () => RuntimeDeclarationMap
 }

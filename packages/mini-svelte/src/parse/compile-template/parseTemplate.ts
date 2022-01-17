@@ -19,13 +19,14 @@ const varRegex = /{([^{}]+)}/g
 
 function parseTemplate(context: Context) {
     let { rawTemplate } = context;
-    let { tagList, runtimeCtxPositionDeclarationMap, addRuntimeName } = context.templateCompileCtx;
-    let
-        regResult,
+    let { tagList, templateReferencedPositionAndDeclarationListMap, addTemplateReferencedName } = context.templateCompileCtx;
+    let regResult,
         declarationNumber = 0
 
-    function genRuntimeDeclarationName(type: string, ctxPosition?: number) {
+    function genCreateFragmentDeclarationName(type: string, ctxPosition?: number) {
         let name = ''
+
+        // TODO: add element type
         if (type === TemplateNodeTypes.text) {
             name = 't' + declarationNumber++
         } else {
@@ -34,9 +35,9 @@ function parseTemplate(context: Context) {
 
         // register runtime relation for update
         if (ctxPosition) {
-            let declarationList = runtimeCtxPositionDeclarationMap.get(ctxPosition) || []
+            let declarationList = templateReferencedPositionAndDeclarationListMap.get(ctxPosition) || []
             declarationList.push(name)
-            runtimeCtxPositionDeclarationMap.set(ctxPosition, declarationList)
+            templateReferencedPositionAndDeclarationListMap.set(ctxPosition, declarationList)
         }
 
         return name
@@ -54,13 +55,12 @@ function parseTemplate(context: Context) {
                 let eventName = event[1],
                     handlerName = event[2];
 
-                addRuntimeName(handlerName, Kind.FunctionDeclaration)
+                addTemplateReferencedName(handlerName, Kind.FunctionDeclaration)
                 eventList.push({ eventName, handlerName })
             }
         }
 
         if (innerContent) {
-            // let restContent = innerContent
             let startOffset = 0
             let tagChildren: {
                 type: string,
@@ -75,27 +75,27 @@ function parseTemplate(context: Context) {
                 content.length && tagChildren.push({
                     type: TemplateNodeTypes.text,
                     content: JSON.stringify(content),
-                    runtimeDeclarationName: genRuntimeDeclarationName(TemplateNodeTypes.text)
+                    runtimeDeclarationName: genCreateFragmentDeclarationName(TemplateNodeTypes.text)
                 })
 
-                let ctxPosition = addRuntimeName(varName)
+                let ctxPosition = addTemplateReferencedName(varName)
                 let replaceStr = `ctx[${ctxPosition}]`
                 tagChildren.push({
                     type: TemplateNodeTypes.text,
                     content: replaceStr,
-                    runtimeDeclarationName: genRuntimeDeclarationName(TemplateNodeTypes.text, ctxPosition)
+                    runtimeDeclarationName: genCreateFragmentDeclarationName(TemplateNodeTypes.text, ctxPosition)
                 })
 
                 return replaceStr
             })
 
-            tagList.push({ tagName, tagChildren, eventList })
+            tagList.push({ tagName:tagName.toLocaleLowerCase(), tagChildren, eventList })
         }
 
     }
 
     return {
-        runtimeCtxPositionDeclarationMap,
+        templateReferencedPositionAndDeclarationListMap,
         tagList
     }
 }

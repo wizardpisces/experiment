@@ -16,8 +16,8 @@ function createParseContext(rawCode: string): ParseContext {
      * map的遍历是有序的，可以很好模拟声明的顺序
      * value被修改后也不会改变key的顺序
      */
-    let runtimeDeclarationMap: Map<string, Kind> = new Map(),
-        runttimeIndexRecord: Record<string, number> = {}
+    let templateReferencedNameTypeMap: Map<string, Kind> = new Map(),
+        templateReferencedNameIndexRecord: Record<string, number> = {}
 
     let runtimeBlockCode: string[] = [],
         inRuntimeCodeGeneration = false;
@@ -41,20 +41,19 @@ function createParseContext(rawCode: string): ParseContext {
 
         templateCompileCtx:{
             tagList:[],
-            runtimeCtxPositionDeclarationMap: new Map(),
-            addRuntimeName: (name: string, type: Kind = Kind.VariableDeclarator) => {
-                name = name.toLowerCase()
+            templateReferencedPositionAndDeclarationListMap: new Map(),
+            addTemplateReferencedName: (name: string, type: Kind = Kind.VariableDeclarator) => {
                 let index
-                if (runtimeDeclarationMap.has(name)) {
+                if (templateReferencedNameTypeMap.has(name)) {
                     index = context.getRuntimeIndexByName(name)
                 } else {
-                    runtimeDeclarationMap.set(name, type)
-                    index = runttimeIndexRecord[name] = runtimeDeclarationMap.size - 1
+                    templateReferencedNameTypeMap.set(name, type)
+                    index = templateReferencedNameIndexRecord[name] = templateReferencedNameTypeMap.size - 1
                 }
                 return index
             },
-            getRuntimeDeclarationMap() {
-                return runtimeDeclarationMap
+            getTemplateReferencedNameTypeMap() {
+                return templateReferencedNameTypeMap
             }
         },
 
@@ -84,7 +83,7 @@ function createParseContext(rawCode: string): ParseContext {
         },
 
         getRuntimeIndexByName(name: string) {
-            let index = runttimeIndexRecord[name]
+            let index = templateReferencedNameIndexRecord[name]
             if (typeof index === undefined) {
                 emitError(`[parseMain]:${name} is not defined`)
             }
