@@ -1,6 +1,7 @@
 export {
     queueJob,
-    nextTick
+    nextTick,
+    SchedulerJob
 }
 type SchedulerJob = () => any
 

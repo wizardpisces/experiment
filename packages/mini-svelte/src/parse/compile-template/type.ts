@@ -1,7 +1,15 @@
 import { Kind } from "../compile-script/environment/Environment"
 
 export {
-    TemplateCompileCtx
+    TemplateCompileCtx,
+    TemplateNodeTypes
+}
+
+
+enum TemplateNodeTypes {
+    text = "text",
+    element = "element",
+    component = "component"
 }
 
 type RuntimeDeclarationMap = Map<string, Kind>
@@ -19,7 +27,7 @@ type eventListItem = {
 
 type TemplateCompileCtx = {
     templateReferencedPositionAndDeclarationListMap: Map<number, string[]> // mainly for code generation of dirty check and update eg: $$invalidate
-    tagList: { tagName: string, tagChildren: tagChildrenItem[], eventList: eventListItem[] }[]
+    tagList: { type:TemplateNodeTypes,tagName: string, tagChildren: tagChildrenItem[], eventList: eventListItem[] }[]
     addTemplateReferencedName: (name: string, type?: Kind) => number
     getTemplateReferencedNameTypeMap: () => RuntimeDeclarationMap
 }

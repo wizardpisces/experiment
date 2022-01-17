@@ -1,5 +1,5 @@
 // @ts-ignore
-import { queueJob } from './scheduler.ts'
+import { SchedulerJob, queueJob } from './scheduler.ts'
 export {
     element,
     text,
@@ -8,35 +8,64 @@ export {
     append,
     set_data,
     init,
+    create_component,
     mount_component,
     MiniSvelteComponent
 }
 
-class MiniSvelteComponent {
-    declare el: Element
-    constructor() { }
+
+type Ctx = any[]
+
+type Fragment = {
+    c: () => void
+    m: (target: Element, anchor: Element | null) => void
+    p: (ctx: Ctx, []) => void
 }
 
-function init(app: typeof MiniSvelteComponent, options: {target:Element}, instance: Function, create_fragment: Function) {
-    let ctx = instance($$invalidate)
-    let block = create_fragment(ctx);
-    block.c()
-    block.m(options.target, null)
-    // bind job with block
 
-    block.updateJobMap = {
-
+class MiniSvelteComponent {
+    $$: { fragment: Fragment | null } = {
+        fragment: null
     }
 
-    function $$invalidate(position:number, newVal:string) {
+    constructor() {
+
+    }
+}
+
+function create_component(fragment: Fragment) {
+    fragment.c()
+}
+
+function mount_component(childComponent: MiniSvelteComponent, target: Element, anchor: Element | null) {
+    console.log('mount child component', childComponent, target, anchor);
+    childComponent.$$.fragment?.m(target, anchor)
+}
+
+function init(app: MiniSvelteComponent, options: { target: Element }, instance: (f: Function) => any[], create_fragment: (ctx: Ctx) => Fragment) {
+    let ctx = instance($$invalidate)
+    let fragment = create_fragment(ctx);
+    let updateJobMap: Record<number, SchedulerJob> = {}
+    function $$invalidate(position: number, newVal: string) {
         ctx[position] = newVal
-        let job = block.updateJobMap[position];
+        let job = updateJobMap[position];
         if (!job) {
-            job = () => block.p(ctx, [position])
-            block.updateJobMap[position] = job
+            job = () => fragment.p(ctx, [position])
+            updateJobMap[position] = job
         }
         queueJob(job)
     }
+
+    app.$$.fragment = fragment
+
+    fragment.c()
+
+    if (!options.target) {
+        return
+    }
+
+    fragment.m(options.target, null)
+    // bind job with fragment
 }
 function element(tagName: string) {
     return document.createElement(tagName)
@@ -55,8 +84,4 @@ function append(parent: Element, child: Element) {
 }
 function set_data(dom: Element, txt: string) {
     dom.textContent = txt
-}
-
-function mount_component(childComponent:typeof MiniSvelteComponent,target:Element,anchor:Element|null){
-    console.log('mount child component',childComponent,target,anchor);
 }

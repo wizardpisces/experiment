@@ -1,8 +1,8 @@
-import { TemplateNodeTypes } from ".";
+import { TemplateCompileCtx, TemplateNodeTypes } from ".";
 import { ParseContext as Context, Kind } from "../type";
 import path from 'path'
 
-export {codeGen}
+export { codeGen }
 
 function codeGen(context: Context) {
     let output: string[] = [];
@@ -16,7 +16,7 @@ function codeGen(context: Context) {
 
 
 function genInternal() {
-    let internalCode = `import {element, text, listen, insert, append, set_data, mount_component, init, MiniSvelteComponent} from "@miniSvelte/internal/index.ts";`
+    let internalCode = `import {element, text, listen, insert, append, set_data, create_component, mount_component, init, MiniSvelteComponent} from "@miniSvelte/internal/index.ts";`
     return internalCode
 }
 
@@ -25,69 +25,87 @@ function genImport(context: Context) {
 }
 
 function genFragment(context: Context) {
-    let {getRuntimeIndexByName} = context
-    let { tagList, templateReferencedPositionAndDeclarationListMap} = context.templateCompileCtx
+    function isComponentTag(tag: TemplateCompileCtx['tagList'][0]) {
+        return tag.type === TemplateNodeTypes.component || context.componentNameSet.has(tag.tagName)
+    }
+    let { getRuntimeIndexByName } = context
+    let { tagList, templateReferencedPositionAndDeclarationListMap } = context.templateCompileCtx
+
+    // codegen fragment 'declaration' content
     let createFragmentDeclarations: string = tagList.map(tag => {
         let children = tag.tagChildren.map(t => {
             return `let ${t.runtimeDeclarationName};`
         }).join('\n');
 
-        return `let ${tag.tagName};
-                ${children}`
+        let declareCode = ''
+
+        if (isComponentTag(tag)) {
+            let name = tag.tagName.toLowerCase()
+            declareCode = `let ${name}= new ${tag.tagName}({});
+            ${children}`
+        } else {
+            declareCode = `let ${tag.tagName};
+            ${children}`
+        }
+
+        return declareCode
     }).join('\n')
 
-    // create method content
+    // codegen fragment 'create' method content
     let cContent: string = tagList.map(tag => {
-        let { tagName, tagChildren } = tag
+        let { tagName, tagChildren, type } = tag
         let children = tagChildren.map(t => {
 
             return `${t.runtimeDeclarationName} = text(${t.content});`
         }).join('\n')
 
-        let tagAssign
-        if (context.componentNameSet.has(tagName)) {
-            tagAssign = `${tagName} = new ${tagName}()`
+        let initCode
+        if (isComponentTag(tag)) {
+            initCode = `create_component(${tagName.toLowerCase()}.$$.fragment)`
         } else {
-            tagAssign = `${tagName} = element("${tagName}");`
+            initCode = `${tagName} = element("${tagName}");`
         }
         return `
-                ${tagAssign}
+                ${initCode}
                 ${children}
                 `
     }).join('\n')
 
-    // mount method content
+    // codegen fragment 'mount' method content
     let mContent: string = tagList.map(tag => {
-        let { tagName, tagChildren, eventList } = tag
-        let insertCode = `insert(target,${tagName},anchor);`
+        let { type, tagName, tagChildren, eventList } = tag
+        let insertCode = type === TemplateNodeTypes.element ? `insert(target,${tagName},anchor);` : ''
         let appendCode = '',
-            eventCode = '',
-            mountChildComponentCode = ''
+            eventCode = ''
 
         appendCode = tagChildren.map(t => {
             if (t.type === TemplateNodeTypes.text) {
                 return `append(${tagName},${t.runtimeDeclarationName})`
             }
         }).join('\n')
+
         if (eventList.length) {
             eventCode = eventList.map(e => {
                 return `listen(${tagName},"${e.eventName}",ctx[${getRuntimeIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
             }).join('\n')
         }
 
-        mountChildComponentCode = Array.from(context.componentNameSet).map(name => {
-            return `mount_component(${name},target,anchor)`
-        }).join('\n')
+        let mountCode = ''
+
+        if (isComponentTag(tag)) {
+            mountCode = `mount_component(${tagName.toLowerCase()},target,anchor)`
+        }
 
         let code = `
             ${insertCode}
             ${appendCode}
             ${eventCode}
-            ${mountChildComponentCode}
+            ${mountCode}
         `
         return code;
     }).join('\n')
 
+    // codegen fragment 'patch' method content
     let pContent: string = Array.from(templateReferencedPositionAndDeclarationListMap).map(([ctxPosition, declarationList]) => {
         return declarationList.map(name => {
             return `if(dirty & ${ctxPosition}) set_data(${name},ctx[dirty]);`
@@ -117,7 +135,7 @@ function genInstance(context: Context) {
     let {
         env
     } = context
-    let { getTemplateReferencedNameTypeMap} = context.templateCompileCtx
+    let { getTemplateReferencedNameTypeMap } = context.templateCompileCtx
     let runtimeNameKindList = Array.from(getTemplateReferencedNameTypeMap());
     let declarations = runtimeNameKindList.map(([name, kind]) => {
         if (kind === Kind.VariableDeclarator) {

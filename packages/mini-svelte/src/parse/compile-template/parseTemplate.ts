@@ -1,21 +1,28 @@
+import { TemplateNodeTypes } from ".";
 import { ParseContext as Context, Kind } from "../type";
 import { emitError } from "../util";
 
 export {
-    parseTemplate,
-    TemplateNodeTypes
+    parseTemplate
 }
 
-
-enum TemplateNodeTypes {
-    text = "text"
-}
-
-// 目前只考虑一个 tagName的场景
 // TODO 只考虑最简单的情况，后面切换成字符串的词法语法分析
 const tplRegex = /<([\w\d]+)\s*([^<>]+)?>([^<>]+)<\/[\w\d]+>/g
 const eventRegex = /on:(\w+)={([\w\d]+)}/
 const varRegex = /{([^{}]+)}/g
+
+function getTypeByTagName(name:string){ // 以 大写开头的都视为 组件 tag
+    if (/[A-Z]/.test(name[0])){
+        return TemplateNodeTypes.component
+    }else{
+        return TemplateNodeTypes.element
+    }
+}
+
+/**
+ * parseTemplate阶段还并不知道 tag 是否为 component类型
+ * 需要结合后面compileScript才能知道
+ */
 
 function parseTemplate(context: Context) {
     let { rawTemplate } = context;
@@ -89,7 +96,7 @@ function parseTemplate(context: Context) {
                 return replaceStr
             })
 
-            tagList.push({ tagName:tagName.toLocaleLowerCase(), tagChildren, eventList })
+            tagList.push({ type: getTypeByTagName(tagName), tagName, tagChildren, eventList })
         }
 
     }
