@@ -39,6 +39,25 @@ function createParseContext(rawCode: string): ParseContext {
         rawStyle: '',
         componentNameSet: new Set<string>(),
 
+        templateCompileCtx:{
+            tagList:[],
+            runtimeCtxPositionDeclarationMap: new Map(),
+            addRuntimeName: (name: string, type: Kind = Kind.VariableDeclarator) => {
+                name = name.toLowerCase()
+                let index
+                if (runtimeDeclarationMap.has(name)) {
+                    index = context.getRuntimeIndexByName(name)
+                } else {
+                    runtimeDeclarationMap.set(name, type)
+                    index = runttimeIndexRecord[name] = runtimeDeclarationMap.size - 1
+                }
+                return index
+            },
+            getRuntimeDeclarationMap() {
+                return runtimeDeclarationMap
+            }
+        },
+
         addScriptImport(newImport:string){
             importStr += newImport;
         },
@@ -64,25 +83,12 @@ function createParseContext(rawCode: string): ParseContext {
             return code
         },
 
-        addRuntimeName: (name: string, type: Kind = Kind.VariableDeclarator) => {
-            let index
-            if(runtimeDeclarationMap.has(name)){
-                index = context.getRuntimeIndexByName(name)
-            }else{
-                runtimeDeclarationMap.set(name, type)
-                index = runttimeIndexRecord[name] = runtimeDeclarationMap.size-1
-            }
-            return index
-        },
         getRuntimeIndexByName(name: string) {
             let index = runttimeIndexRecord[name]
             if (typeof index === undefined) {
                 emitError(`[parseMain]:${name} is not defined`)
             }
             return index
-        },
-        getRuntimeDeclarationMap(){
-            return runtimeDeclarationMap
         }
     }
     return context;

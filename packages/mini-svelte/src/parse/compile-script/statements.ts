@@ -60,7 +60,8 @@ class ImportDeclaration extends Tree{
         if(sourceCode.endsWith('.svelte')){
             context.componentNameSet.add( path.basename(sourceCode,'.svelte'))
         }
-        let code = `import ${specifierCode} from ${sourceCode};`
+        let code = `import ${specifierCode} from "${sourceCode}";`
+        context.addScriptImport(code)
         return code
     }
 }

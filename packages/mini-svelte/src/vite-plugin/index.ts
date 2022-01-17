@@ -1,9 +1,9 @@
-import { Plugin } from 'vite'
+import { PluginOption } from 'vite'
 import { transformMain } from "./transformMain"
 export {
     miniSveltePlugin
 }
-function miniSveltePlugin(): Plugin {
+function miniSveltePlugin(): PluginOption {
     function filter(filename: string) {
         return filename.endsWith('.svelte')
     }

@@ -70,7 +70,5 @@
     "node_modules",
     "dist"
   ],
-  "include": [
-    "src"
-, "test/test.ts"  ]
+  "include": [ "src", "test"  ]
 }

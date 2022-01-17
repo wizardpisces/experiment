@@ -1,5 +1,6 @@
 import EStree from 'estree'
-import { Environment, Kind } from "./compile-script/environment/Environment"
+import { Environment } from "./compile-script/environment/Environment"
+import { TemplateCompileCtx } from './compile-template/type';
 export * from "./compile-script/environment/Environment"
 export {
     NodeTypes,
@@ -40,8 +41,6 @@ type Descriptor = {
     template: string
 }
 
-type RuntimeDeclarationMap = Map<string, Kind>
-
 type ParseContext = {
     code: string
     env: Environment
@@ -56,6 +55,8 @@ type ParseContext = {
 
     componentNameSet:Set<string>
 
+    templateCompileCtx: TemplateCompileCtx
+
     addScriptImport:(i:string)=>void
     getScriptImport:()=>string
 
@@ -64,8 +65,6 @@ type ParseContext = {
     addRuntimeCode:(code:string)=>void
     flushRuntimeBlockCode:()=>string
 
-    addRuntimeName: (name: string, type?: Kind)=>number
     getRuntimeIndexByName:(name:string)=>number
-    getRuntimeDeclarationMap: () => RuntimeDeclarationMap
 }
 

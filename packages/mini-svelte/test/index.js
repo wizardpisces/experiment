@@ -1,5 +1,10 @@
-import { Descriptor, parseMain } from "../src/parse/index"
-import fs from 'fs'
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const index_1 = require("../src/parse/index");
+const fs_1 = __importDefault(require("fs"));
 let code = `
 <script>
   import Counter from "./lib/Counter.svelte";
@@ -42,12 +47,10 @@ let code = `
     line-height: 1.35;
   }
 </style>
-`
-
-let descriptor = parseMain(code)
-
-console.log(descriptor.script)
-console.log(descriptor.style)
-console.log(descriptor.template)
-fs.writeFileSync(__dirname+'/result.js', descriptor.template,'utf8')
-console.log('\ncompile success.....')
+`;
+let descriptor = (0, index_1.parseMain)(code);
+console.log(descriptor.script);
+console.log(descriptor.style);
+console.log(descriptor.template);
+fs_1.default.writeFileSync(__dirname + '/result.js', descriptor.template, 'utf8');
+console.log('\ncompile success.....');
