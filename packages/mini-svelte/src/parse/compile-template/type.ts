@@ -1,8 +1,10 @@
 import { Kind } from "../compile-script/environment/Environment"
 
 export {
-    TemplateCompileCtx,
-    TemplateNodeTypes
+    TemplateCompileContext,
+    TemplateNodeTypes,
+    EventType,
+    PropType
 }
 
 
@@ -14,20 +16,28 @@ enum TemplateNodeTypes {
 
 type RuntimeDeclarationMap = Map<string, Kind>
 
-type tagChildrenItem = {
+// not support nested dom yet
+type TagChildType = {
     type: string,
     content: string,
-    runtimeDeclarationName: string
+    domOrComponentDeclarationName: string
 }
 
-type eventListItem = {
+type EventType = {
     eventName: string
     handlerName: string
 }
 
-type TemplateCompileCtx = {
-    templateReferencedPositionAndDeclarationListMap: Map<number, string[]> // mainly for code generation of dirty check and update eg: $$invalidate
-    tagList: { type:TemplateNodeTypes,tagName: string, tagChildren: tagChildrenItem[], eventList: eventListItem[] }[]
+type PropType = {
+    propName: string,
+    propValueName: string,
+    ctxPosition:number // for props update
+}
+
+type TemplateCompileContext = {
+    ctxPositionAndDomOrComponentDeclarationsMap: Map<number, string[]> // mainly for code generation of dirty check and update eg: $$invalidate
+    tagList: { type: TemplateNodeTypes, tagName: string, children: TagChildType[], eventList: EventType[], props: PropType[] }[]
     addTemplateReferencedName: (name: string, type?: Kind) => number
     getTemplateReferencedNameTypeMap: () => RuntimeDeclarationMap
+    getTemplateReferencedIndexByName:(name: string)=>number
 }

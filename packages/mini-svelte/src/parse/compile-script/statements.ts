@@ -1,12 +1,11 @@
 import ESTree from 'estree'
 import path from 'path'
 // acorn: The return value will be an abstract syntax tree object as specified by the ESTree spec
-import { NodeTypes, ParseContext as Context } from '../type'
+import { ParseContext as Context } from '../type'
 import { VariableDeclaration } from './variableDeclaration'
 import { Tree } from "./Tree";
-import { Environment, Kind } from './environment/Environment';
+import { Environment, NodeTypes, ProgramBodyItem } from './type';
 import { ExpressionStatement, Literal } from './expression';
-import { ProgramBodyItem } from '..';
 
 export {
     dispatchStatementToCode
@@ -23,6 +22,7 @@ function dispatchStatementToCode(statement: ProgramBodyItem, context: Context): 
          */
         case NodeTypes.FunctionDeclaration: new FunctionDeclaration(statement).toCode(context); break;
         case NodeTypes.ImportDeclaration : new ImportDeclaration(statement).toCode(context); break;
+        case NodeTypes.ExportNamedDeclaration: new ExportNamedDeclaration(statement).toCode(context); break;
         
         default: throw Error('Unknown statement ' + statement.type)
     }
@@ -61,7 +61,23 @@ class ImportDeclaration extends Tree{
             context.componentNameSet.add( path.basename(sourceCode,'.svelte'))
         }
         let code = `import ${specifierCode} from "${sourceCode}";`
-        context.addScriptImport(code)
+        context.scriptCompileContext.addScriptImport(code)
+        return code
+    }
+}
+class ExportNamedDeclaration extends Tree{
+    declare ast: ESTree.ExportNamedDeclaration
+    constructor(ast: ESTree.ExportNamedDeclaration){
+        super(ast)
+    }
+    toCode(context: Context): string {
+        let {declaration} = this.ast
+        context.scriptCompileContext.inPropCollecting = true
+        if(declaration?.type === NodeTypes.VariableDeclaration){
+            new VariableDeclaration(declaration).toCode(context)
+        }
+        context.scriptCompileContext.inPropCollecting = false
+        let code = ''
         return code
     }
 }
@@ -85,8 +101,8 @@ class FunctionDeclaration extends Tree {
             * 如果函数被template引用到，就需要构造序列化一个新的函数返回给客户端
             * codegen prehook
             */
-            if (context.getRuntimeIndexByName(id.name)) {
-                context.turnOnRuntimeCodeGeneration()
+            if (context.templateCompileContext.getTemplateReferencedIndexByName(id.name)) {
+                context.scriptCompileContext.turnOnRuntimeCodeGeneration()
             }
             let funcName = id.name;
 
@@ -110,11 +126,11 @@ class FunctionDeclaration extends Tree {
             }
 
             code = `function ${funcName}(${paramStr}){
-                    ${context.flushRuntimeBlockCode()}
+                    ${context.scriptCompileContext.flushRuntimeBlockCode()}
                 }`
 
                    // codegen posthook
-            if (context.getRuntimeIndexByName(id.name)) {
+            if (context.templateCompileContext.getTemplateReferencedIndexByName(id.name)) {
                 context.env.defCode(id.name, code)
             }
         }

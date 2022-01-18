@@ -80,8 +80,8 @@ export class UpdateExpression extends Tree {
                 let res = context.env.get(argument.name)
                 if (res) {
                     res.env.def(res.name, res.value + 1)
-                    if (context.isInRuntimeCodeGeneration()) {
-                        let index = context.getRuntimeIndexByName(res.name),
+                    if (context.scriptCompileContext.isInRuntimeCodeGeneration()) {
+                        let index = context.templateCompileContext.getTemplateReferencedIndexByName(res.name),
                             rawCode = prefix ? `++${res.name}` : `${res.name}++`
                         /**
                          * 这里是变量的更新
@@ -89,9 +89,9 @@ export class UpdateExpression extends Tree {
                          * has been referenced by template, then wrap by $$invalidate
                          */
                         if (res.env.isTopEnv() && index) {
-                            context.addRuntimeCode(`$$invalidate(${index},${rawCode})`)
+                            context.scriptCompileContext.addRuntimeCode(`$$invalidate(${index},${rawCode})`)
                         } else {
-                            context.addRuntimeCode(rawCode)
+                            context.scriptCompileContext.addRuntimeCode(rawCode)
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 <script>
   import Counter from "./lib/Counter.svelte";
+  import Prop from "./lib/Prop.svelte";
   let name = "parent";
   let count = 0;
   function inc() {
@@ -12,8 +13,9 @@
   <button on:click={inc}>
     {name} Clicked {count}
   </button>
-  <br/>
+
   <Counter />
+  <Prop prop1={count} />
 </main>
 
 <style>
@@ -26,16 +28,5 @@
     text-align: center;
     padding: 1em;
     margin: 0 auto;
-  }
-
-  img {
-    height: 16rem;
-    width: 16rem;
-  }
-
-  p {
-    max-width: 14rem;
-    margin: 1rem auto;
-    line-height: 1.35;
   }
 </style>

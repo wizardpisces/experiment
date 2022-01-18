@@ -1,6 +1,5 @@
-import { TemplateCompileCtx, TemplateNodeTypes } from ".";
+import { TemplateCompileContext, TemplateNodeTypes } from ".";
 import { ParseContext as Context, Kind } from "../type";
-import path from 'path'
 
 export { codeGen }
 
@@ -21,31 +20,32 @@ function genInternal() {
 }
 
 function genImport(context: Context) {
-    return context.getScriptImport()
+    return context.scriptCompileContext.getScriptImport()
 }
 
 function genFragment(context: Context) {
-    function isComponentTag(tag: TemplateCompileCtx['tagList'][0]) {
+    function isComponentTag(tag: TemplateCompileContext['tagList'][0]) {
         return tag.type === TemplateNodeTypes.component || context.componentNameSet.has(tag.tagName)
     }
-    let { getRuntimeIndexByName } = context
-    let { tagList, templateReferencedPositionAndDeclarationListMap } = context.templateCompileCtx
+    let { getTemplateReferencedIndexByName } = context.templateCompileContext
+    let { tagList, ctxPositionAndDomOrComponentDeclarationsMap } = context.templateCompileContext
 
     // codegen fragment 'declaration' content
-    let createFragmentDeclarations: string = tagList.map(tag => {
-        let children = tag.tagChildren.map(t => {
-            return `let ${t.runtimeDeclarationName};`
+    let domOrComponentDeclarasions: string = tagList.map(tag => {
+        let childrenDeclarations = tag.children.map(t => {
+            return `let ${t.domOrComponentDeclarationName};`
         }).join('\n');
 
         let declareCode = ''
 
         if (isComponentTag(tag)) {
             let name = tag.tagName.toLowerCase()
-            declareCode = `let ${name}= new ${tag.tagName}({});
-            ${children}`
+            let props = tag.props.length ? tag.props.map(prop => `${prop.propName}:ctx[${getTemplateReferencedIndexByName(prop.propValueName)}]`).join(',') : ``
+            declareCode = `let ${name}= new ${tag.tagName}({props:{${props}}});
+            ${childrenDeclarations}`
         } else {
             declareCode = `let ${tag.tagName};
-            ${children}`
+            ${childrenDeclarations}`
         }
 
         return declareCode
@@ -53,11 +53,7 @@ function genFragment(context: Context) {
 
     // codegen fragment 'create' method content
     let cContent: string = tagList.map(tag => {
-        let { tagName, tagChildren, type } = tag
-        let children = tagChildren.map(t => {
-
-            return `${t.runtimeDeclarationName} = text(${t.content});`
-        }).join('\n')
+        let { tagName, children, type } = tag
 
         let initCode
         if (isComponentTag(tag)) {
@@ -65,28 +61,33 @@ function genFragment(context: Context) {
         } else {
             initCode = `${tagName} = element("${tagName}");`
         }
+
+        let childrenAssignList = children.map(t => {
+            return `${t.domOrComponentDeclarationName} = text(${t.content});`
+        }).join('\n')
+
         return `
                 ${initCode}
-                ${children}
+                ${childrenAssignList}
                 `
     }).join('\n')
 
     // codegen fragment 'mount' method content
     let mContent: string = tagList.map(tag => {
-        let { type, tagName, tagChildren, eventList } = tag
+        let { type, tagName, children, eventList } = tag
         let insertCode = type === TemplateNodeTypes.element ? `insert(target,${tagName},anchor);` : ''
         let appendCode = '',
             eventCode = ''
 
-        appendCode = tagChildren.map(t => {
+        appendCode = children.map(t => {
             if (t.type === TemplateNodeTypes.text) {
-                return `append(${tagName},${t.runtimeDeclarationName})`
+                return `append(${tagName},${t.domOrComponentDeclarationName})`
             }
         }).join('\n')
 
         if (eventList.length) {
             eventCode = eventList.map(e => {
-                return `listen(${tagName},"${e.eventName}",ctx[${getRuntimeIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
+                return `listen(${tagName},"${e.eventName}",ctx[${getTemplateReferencedIndexByName(e.handlerName)}]);/*${e.eventName}|${e.handlerName}*/`;
             }).join('\n')
         }
 
@@ -106,14 +107,31 @@ function genFragment(context: Context) {
     }).join('\n')
 
     // codegen fragment 'patch' method content
-    let pContent: string = Array.from(templateReferencedPositionAndDeclarationListMap).map(([ctxPosition, declarationList]) => {
+    console.log(Array.from(ctxPositionAndDomOrComponentDeclarationsMap))
+    let pContent: string = Array.from(ctxPositionAndDomOrComponentDeclarationsMap).map(([ctxPosition, declarationList]) => {
         return declarationList.map(name => {
-            return `if(dirty & ${ctxPosition}) set_data(${name},ctx[dirty]);`
+            return `if(dirty === ${ctxPosition}) set_data(${name},ctx[dirty]);`
         }).join('\n')
     }).join('\n')
 
+    let propsUpdateContent: string = tagList.map(tag=>{
+        let {props,tagName} = tag,
+            code = ''
+        if(isComponentTag(tag)){
+            let changedPropDeclarationName = `${tagName.toLocaleLowerCase()}_changes`
+            code += `const ${changedPropDeclarationName} = {};`
+            code += props.map(prop => 
+                `if(dirty & ${prop.ctxPosition}) 
+                    ${changedPropDeclarationName}.${prop.propName}=/*${prop.propName}|${prop.propValueName}*/ctx[dirty];`
+                ).join('\n')
+            code += `${tagName.toLocaleLowerCase()}.$set(${changedPropDeclarationName});`
+        }
+        
+        return code
+    }).join('\n')
+
     let output = `function create_fragment(ctx) {
-        ${createFragmentDeclarations}
+        ${domOrComponentDeclarasions}
          let block = {
               c: function create() {
                   ${cContent}
@@ -123,6 +141,7 @@ function genFragment(context: Context) {
               },
               p: function patch(ctx,[dirty]){
                ${pContent}
+               ${propsUpdateContent}
                 console.log('dirty checked',ctx,dirty)
               }
         }
@@ -135,9 +154,32 @@ function genInstance(context: Context) {
     let {
         env
     } = context
-    let { getTemplateReferencedNameTypeMap } = context.templateCompileCtx
-    let runtimeNameKindList = Array.from(getTemplateReferencedNameTypeMap());
-    let declarations = runtimeNameKindList.map(([name, kind]) => {
+    let { getTemplateReferencedNameTypeMap, getTemplateReferencedIndexByName } = context.templateCompileContext
+    let instanceCtxNameKindList = Array.from(getTemplateReferencedNameTypeMap());
+    let propSet = context.scriptCompileContext.getProps(), 
+        props = Array.from(propSet),
+        propStr = ''
+
+    if(props.length){
+        let propDeclarations = `let { ${props.join(',')} }=$$props`
+        let propsSetFunctionContent = props.map(propName=>{
+            return `if('${propName}' in $$props) $$invalidate(${getTemplateReferencedIndexByName(propName)},${propName} = $$props.${propName});`
+        }).join('\n')
+        let propUpdateFunction = `
+         $$self.$set = $$props => {
+             ${propsSetFunctionContent}
+        };`
+
+        propStr = `
+        ${propDeclarations}
+        ${propUpdateFunction}
+        `
+    }
+   
+    let declarations = instanceCtxNameKindList.map(([name, kind]) => {
+        if(propSet.has(name)){
+            return ''
+        }
         if (kind === Kind.VariableDeclarator) {
             let varCode = `${env.getCode(name)}`
             return varCode
@@ -149,10 +191,12 @@ function genInstance(context: Context) {
             return env.getCode(name)
         }
     }).join('\n')
+    
     return `
-    function instance($$invalidate){
+    function instance($$invalidate,$$props,$$self){
+        ${propStr}
         ${declarations}
-        return [${runtimeNameKindList.map(([name, kind]) => name)}]
+        return [${instanceCtxNameKindList.map(([name, kind]) => name)}]
     }`
 }
 

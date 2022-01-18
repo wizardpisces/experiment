@@ -1,33 +1,17 @@
 import { compileStyle } from "./compileStyle"
-import { compileScript } from "./compileScript"
 import { ParseContext } from "./type"
 import { compileTemplate } from "./compileTemplate"
 import { Descriptor } from "."
 import { Environment, Kind } from "./compile-script/environment/Environment"
 import { emitError } from "./util"
+import { createScriptCompileContext } from "./compile-script/context"
+import { createTemplateCompileContext } from "./compile-template/context"
 
 export {
     parseMain
 }
 
 function createParseContext(rawCode: string): ParseContext {
-
-    /**
-     * map的遍历是有序的，可以很好模拟声明的顺序
-     * value被修改后也不会改变key的顺序
-     */
-    let templateReferencedNameTypeMap: Map<string, Kind> = new Map(),
-        templateReferencedNameIndexRecord: Record<string, number> = {}
-
-    let runtimeBlockCode: string[] = [],
-        inRuntimeCodeGeneration = false;
-
-    function turnOffRuntimeCodeGeneration(){
-        inRuntimeCodeGeneration = false
-    }
-
-    let importStr = ''
-
     let context = {
         code: rawCode,
         env: new Environment(null),
@@ -39,56 +23,8 @@ function createParseContext(rawCode: string): ParseContext {
         rawStyle: '',
         componentNameSet: new Set<string>(),
 
-        templateCompileCtx:{
-            tagList:[],
-            templateReferencedPositionAndDeclarationListMap: new Map(),
-            addTemplateReferencedName: (name: string, type: Kind = Kind.VariableDeclarator) => {
-                let index
-                if (templateReferencedNameTypeMap.has(name)) {
-                    index = context.getRuntimeIndexByName(name)
-                } else {
-                    templateReferencedNameTypeMap.set(name, type)
-                    index = templateReferencedNameIndexRecord[name] = templateReferencedNameTypeMap.size - 1
-                }
-                return index
-            },
-            getTemplateReferencedNameTypeMap() {
-                return templateReferencedNameTypeMap
-            }
-        },
-
-        addScriptImport(newImport:string){
-            importStr += newImport;
-        },
-
-        getScriptImport():string{
-            return importStr
-        },
-
-        turnOnRuntimeCodeGeneration(){
-            inRuntimeCodeGeneration = true
-        },
-        addRuntimeCode(str:string){
-            if (!context.isInRuntimeCodeGeneration()) return
-            runtimeBlockCode.push(str)
-        },
-        isInRuntimeCodeGeneration(){
-            return inRuntimeCodeGeneration
-        },
-        flushRuntimeBlockCode(){
-            turnOffRuntimeCodeGeneration()
-            let code = runtimeBlockCode.join('\n')
-            runtimeBlockCode = []
-            return code
-        },
-
-        getRuntimeIndexByName(name: string) {
-            let index = templateReferencedNameIndexRecord[name]
-            if (typeof index === undefined) {
-                emitError(`[parseMain]:${name} is not defined`)
-            }
-            return index
-        }
+        templateCompileContext:createTemplateCompileContext(),
+        scriptCompileContext:createScriptCompileContext(),
     }
     return context;
 }
@@ -105,17 +41,32 @@ function parseMain(rawCode: string): Descriptor {
         styleStart = '<style>',
         styleEnd = '</style>';
 
+    function isValidParseBlock(start:number,end:number){ // style may not exist
+        return start!==-1 && end!==-1
+    }
+
+    let rawScript = '',
+        rawStyle = '',
+        rawTemplate = ''
 
     let scriptStartIndex = code.indexOf(scriptStart) //TODO: add ts parse
     let scriptEndIndex = code.indexOf(scriptEnd)
-    let rawScript = code.slice(scriptStartIndex + scriptStart.length, scriptEndIndex)
-    code = code.slice(0, scriptStartIndex) + code.slice(scriptEndIndex + scriptEnd.length)
+    
+    if(isValidParseBlock(scriptStartIndex,scriptEndIndex)){
+        rawScript = code.slice(scriptStartIndex + scriptStart.length, scriptEndIndex)
+        code = code.slice(0, scriptStartIndex) + code.slice(scriptEndIndex + scriptEnd.length)
+    }
 
     let styleStartIndex = code.indexOf(styleStart) // TODO：add sass parse
     let styleEndIndex = code.indexOf(styleEnd)
-    let rawStyle = code.slice(styleStartIndex + styleStart.length, styleEndIndex)
 
-    let rawTemplate = code.slice(0, styleStartIndex) + code.slice(styleEndIndex + styleEnd.length)
+    if (isValidParseBlock(styleStartIndex,styleEndIndex)){
+        rawStyle = code.slice(styleStartIndex + styleStart.length, styleEndIndex)
+        rawTemplate = code.slice(0, styleStartIndex) + code.slice(styleEndIndex + styleEnd.length)
+    }else{
+        rawTemplate = code
+    }
+
 
     context = {
         ...context,

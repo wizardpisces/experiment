@@ -10,7 +10,10 @@
     "test": "npm run rmjs && node -r ts-node/register test/index.ts"
   },
   "author": "刘泽",
-  "license": "ISC",
+  "license": "MTT",
+  "engines": {
+    "node": ">=14.x"
+  },
   "devDependencies": {
     "@types/node": "^17.0.8",
     "acorn": "^8.7.0",

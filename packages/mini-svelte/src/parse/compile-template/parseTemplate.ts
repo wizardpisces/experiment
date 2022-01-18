@@ -1,20 +1,21 @@
-import { TemplateNodeTypes } from ".";
+import { EventType, PropType, TemplateNodeTypes } from ".";
 import { ParseContext as Context, Kind } from "../type";
-import { emitError } from "../util";
+import { emitError, isNumber } from "../util";
 
 export {
     parseTemplate
 }
 
 // TODO 只考虑最简单的情况，后面切换成字符串的词法语法分析
-const tplRegex = /<([\w\d]+)\s*([^<>]+)?>([^<>]+)<\/[\w\d]+>/g
-const eventRegex = /on:(\w+)={([\w\d]+)}/
+const tplRegex = /<([\w\d]+)\s*([^<>]*)>([^<>]*)<\/[\w\d]+>/g
+const eventRegex = /on:(\w+)={([\w\d]+)}/g
+const propRegex = /([\w]+)={([\w\d]+)}/g
 const varRegex = /{([^{}]+)}/g
 
-function getTypeByTagName(name:string){ // 以 大写开头的都视为 组件 tag
-    if (/[A-Z]/.test(name[0])){
+function getTypeByTagName(name: string) { // 以 大写开头的都视为 组件 tag
+    if (/[A-Z]/.test(name[0])) {
         return TemplateNodeTypes.component
-    }else{
+    } else {
         return TemplateNodeTypes.element
     }
 }
@@ -26,11 +27,11 @@ function getTypeByTagName(name:string){ // 以 大写开头的都视为 组件 t
 
 function parseTemplate(context: Context) {
     let { rawTemplate } = context;
-    let { tagList, templateReferencedPositionAndDeclarationListMap, addTemplateReferencedName } = context.templateCompileCtx;
+    let { tagList, ctxPositionAndDomOrComponentDeclarationsMap, addTemplateReferencedName } = context.templateCompileContext;
     let regResult,
         declarationNumber = 0
 
-    function genCreateFragmentDeclarationName(type: string, ctxPosition?: number) {
+    function genDomOrComponentDeclarationName(type: string, ctxPosition?: number) {
         let name = ''
 
         // TODO: add element type
@@ -41,68 +42,92 @@ function parseTemplate(context: Context) {
         }
 
         // register runtime relation for update
-        if (ctxPosition) {
-            let declarationList = templateReferencedPositionAndDeclarationListMap.get(ctxPosition) || []
+        if (isNumber(ctxPosition)) {
+            let declarationList = ctxPositionAndDomOrComponentDeclarationsMap.get(ctxPosition) || []
             declarationList.push(name)
-            templateReferencedPositionAndDeclarationListMap.set(ctxPosition, declarationList)
+            ctxPositionAndDomOrComponentDeclarationsMap.set(ctxPosition, declarationList)
         }
 
         return name
     }
 
-    while ((regResult = tplRegex.exec(rawTemplate)) !== null) {
-        let tagName = regResult[1]
-        let prop = regResult[2]
-        let innerContent = regResult[3]
-        let eventList = []
-
-        if (prop) {
-            let event = prop.match(eventRegex)
-            if (event) {
+    function parseEvents(rawPropStr: string) {
+        let eventList: EventType[] = [];
+        if (rawPropStr) {
+            const matchesIterator = rawPropStr.matchAll(eventRegex)
+            for (let event of matchesIterator) {
                 let eventName = event[1],
                     handlerName = event[2];
 
                 addTemplateReferencedName(handlerName, Kind.FunctionDeclaration)
-                eventList.push({ eventName, handlerName })
+                eventList.push({
+                    eventName, handlerName
+                })
             }
         }
+        return eventList
+    }
+
+    function parseProps(rawPropStr: string) {
+        let props: PropType[] = []
+        if (rawPropStr) {
+            const matchesIterator = rawPropStr.matchAll(propRegex)
+            for (let match of matchesIterator) {
+                let propName = match[1],
+                    propValueName = match[2];
+
+                let ctxPosition = addTemplateReferencedName(propValueName)
+                props.push({
+                    propName, propValueName, ctxPosition
+                })
+            }
+        }
+        return props
+    }
+
+    while ((regResult = tplRegex.exec(rawTemplate)) !== null) {
+        let tagName = regResult[1]
+        let rawPropStr = regResult[2]
+        let innerContent = regResult[3]
+        let eventList = parseEvents(rawPropStr)
+        let props = parseProps(rawPropStr)
 
         if (innerContent) {
             let startOffset = 0
-            let tagChildren: {
+            let children: {
                 type: string,
                 content: string,
-                runtimeDeclarationName: string
+                domOrComponentDeclarationName: string
             }[] = []
 
             innerContent.replace(varRegex, function (match, varName, offset) {
                 let content = innerContent.slice(startOffset, offset)
                 startOffset = offset + match.length
 
-                content.length && tagChildren.push({
+                content.length && children.push({
                     type: TemplateNodeTypes.text,
                     content: JSON.stringify(content),
-                    runtimeDeclarationName: genCreateFragmentDeclarationName(TemplateNodeTypes.text)
+                    domOrComponentDeclarationName: genDomOrComponentDeclarationName(TemplateNodeTypes.text)
                 })
 
                 let ctxPosition = addTemplateReferencedName(varName)
                 let replaceStr = `ctx[${ctxPosition}]`
-                tagChildren.push({
+                children.push({
                     type: TemplateNodeTypes.text,
                     content: replaceStr,
-                    runtimeDeclarationName: genCreateFragmentDeclarationName(TemplateNodeTypes.text, ctxPosition)
+                    domOrComponentDeclarationName: genDomOrComponentDeclarationName(TemplateNodeTypes.text, ctxPosition)
                 })
 
                 return replaceStr
             })
 
-            tagList.push({ type: getTypeByTagName(tagName), tagName, tagChildren, eventList })
+            tagList.push({ type: getTypeByTagName(tagName), tagName, children, eventList, props })
         }
 
     }
 
     return {
-        templateReferencedPositionAndDeclarationListMap,
+        ctxPositionAndDomOrComponentDeclarationsMap,
         tagList
     }
 }

@@ -1,38 +1,11 @@
-import EStree from 'estree'
-import { Environment } from "./compile-script/environment/Environment"
-import { TemplateCompileCtx } from './compile-template/type';
-export * from "./compile-script/environment/Environment"
+import { Environment } from "./compile-script/type"
+import { TemplateCompileContext } from './compile-template/type';
+import { ScriptCompileContext } from './compile-script/type';
+export * from './compile-script/type'
+export * from './compile-template/type'
 export {
-    NodeTypes,
     Descriptor,
     ParseContext,
-    ProgramBodyItem
-}
-type ProgramBodyItem = (EStree.Program['body'])[number];
-const enum NodeTypes {
-    //ExpressionStatement
-    MemberExpression = 'MemberExpression',
-    AssignmentExpression = 'AssignmentExpression',
-    ExpressionStatement = 'ExpressionStatement',
-    BinaryExpression = 'BinaryExpression',
-    CallExpression = 'CallExpression',
-    UpdateExpression = 'UpdateExpression',
-    Identifier = 'Identifier',
-    Literal = 'Literal',
-
-    VariableDeclaration = 'VariableDeclaration',
-    VariableDeclarator = 'VariableDeclarator',
-
-    FunctionDeclaration = 'FunctionDeclaration',
-    ImportDeclaration = 'ImportDeclaration',
-
-    BlockStatement = 'BlockStatement',
-
-    ReturnStatement = 'ReturnStatement',
-
-    // flow control
-    WhileStatement = 'WhileStatement',
-    IfStatement = 'IfStatement',
 }
 
 type Descriptor = {
@@ -55,16 +28,7 @@ type ParseContext = {
 
     componentNameSet:Set<string>
 
-    templateCompileCtx: TemplateCompileCtx
-
-    addScriptImport:(i:string)=>void
-    getScriptImport:()=>string
-
-    turnOnRuntimeCodeGeneration:()=>void
-    isInRuntimeCodeGeneration:()=>boolean
-    addRuntimeCode:(code:string)=>void
-    flushRuntimeBlockCode:()=>string
-
-    getRuntimeIndexByName:(name:string)=>number
+    templateCompileContext: TemplateCompileContext
+    scriptCompileContext: ScriptCompileContext
 }
 

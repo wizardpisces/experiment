@@ -15,7 +15,13 @@ let currentFlushPromise: Promise<void> | null = null
 function flushJobs() {
     isFlushing = true
     console.log('flushJobs', queue.length)
-    queue.forEach(job => job())
+    /**
+     * for let of 的迭代方式是动态的，可以比较好的满足更新调度过程中新插入的更新任务
+     * forEach的方式是静态的，没法满足动态添加任务的需求
+     */
+    for(let job of queue){ 
+        job()
+    }
     queue = [] // empty queue
 }
 

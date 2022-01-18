@@ -15,12 +15,19 @@ class VariableDeclarator extends Tree {
     toCode(context: Context, kind: string) {
         let { env } = context
         if (this.ast.id.type === NodeTypes.Identifier) {
-            if (this.ast.init!.type === NodeTypes.Literal) {
-                env.def(this.ast.id.name, (<ESTree.Literal>this.ast.init).value)
-                env.defCode(this.ast.id.name, `${kind} ${this.ast.id.name}=${JSON.stringify((<ESTree.Literal>this.ast.init).value)};`)
-            } else if (this.ast.init!.type === NodeTypes.Identifier) {
-                env.def(this.ast.id.name, env.get((<ESTree.Identifier>this.ast.init).name))
-                env.defCode(this.ast.id.name, `${this.ast.id.name}=${(<ESTree.Identifier>this.ast.init).name};`)
+
+            context.scriptCompileContext.addProps(this.ast.id.name)
+            
+            if (this.ast.init) {
+                if (this.ast.init!.type === NodeTypes.Literal) {
+                    env.def(this.ast.id.name, (<ESTree.Literal>this.ast.init).value)
+                    env.defCode(this.ast.id.name, `${kind} ${this.ast.id.name}=${JSON.stringify((<ESTree.Literal>this.ast.init).value)};`)
+                } else if (this.ast.init!.type === NodeTypes.Identifier) {
+                    env.def(this.ast.id.name, env.get((<ESTree.Identifier>this.ast.init).name))
+                    env.defCode(this.ast.id.name, `${this.ast.id.name}=${(<ESTree.Identifier>this.ast.init).name};`)
+                }
+            }else{
+                env.def(this.ast.id.name, undefined)
             }
         }
         return ''

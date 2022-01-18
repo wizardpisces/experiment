@@ -21,15 +21,17 @@ type Fragment = {
     m: (target: Element, anchor: Element | null) => void
     p: (ctx: Ctx, []) => void
 }
-
+type Props = Record<string, string>
 
 class MiniSvelteComponent {
     $$: { fragment: Fragment | null } = {
         fragment: null
     }
+    
+    updateJobMap: Record<number, SchedulerJob> = {}
 
     constructor() {
-
+        this.updateJobMap = {}
     }
 }
 
@@ -42,30 +44,29 @@ function mount_component(childComponent: MiniSvelteComponent, target: Element, a
     childComponent.$$.fragment?.m(target, anchor)
 }
 
-function init(app: MiniSvelteComponent, options: { target: Element }, instance: (f: Function) => any[], create_fragment: (ctx: Ctx) => Fragment) {
-    let ctx = instance($$invalidate)
+function init(app: MiniSvelteComponent, options: { target?: Element, props: Props } = { props: {} }, instance: (invalidate: Function, props?: {}, app?: MiniSvelteComponent) => any[], create_fragment: (ctx: Ctx) => Fragment) {
+    let ctx = instance($$invalidate, options.props, app)
     let fragment = create_fragment(ctx);
-    let updateJobMap: Record<number, SchedulerJob> = {}
+
     function $$invalidate(position: number, newVal: string) {
         ctx[position] = newVal
-        let job = updateJobMap[position];
+        let job = app.updateJobMap[position];
         if (!job) {
             job = () => fragment.p(ctx, [position])
-            updateJobMap[position] = job
+            app.updateJobMap[position] = job
         }
         queueJob(job)
     }
 
     app.$$.fragment = fragment
 
-    fragment.c()
+    create_component(fragment)
 
     if (!options.target) {
         return
     }
 
-    fragment.m(options.target, null)
-    // bind job with fragment
+    mount_component(app, options.target, null)
 }
 function element(tagName: string) {
     return document.createElement(tagName)
