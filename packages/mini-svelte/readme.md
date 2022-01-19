@@ -28,26 +28,14 @@ npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (r
 #### Step2
 * [x] scheduler (commitId: 7b4405a)
 * [x] nested components (commitId: 77296d6)
-* [x] prop injection
+* [x] prop injection (commitId: 65fe9a9)
 
 #### Step3
 * [] slot
-* [] nested dom
+* [] nested dom (use htmlparser2)
 * [] if-block
 * [] scoped css
 * ...
-
-### Prop传递的基本思路
-
-子组件中
-* 编译 export let prop，把export标记为组件的 prop
-* 把$$props注入到 instance方法中，解构出prop，并通过 ctx返回
-* 把实例本身 $$self注入到 Instance，并动态挂载 $$set方法，代理prop的更新处理，供parent组件调用
-
-父组件中
-* 从模板中编译出组件对应的 props
-* Fragment声明阶段：实例化子组件时传入 props对象
-* Fragment 返回的p函数里面，动态根据子函数名生成props对象，并关联dirty与props的赋值，最后执行子实例 $set方法（ -> 触发子组件的 $$set ->触发子组件的p脏检测及其更新）
 
 ## Reference
 
