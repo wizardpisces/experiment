@@ -8,15 +8,13 @@
   }
 </script>
 
-<main>
-  <h1>Hello {name} Typescript!</h1>
-  <button on:click={inc}>
-    {name} Clicked {count}
-  </button>
+<h1>Hello {name} Typescript!</h1>
+<button on:click={inc}>
+  {name} Clicked {count}
+</button>
 
-  <Counter />
-  <Prop prop1={count} />
-</main>
+<Counter></Counter>
+<Prop prop1={count}></Prop>
 
 <style>
   :root {

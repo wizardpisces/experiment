@@ -89,16 +89,18 @@ function parseTemplate(context: Context) {
         let tagName = regResult[1]
         let rawPropStr = regResult[2]
         let innerContent = regResult[3]
+        
         let eventList = parseEvents(rawPropStr)
         let props = parseProps(rawPropStr)
 
+        let startOffset = 0
+        let children: {
+            type: string,
+            content: string,
+            domOrComponentDeclarationName: string
+        }[] = []
+
         if (innerContent) {
-            let startOffset = 0
-            let children: {
-                type: string,
-                content: string,
-                domOrComponentDeclarationName: string
-            }[] = []
 
             innerContent.replace(varRegex, function (match, varName, offset) {
                 let content = innerContent.slice(startOffset, offset)
@@ -121,8 +123,8 @@ function parseTemplate(context: Context) {
                 return replaceStr
             })
 
-            tagList.push({ type: getTypeByTagName(tagName), tagName, children, eventList, props })
         }
+        tagList.push({ type: getTypeByTagName(tagName), tagName, children, eventList, props })
 
     }
 

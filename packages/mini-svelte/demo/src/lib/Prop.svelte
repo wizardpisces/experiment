@@ -2,4 +2,4 @@
 	export let prop1;
 </script>
 
-<p>Child: The prop is prop1:{prop1}</p>
+<h1>Child1: prop from parent:{prop1}</h1>

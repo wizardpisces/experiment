@@ -1,5 +1,5 @@
 <script>
-	let name = 'child Count';
+	let name = 'child2';
 	let count = 0;
 
 	function handleClick() {
@@ -8,10 +8,9 @@
 	}
 </script>
 
-<h1>{name}!</h1>
-<h2>Hello {count}!</h2>
+<h1>{name}:own count: {count}!</h1>
 <button on:click={handleClick}>
-	Clicked {count}
+	{name} Clicked {count}
 </button>
 
 <style>

@@ -34,6 +34,7 @@ npm run rmjs #then click vscode run and debug, then choose mini-svelte to run (r
 * [] slot
 * [] nested dom
 * [] if-block
+* [] scoped css
 * ...
 
 ### Prop传递的基本思路

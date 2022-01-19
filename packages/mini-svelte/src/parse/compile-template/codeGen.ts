@@ -119,12 +119,20 @@ function genFragment(context: Context) {
             code = ''
         if(isComponentTag(tag)){
             let changedPropDeclarationName = `${tagName.toLocaleLowerCase()}_changes`
-            code += `const ${changedPropDeclarationName} = {};`
-            code += props.map(prop => 
-                `if(dirty & ${prop.ctxPosition}) 
-                    ${changedPropDeclarationName}.${prop.propName}=/*${prop.propName}|${prop.propValueName}*/ctx[dirty];`
-                ).join('\n')
-            code += `${tagName.toLocaleLowerCase()}.$set(${changedPropDeclarationName});`
+            let newPropsDeclaration = `const ${changedPropDeclarationName} = {};`
+            let propsDirtyCheckArray = props.map(prop => {
+                return `if(dirty & ${prop.ctxPosition}) 
+                ${changedPropDeclarationName}.${prop.propName}=/*${prop.propName}|${prop.propValueName}*/ctx[dirty];`
+            })
+            
+            let updateComponentProps= `${tagName.toLocaleLowerCase()}.$set(${changedPropDeclarationName});`
+
+            if(propsDirtyCheckArray.length){ // if exist props injection
+                code = `${newPropsDeclaration}
+                        ${propsDirtyCheckArray.join('\n')}
+                        ${updateComponentProps}
+                    `
+            }
         }
         
         return code
