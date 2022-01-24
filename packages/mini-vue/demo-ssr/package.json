@@ -1,13 +1,16 @@
 {
-  "name": "mini-vue-demo",
+  "name": "ssr-mini-vue-demo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "node server",
     "build": "vite build",
     "serve": "vite preview"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.17.2",
+    "vue-router": "4"
+  },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.9.3",
     "vite": "^2.1.5",

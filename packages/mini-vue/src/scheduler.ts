@@ -14,7 +14,10 @@ let currentFlushPromise: Promise<void> | null = null
 function flushJobs() {
     isFlushing = true
     console.log('flushJobs',queue.length)
-    queue.forEach(job => job())
+    for(let job of queue){
+        job()
+    }
+    // queue.forEach(job => job())
     queue = [] // empty queue to avoid Component Scope Trigger
 }
 

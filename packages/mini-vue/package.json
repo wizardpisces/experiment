@@ -1,14 +1,21 @@
 {
   "name": "mini-vue",
+  "private": true,
   "version": "1.0.0",
   "description": "Vue in mini version",
   "main": "index.js",
   "scripts": {
+    "demo":"cd demo && npm run dev",
+    "demo-ssr":"cd demo-ssr && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "刘泽",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "vue": "^3.2.20"
-  }
+  },
+  "workspaces": [
+    "demo",
+    "ssr-demo"
+  ]
 }

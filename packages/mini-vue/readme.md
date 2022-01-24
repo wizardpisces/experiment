@@ -1,5 +1,11 @@
 ## Introdution
 Vue@3 Composition-API in mini version
+
+## How to run
+```bash
+yarn install
+
+```
 ## Progress
 通过run Demo的需要逐步实现功能
 ### 第一阶段
