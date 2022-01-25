@@ -1,7 +1,7 @@
 import {
     // createApp,
     createSSRApp
-} from '../../src'
+} from 'mini-vue'
 
 import App from './App'
 import { createRouter } from './router'

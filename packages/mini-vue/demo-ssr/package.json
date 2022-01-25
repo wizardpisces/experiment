@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "express": "^4.17.2",
-    "vue-router": "4"
+    "vue-router": "4",
+    "mini-vue": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.9.3",
-    "vite": "^2.1.5",
-    "vue": "^3.2.13"
+    "vite": "^2.1.5"
   }
 }
