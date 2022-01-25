@@ -1,5 +1,5 @@
-import { ref, effect, h, reactive } from '../../src'
-import { nextTick } from '../../src/scheduler'
+import { ref, effect, h, reactive } from 'mini-vue'
+import { nextTick } from 'mini-vue'
 import Child from './child'
 export default {
   setup() {

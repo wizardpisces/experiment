@@ -5,7 +5,8 @@ import { effect, h } from ".";
 import { ConcreteComponent } from "./component";
 
 export {
-    createApp
+    createApp,
+    createSSRApp
 }
 
 function createApp(app: ConcreteComponent, props: VNode['props']={children:[]}) {
@@ -24,3 +25,6 @@ function createApp(app: ConcreteComponent, props: VNode['props']={children:[]}) 
     }
 }
 
+function createSSRApp(app: ConcreteComponent, props: VNode['props'] = { children: [] }) {
+    return h(app,props)
+}

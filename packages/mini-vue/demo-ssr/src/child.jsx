@@ -1,4 +1,4 @@
-import { ref, effect, h } from '../../src'
+import { ref, effect, h } from 'mini-vue'
 export default {
     props:{
         count:Number
@@ -14,7 +14,7 @@ export default {
         effect(() => console.log('child props change:', props,props.count))
         return () => (
             <div class="child-count">
-                <h1>Child {Math.random()}</h1>
+                <h1>Child2 {Math.random()}</h1>
                 <p>child count:{childCount.value}<button onClick={add}>+1</button></p>
                 <p>props count: {props.count}</p>
             </div>

@@ -3,7 +3,9 @@ Vue@3 Composition-API in mini version
 
 ## How to run
 ```bash
-yarn install
+pnpm install
+npm run demo
+npm run demo-ssr
 
 ```
 ## Progress
