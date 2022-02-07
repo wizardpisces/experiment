@@ -8,17 +8,18 @@ export {
 
 function unrollBufferSync(buffer:SSRBuffer){
     let ret = ''
-    for(let b in buffer){
-        if(isString(b)){
-            ret +=b
-        }else{
-            ret +=unrollBufferSync(b)
+    buffer.forEach((b,index)=>{
+        if (isString(b)) {
+            ret += b
+        } else {
+            ret += unrollBufferSync(b)
         }
-    }
+    })
+
     return ret
 }
 
-function renderToString(vnode:VNode){
-    let buffer = render(vnode)
+function renderToString(app:{vnode:VNode},ctx:any){
+    let buffer = render(app.vnode)
     return unrollBufferSync(buffer)
 }

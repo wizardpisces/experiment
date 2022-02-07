@@ -3,8 +3,8 @@ import { renderToString } from 'mini-vue'
 import path, { basename } from 'path'
 
 export async function render(url, manifest) {
+  console.log('rendering', createApp)
   const { app, router } = createApp()
-
   // set the router to the desired URL before rendering
   router.push(url)
   await router.isReady()

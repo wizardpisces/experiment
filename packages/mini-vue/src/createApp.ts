@@ -1,7 +1,6 @@
 import { VNode } from "./type";
 import { isString } from "./util";
-import { render } from "./h";
-import { effect, h } from ".";
+import { render, h } from "./h";
 import { ConcreteComponent } from "./component";
 
 export {
@@ -26,5 +25,8 @@ function createApp(app: ConcreteComponent, props: VNode['props']={children:[]}) 
 }
 
 function createSSRApp(app: ConcreteComponent, props: VNode['props'] = { children: [] }) {
-    return h(app,props)
+    return {
+        vnode:h(app,props),
+        ...createApp(app)
+    }
 }

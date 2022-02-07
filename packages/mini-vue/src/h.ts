@@ -6,6 +6,7 @@ import { ComponentChild, HTMLElementX, ShapeFlags, SimpleNode, VNode, TEXT } fro
 import { isArray, isFunction, isObject, isSimpleNode, isString } from './util';
 export {
     h,
+    isElement,
     render
 }
 
