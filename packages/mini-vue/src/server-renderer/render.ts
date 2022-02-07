@@ -60,9 +60,10 @@ function renderElement(vnode:VNode,push:Function){
 
 function renderProps(props:VNode['props'],push:Function){
     for(let p in props){
+        push(' ')
         let v = props[p]
         if(isString(v)){
-            push(`${p}=${v}`)
+            push(`${p}="${v}"`)
         }
     }
 }

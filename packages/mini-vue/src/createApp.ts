@@ -27,6 +27,8 @@ function createApp(app: ConcreteComponent, props: VNode['props']={children:[]}) 
 function createSSRApp(app: ConcreteComponent, props: VNode['props'] = { children: [] }) {
     return {
         vnode:h(app,props),
-        ...createApp(app)
+        mount: (rootContainer: string | Element) => {
+
+        }
     }
 }
