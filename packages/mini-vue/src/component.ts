@@ -18,7 +18,7 @@ type ConcreteComponent = {
     update?: null | (() => void)
 }
 
-type InternalRenderFunction = () => any
+type InternalRenderFunction = () => VNode
 
 type ComponentInternalInstance = {
     uid: number

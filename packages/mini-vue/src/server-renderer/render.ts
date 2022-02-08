@@ -23,7 +23,6 @@ function createBuffer(){
 function render(vnode:VNode){
     let {getBuffer,push} = createBuffer()
     const { type, shapeFlag } = vnode
-
     switch (type) {
         case TEXT: push(vnode.props.value + '');
         default:

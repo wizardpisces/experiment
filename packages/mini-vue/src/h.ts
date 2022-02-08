@@ -2,23 +2,50 @@ import { ComponentInternalInstance, ConcreteComponent, createComponentInstance, 
 import { effect, ReactiveEffect } from './effect';
 import { nodeOps, patchProps } from './nodeOpts';
 import { queueJob } from './scheduler';
+import { createHydration } from './hydration';
 import { ComponentChild, HTMLElementX, ShapeFlags, SimpleNode, VNode, TEXT } from './type'
 import { isArray, isFunction, isObject, isSimpleNode, isString } from './util';
 export {
     h,
     isElement,
-    render
+    render,
+    hydrateRender,
+    mountComponent
 }
 
-function h(type: VNode['type'], props: VNode['props'], ...children: VNode['props']['children']): VNode {
+function h(type: VNode['type'], props: VNode['props'], ...children: VNode['children']): VNode {
     let normalizedProps: VNode['props'] = props || {}
-    let normalizedChildren = flatten(children).map(child => {
-        if (isSimpleNode(child)) {
-            child = createTextVNode(child)
-        }
-        return child
-    })
+    // children = flatten(children).map(child => {
+    //     if (isSimpleNode(child)) {
+    //         child = createTextVNode(child)
+    //     }
+    //     return child
+    // })
+    let normalizedChildren = combineTextVNode(flatten(children))
     return createVNode(type, normalizedProps, normalizedChildren)
+}
+
+function combineTextVNode(children: VNode['children']) {
+    let newChildren: VNode[] = [],
+        textList: VNode[] = [];
+
+    children.forEach((child) => {
+        if (isSimpleNode(child)) {
+            textList.push(child)
+        } else {
+            if (textList.length) {
+                newChildren.push(createTextVNode(textList.join('')))
+            }
+            newChildren.push(child)
+            textList = []
+        }
+    })
+
+    if (textList.length) {
+        newChildren.push(createTextVNode(textList.join('')))
+    }
+
+    return newChildren
 }
 
 function createVNode(type: VNode['type'], props: VNode['props'], children: VNode['children']): VNode {
@@ -57,6 +84,14 @@ function isElement(vnode: VNode) {
 
 function render(vnode: VNode, container: Element) {
     patch(null, vnode, container, null)
+}
+
+let hydrateContext: ReturnType<typeof createHydration> | null = null
+function hydrateRender(vnode: VNode, container: Element) {
+    let internals = { mountComponent, patchProps }
+    hydrateContext = createHydration(internals)
+    hydrateContext.hydrate(vnode, container.firstChild as ChildNode, container)
+    hydrateContext = null
 }
 
 function mountChildren(children: ComponentChild[], container: Element, anchor: HTMLElementX | null) {
@@ -144,8 +179,13 @@ function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VN
     const componentUpdateFn = instance.update = () => {
         if (!instance.isMounted) {
             let subTree = instance.subTree = instance.render()
-            patch(null, subTree, container, anchor)
-            initialVNode.el = subTree.el
+            if (hydrateContext) {
+                subTree.el = initialVNode.el
+                hydrateContext.hydrate(subTree, subTree.el as ChildNode, container)
+            } else {
+                patch(null, subTree, container, anchor)
+                initialVNode.el = subTree.el
+            }
             instance.isMounted = true
         } else {
             let nextTree = instance.render()
@@ -196,7 +236,7 @@ function patchChildren(n1: VNode, n2: VNode, container: Element, anchor: HTMLEle
     const oldLength = c1.length
     const newLength = c2.length
     const commonLength = Math.min(oldLength, newLength)
-    
+
     for (let i = 0; i < commonLength; i++) {
         const nextChild = c2[i]
         patch(c1[i], nextChild, container, anchor)

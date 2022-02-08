@@ -4,6 +4,7 @@ import { h } from './h'
 import { createApp, createSSRApp } from './createApp'
 import { reactive } from './reactive'
 export {renderToString} from './server-renderer'
+export { nextTick} from './scheduler'
 export {
     ref,
     effect,
