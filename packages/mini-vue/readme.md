@@ -4,7 +4,7 @@ Vue@3 Composition-API in mini version
 ## How to run
 ```bash
 pnpm install
-npm run demo
+npm run demo # node>=14
 npm run demo-ssr
 
 ```
@@ -28,6 +28,8 @@ commitId: 0e48a8a
 commitId: 3041af
 ### 第三阶段
 * [x] SSR
+    [X] renderToString
+    [] renderToStream
 * [] toRefs
 * [] unmount
 * [] Fragment？

@@ -72,8 +72,10 @@ async function createServer(
             const html = template
                 .replace(`<!--preload-links-->`, preloadLinks)
                 .replace(`<!--app-html-->`, appHtml)
-
-            res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
+            // res.status(200).set({
+            //     'Content-Type': 'text/html'
+            // }).end(html)
+            appHtml.pipe(res)
         } catch (e) {
             vite && vite.ssrFixStacktrace(e)
             console.log(e.stack)
