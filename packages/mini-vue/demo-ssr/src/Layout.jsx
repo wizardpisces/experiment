@@ -16,7 +16,6 @@ export default {
                     <script type="module" src="/src/entry-client.ts"></script>
                 </body>
             </html>
-            // <App></App>
         )
     }
 }

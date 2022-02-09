@@ -12,6 +12,7 @@ import { createRouter } from './router'
 // fresh store here.
 const isBrowser = typeof window !== 'undefined';
 export function createApp() {
+    // let app = createSSRApp(Layout)
     let app = isBrowser ? CreateClientApp(App) : createSSRApp(Layout)
 
     const router = createRouter()

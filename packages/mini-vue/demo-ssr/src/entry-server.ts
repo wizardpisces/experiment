@@ -1,5 +1,5 @@
 import { createApp } from './main'
-import { renderToString, renderToNodeStream } from 'mini-vue'
+import { renderToNodeStream } from 'mini-vue'
 import path, { basename } from 'path'
 
 export async function render(url, manifest) {
