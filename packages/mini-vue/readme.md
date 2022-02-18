@@ -30,8 +30,10 @@ commitId: 3041af
 * [x] SSR
     [X] renderToString
     [x] renderToStream/renderToNodeStream
+* [] slot
+* [] lifecycle hooks
+    * [] unmount
 * [] toRefs
-* [] unmount
 * [] Fragment？
 ## Reference
 
