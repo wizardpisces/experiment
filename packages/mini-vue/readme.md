@@ -28,8 +28,8 @@ commitId: 0e48a8a
 commitId: 3041af
 ### 第三阶段
 * [x] SSR
-    [X] renderToString
-    [x] renderToStream/renderToNodeStream
+    * [X] renderToString
+    * [x] renderToStream/renderToNodeStream
 * [] slot
 * [] lifecycle hooks
     * [] unmount
